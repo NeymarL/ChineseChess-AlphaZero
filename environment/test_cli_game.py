@@ -30,7 +30,7 @@ def main():
             title = "请输入棋子名字: ".decode("utf-8").encode("gbk")
             input_chessman_name = input(title)
             chessman = cbd.get_chessman_by_name(input_chessman_name)
-            if chessman <> None and chessman.is_red == cbd.is_red_turn:
+            if chessman != None and chessman.is_red == cbd.is_red_turn:
                 is_correct_chessman = True
                 print "当前可以落子的位置有：".decode("utf-8").encode("gbk")
                 for point in chessman.moving_list:

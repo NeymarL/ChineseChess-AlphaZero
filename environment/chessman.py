@@ -1,7 +1,9 @@
 #-*- coding:utf-8 -*-
 
-from Point import Point
-
+class Point(object):
+    def __init__(self,x,y):
+        self.x=x
+        self.y=y
 
 def num_between(max_num, min_num, current):
     return current >= min_num and current <= max_num
@@ -129,6 +131,7 @@ class Chessman(object):
 
 
 class Rook(Chessman):
+    '''车'''
 
     def __init__(self, name_cn, name, is_red, chessboard):
         super(Rook, self).__init__(name_cn, name, is_red, chessboard)
@@ -160,6 +163,7 @@ class Rook(Chessman):
 
 
 class Knight(Chessman):
+    '''马'''
 
     def __init__(self, name_cn, name, is_red, chessboard):
         super(Knight, self).__init__(name_cn, name, is_red, chessboard)
@@ -200,6 +204,7 @@ class Knight(Chessman):
 
 
 class Cannon(Chessman):
+    '''炮'''
 
     def __init__(self, name_cn, name, is_red, chessboard):
         super(Cannon, self).__init__(name_cn, name, is_red, chessboard)
@@ -251,6 +256,7 @@ class Cannon(Chessman):
 
 
 class Mandarin(Chessman):
+    '''仕/士'''
 
     def __init__(self, name_cn, name, is_red, chessboard):
         super(Mandarin, self).__init__(name_cn, name, is_red, chessboard)
@@ -279,6 +285,7 @@ class Mandarin(Chessman):
 
 
 class Elephant(Chessman):
+    '''象/相'''
 
     def __init__(self, name_cn, name, is_red, chessboard):
         super(Elephant, self).__init__(name_cn, name, is_red, chessboard)
@@ -314,6 +321,7 @@ class Elephant(Chessman):
 
 
 class Pawn(Chessman):
+    '''卒/兵'''
 
     def __init__(self, name_cn, name, is_red, chessboard):
         super(Pawn, self).__init__(name_cn, name, is_red, chessboard)
@@ -349,6 +357,7 @@ class Pawn(Chessman):
 
 
 class King(Chessman):
+    '''将/帅'''
 
     def __init__(self, name_cn, name, is_red, chessboard):
         super(King, self).__init__(name_cn, name, is_red, chessboard)
