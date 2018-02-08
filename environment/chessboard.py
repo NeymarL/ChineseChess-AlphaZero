@@ -123,6 +123,7 @@ class Chessboard(object):
         chessman_old = self.get_chessman(col_num, row_num)
         if chessman_old != None:
             self.__chessmans_hash.pop(chessman_old.name)
+        return chessman_old
 
     def remove_chessman_source(self, col_num, row_num):
         self.chessmans[col_num][row_num] = None
@@ -139,8 +140,15 @@ class Chessboard(object):
     def move_chessman(self, chessman, col_num, row_num):
         if chessman.is_red == self.__is_red_turn:
             # self.remove_chessman_source(chessman.col_num, chessman.row_num)
-            self.remove_chessman_target(col_num, row_num)
+            chessman_old = self.remove_chessman_target(col_num, row_num)
             self.add_chessman(chessman, col_num, row_num)
+            if self.is_check():
+                if chessman_old != None:
+                    self.add_chessman(chessman_old, col_num, row_num)
+                else:
+                    self.remove_chessman_source(col_num, row_num)
+
+                return False
             self.__is_red_turn = not self.__is_red_turn
             return True
         else:
@@ -242,3 +250,32 @@ class Chessboard(object):
                     screen += "   .   "
             screen += "\r\n" * 3
         print(screen.decode("utf-8"))
+
+    def is_check(self):
+        global chessman
+        if self.__is_red_turn:
+            king = self.get_chessman_by_name("red_king")
+        else:
+            king = self.get_chessman_by_name("black_king")
+        for i in range(9):
+            for j in range(10):
+                chess = self.chessmans[i][j]
+                if chess != None:
+                    chess.clear_moving_list()
+                    chess.calc_moving_list()
+                    if chess != None and chess.is_red != self.__is_red_turn:
+                        if chess.in_moving_list(king.position.x, king.position.y):
+                            print "Checking:", chess.name, chess.position.x, chess.position.y
+                            return True
+        return False
+
+    def check_position(self):
+        for i in range(9):
+            for j in range(10):
+                chess = self.chessmans[i][j]
+                if chess != None:
+                    if chess.position.x != self.chessmans_hash[chess.name].position.x or\
+                        chess.position.y != self.chessmans_hash[chess.name].position.y:
+                        print "Error position:", chess.name, chess.position.x, chess.position.y
+
+

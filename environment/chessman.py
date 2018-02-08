@@ -84,9 +84,17 @@ class Chessman(object):
     def move(self, col_num, row_num):
         if self.in_moving_list(col_num, row_num):
             self.__chessboard.remove_chessman_source(self.__position.x, self.__position.y)
+            old_x = self.__position.x
+            old_y = self.__position.y
             self.__position.x = col_num
             self.__position.y = row_num
-            return self.__chessboard.move_chessman(self, col_num, row_num)
+            if not self.__chessboard.move_chessman(self, col_num, row_num):
+                self.__position.x = old_x
+                self.__position.y = old_y
+                self.__chessboard.add_chessman(self, self.__position.x, self.__position.y)
+                # self.__chessboard.print_to_cl()
+                return False
+            return True
         else:
             print "the worng target_position"
             return False
