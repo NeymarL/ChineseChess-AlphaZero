@@ -6,6 +6,6 @@
 * 判断胜负 (Detect winner)
 * 记录棋谱 (Record)
 * 生成训练数据 (Generate training data)
-* 可视化 (Visiualization)
+* 可视化 (Visualization)
 
 
