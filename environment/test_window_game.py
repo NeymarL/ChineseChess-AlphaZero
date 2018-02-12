@@ -44,6 +44,7 @@ class Chessman_Sprite(pygame.sprite.Sprite):
         self.rect = Rect(chessman.col_num * 80, (9 - chessman.row_num) * 80, 80, 80)
 
     def move(self, col_num, row_num):
+        # print self.chessman.name, col_num, row_num
         old_col_num = self.chessman.col_num
         old_row_num = self.chessman.row_num
         is_correct_position = self.chessman.move(col_num, row_num)

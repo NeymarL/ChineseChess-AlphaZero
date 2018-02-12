@@ -139,7 +139,6 @@ class Chessboard(object):
 
     def move_chessman(self, chessman, col_num, row_num):
         if chessman.is_red == self.__is_red_turn:
-            # self.remove_chessman_source(chessman.col_num, chessman.row_num)
             chessman_old = self.remove_chessman_target(col_num, row_num)
             self.add_chessman(chessman, col_num, row_num)
             if self.is_check():
@@ -147,27 +146,29 @@ class Chessboard(object):
                     self.add_chessman(chessman_old, col_num, row_num)
                 else:
                     self.remove_chessman_source(col_num, row_num)
-
                 return False
             self.__is_red_turn = not self.__is_red_turn
             return True
         else:
-            # print "the wrong turn"
             return False
 
     def is_end(self):
-        if self.__is_red_turn:
-            chessman = self.get_chessman_by_name("red_king")
-            if chessman != None:
-                return False
-            else:
-                return True
+        if self.is_check():
+            for i in range(9):
+                for j in range(10):
+                    chess = self.chessmans[i][j]
+                    if chess != None and chess.is_red == self.is_red_turn:
+                        for mov in chess.moving_list:
+                            if chess.test_move(mov.x, mov.y):
+                                print "+1s,", chess.name, mov.x, mov.y
+                                return False
         else:
-            chessman = self.get_chessman_by_name("black_king")
-            if chessman != None:
-                return False
-            else:
-                return True
+            return False
+        if self.is_red_turn:
+            print "Black win"
+        else:
+            print "Red win"
+        return True
 
     def get_chessman(self, col_num, row_num):
         return self.__chessmans[col_num][row_num]
@@ -265,9 +266,21 @@ class Chessboard(object):
                     chess.calc_moving_list()
                     if chess != None and chess.is_red != self.__is_red_turn:
                         if chess.in_moving_list(king.position.x, king.position.y):
-                            print "Checking:", chess.name, chess.position.x, chess.position.y
+                            # print "Checking:", chess.name, chess.position.x, chess.position.y
                             return True
-        return False
+        # the two king cannot exsits in one column with any obstacles
+        red_king = self.get_chessman_by_name("red_king")
+        black_king = self.get_chessman_by_name("black_king")
+        checking = True
+        if red_king.position.x == black_king.position.x:
+            for i in range(red_king.position.y + 1, black_king.position.y):
+                if self.chessmans[red_king.position.x][i] != None:
+                    checking = False
+        else:
+            checking = False
+        # if checking:
+        #     print "Checking by kings", red_king.position.x, black_king.position.x
+        return checking
 
     def check_position(self):
         for i in range(9):
