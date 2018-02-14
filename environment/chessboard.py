@@ -169,7 +169,7 @@ class Chessboard(object):
                     if chess != None and chess.is_red == self.is_red_turn:
                         for mov in chess.moving_list:
                             if chess.test_move(mov.x, mov.y):
-                                print "+1s,", chess.name_cn, mov.x, mov.y
+                                # print "+1s,", chess.name_cn, mov.x, mov.y
                                 return False
         else:
             return False
@@ -307,17 +307,27 @@ class Chessboard(object):
             self.record += str(self.turns) + '.'
         else:
             self.record += '\t'
+        has_two, mark = self.check_two_chesses_in_one_row(chess, old_x, old_y)
+        if has_two:
+            self.record += mark
         self.record += chess.name_cn[1]
+        # horizontal move
         if old_y == y:
             if not self.is_red_turn:
-                self.record += RECORD_NOTES[old_x + 1][0] + u'平' + RECORD_NOTES[x + 1][0]
+                if not has_two:
+                    self.record += RECORD_NOTES[old_x + 1][0]
+                self.record += u'平' + RECORD_NOTES[x + 1][0]
             else:
-                self.record += RECORD_NOTES[9 - old_x][1] + u'平' + RECORD_NOTES[9 - x][1]
+                if not has_two:
+                    self.record += RECORD_NOTES[9 - old_x][1]
+                self.record += u'平' + RECORD_NOTES[9 - x][1]
+        # vertical move
         else:
-            if not self.is_red_turn:
-                self.record += RECORD_NOTES[old_x + 1][0]
-            else:
-                self.record += RECORD_NOTES[9 - old_x][1]
+            if not has_two:
+                if not self.is_red_turn:
+                    self.record += RECORD_NOTES[old_x + 1][0]
+                else:
+                    self.record += RECORD_NOTES[9 - old_x][1]
             if (y > old_y and self.is_red_turn) or (y < old_y and not self.is_red_turn):
                 self.record += u'进'
             else:
@@ -330,6 +340,18 @@ class Chessboard(object):
                     self.record += RECORD_NOTES[x + 1][0]
                 else:
                     self.record += RECORD_NOTES[9 - x][1]
+
+    def check_two_chesses_in_one_row(self, chess, old_x, old_y):
+        for j in range(10):
+            chs = self.chessmans[old_x][j]
+            if chs != None and chs.is_red == chess.is_red:
+                if type(chs) == type(chess) and chs != chess:
+                    if (chs.position.y > old_y and not chs.is_red) or\
+                       (chs.position.y < old_y and chs.is_red):
+                        return (True, u'前')
+                    else:
+                        return (True, u'后')
+        return (False, u'')
 
     def print_record(self):
         print self.record
