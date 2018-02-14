@@ -170,7 +170,6 @@ class Chessboard(object):
                         for mov in chess.moving_list:
                             if chess.test_move(mov.x, mov.y):
                                 print "+1s,", chess.name_cn, mov.x, mov.y
-                                self.print_to_cl()
                                 return False
         else:
             return False
