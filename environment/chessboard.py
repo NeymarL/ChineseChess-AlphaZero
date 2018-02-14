@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
 
 import chessman
+import codecs
 
 class Chessboard(object):
 
@@ -356,8 +357,12 @@ class Chessboard(object):
     def print_record(self):
         print self.record
 
-    def save_record(self, filename):
-        pass
+    def save_record(self, filename, head = ''):
+        with codecs.open(filename, "a", encoding="utf-8") as f:
+            if head != '':
+                f.write(head)
+            f.write(self.record)
+
 
 RECORD_NOTES = [
     ['0', '0'], ['1', u'一'], ['2', u'二'],

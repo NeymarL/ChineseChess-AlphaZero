@@ -142,6 +142,7 @@ def main(winstyle=0):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 cbd.print_record()
+                cbd.save_record('tmp.rcd')
                 sys.exit()
             elif event.type == MOUSEBUTTONDOWN:
                 pressed_array = pygame.mouse.get_pressed()
@@ -181,7 +182,7 @@ def main(winstyle=0):
         chessmans.update()
         chessmans.draw(screen)
         pygame.display.update()
-        
+
     cbd.print_record()
 
 if __name__ == '__main__':
