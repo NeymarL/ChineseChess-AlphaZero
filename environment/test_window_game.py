@@ -5,7 +5,6 @@ import pygame
 import random
 import os.path
 import chessboard
-import point
 import chessman
 from pygame.locals import *
 
@@ -142,7 +141,6 @@ def main(winstyle=0):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 cbd.print_record()
-                cbd.save_record('tmp.rcd')
                 sys.exit()
             elif event.type == MOUSEBUTTONDOWN:
                 pressed_array = pygame.mouse.get_pressed()
@@ -162,8 +160,7 @@ def main(winstyle=0):
                                 current_chessman = chessman_sprite
                                 chessman_sprite.is_selected = True
                             else:
-                                success = current_chessman.move(
-                                    col_num, row_num)
+                                success = current_chessman.move(col_num, row_num)
                                 if success:
                                     chessmans.remove(chessman_sprite)
                                     chessman_sprite.kill()

@@ -2,16 +2,19 @@
 
 import chessman
 import codecs
+from lookup_tables import Winner
 
 class Chessboard(object):
 
-    def __init__(self, name):
+    def __init__(self, name='000'):
         self.__name = name
         self.__is_red_turn = True
         self.__chessmans = [([None] * 10) for i in range(9)]
         self.__chessmans_hash = {}
         self.turns = 1
         self.record = ''
+        self.winner = None
+        self.__screen = ''
 
     @property
     def is_red_turn(self):
@@ -33,89 +36,95 @@ class Chessboard(object):
     def chessmans_hash(self):
         return self.__chessmans_hash
 
+    @property
+    def screen(self):
+        self.print_to_cl(is_print=False)
+        return self.__screen
+
     def init_board(self):
-        red_rook_left = chessman.Rook(u" 车l红 ", "red_rook_left", True, self)
+        red_rook_left = chessman.Rook(u" 车l红 ", "red_rook_left", True, self, 'r')
         red_rook_left.add_to_board(0, 0)
-        red_rook_right = chessman.Rook(u" 车r红 ", "red_rook_right", True, self)
+        red_rook_right = chessman.Rook(u" 车r红 ", "red_rook_right", True, self, 'r')
         red_rook_right.add_to_board(8, 0)
         black_rook_left = chessman.Rook(
-            u" 车l黑 ", "black_rook_left", False, self)
+            u" 车l黑 ", "black_rook_left", False, self, 'R')
         black_rook_left.add_to_board(0, 9)
         black_rook_right = chessman.Rook(
-            u" 车r黑 ", "black_rook_right", False, self)
+            u" 车r黑 ", "black_rook_right", False, self, 'R')
         black_rook_right.add_to_board(8, 9)
         red_knight_left = chessman.Knight(
-            u" 马l红 ", "red_knight_left", True, self)
+            u" 马l红 ", "red_knight_left", True, self, 'k')
         red_knight_left.add_to_board(1, 0)
         red_knight_right = chessman.Knight(
-            u" 马r红 ", "red_knight_right", True, self)
+            u" 马r红 ", "red_knight_right", True, self, 'k')
         red_knight_right.add_to_board(7, 0)
         black_knight_left = chessman.Knight(
-            u" 马l黑 ", "black_knight_left", False, self)
+            u" 马l黑 ", "black_knight_left", False, self, 'K')
         black_knight_left.add_to_board(1, 9)
         black_knight_right = chessman.Knight(
-            u" 马r黑 ", "black_knight_right", False, self)
+            u" 马r黑 ", "black_knight_right", False, self, 'K')
         black_knight_right.add_to_board(7, 9)
         red_cannon_left = chessman.Cannon(
-            u" 炮l红 ", "red_cannon_left", True, self)
+            u" 炮l红 ", "red_cannon_left", True, self, 'c')
         red_cannon_left.add_to_board(1, 2)
         red_cannon_right = chessman.Cannon(
-            u" 炮r红 ", "red_cannon_right", True, self)
+            u" 炮r红 ", "red_cannon_right", True, self, 'c')
         red_cannon_right.add_to_board(7, 2)
         black_cannon_left = chessman.Cannon(
-            u" 炮l黑 ", "black_cannon_left", False, self)
+            u" 炮l黑 ", "black_cannon_left", False, self, 'C')
         black_cannon_left.add_to_board(1, 7)
         black_cannon_right = chessman.Cannon(
-            u" 炮r黑 ", "black_cannon_right", False, self)
+            u" 炮r黑 ", "black_cannon_right", False, self, 'C')
         black_cannon_right.add_to_board(7, 7)
         red_elephant_left = chessman.Elephant(
-            u" 相l红 ", "red_elephant_left", True, self)
+            u" 相l红 ", "red_elephant_left", True, self, 'e')
         red_elephant_left.add_to_board(2, 0)
         red_elephant_right = chessman.Elephant(
-            u" 相r红 ", "red_elephant_right", True, self)
+            u" 相r红 ", "red_elephant_right", True, self, 'e')
         red_elephant_right.add_to_board(6, 0)
         black_elephant_left = chessman.Elephant(
-            u" 象l黑 ", "black_elephant_left", False, self)
+            u" 象l黑 ", "black_elephant_left", False, self, 'E')
         black_elephant_left.add_to_board(2, 9)
         black_elephant_right = chessman.Elephant(
-            u" 象r黑 ", "black_elephant_right", False, self)
+            u" 象r黑 ", "black_elephant_right", False, self, 'E')
         black_elephant_right.add_to_board(6, 9)
         red_mandarin_left = chessman.Mandarin(
-            u" 仕l红 ", "red_mandarin_left", True, self)
+            u" 仕l红 ", "red_mandarin_left", True, self, 'm')
         red_mandarin_left.add_to_board(3, 0)
         red_mandarin_right = chessman.Mandarin(
-            u" 仕r红 ", "red_mandarin_right", True, self)
+            u" 仕r红 ", "red_mandarin_right", True, self, 'm')
         red_mandarin_right.add_to_board(5, 0)
         black_mandarin_left = chessman.Mandarin(
-            u" 仕l黑 ", "black_mandarin_left", False, self)
+            u" 仕l黑 ", "black_mandarin_left", False, self, 'M')
         black_mandarin_left.add_to_board(3, 9)
         black_mandarin_right = chessman.Mandarin(
-            u" 仕r黑 ", "black_mandarin_right", False, self)
+            u" 仕r黑 ", "black_mandarin_right", False, self, 'M')
         black_mandarin_right.add_to_board(5, 9)
-        red_king = chessman.King(u" 帅 红 ", "red_king", True, self)
+        red_king = chessman.King(u" 帅 红 ", "red_king", True, self, 's')
         red_king.add_to_board(4, 0)
-        black_king = chessman.King(u" 将 黑 ", "black_king", False, self)
+        black_king = chessman.King(u" 将 黑 ", "black_king", False, self, 'S')
         black_king.add_to_board(4, 9)
-        red_pawn_1 = chessman.Pawn(u" 兵1红 ", "red_pawn_1", True, self)
+        red_pawn_1 = chessman.Pawn(u" 兵1红 ", "red_pawn_1", True, self, 'p')
         red_pawn_1.add_to_board(0, 3)
-        red_pawn_2 = chessman.Pawn(u" 兵2红 ", "red_pawn_2", True, self)
+        red_pawn_2 = chessman.Pawn(u" 兵2红 ", "red_pawn_2", True, self, 'p')
         red_pawn_2.add_to_board(2, 3)
-        red_pawn_3 = chessman.Pawn(u" 兵3红 ", "red_pawn_3", True, self)
+        red_pawn_3 = chessman.Pawn(u" 兵3红 ", "red_pawn_3", True, self, 'p')
         red_pawn_3.add_to_board(4, 3)
-        red_pawn_4 = chessman.Pawn(u" 兵4红 ", "red_pawn_4", True, self)
+        red_pawn_4 = chessman.Pawn(u" 兵4红 ", "red_pawn_4", True, self, 'p')
         red_pawn_4.add_to_board(6, 3)
-        red_pawn_5 = chessman.Pawn(u" 兵5红 ", "red_pawn_5", True, self)
+        red_pawn_5 = chessman.Pawn(u" 兵5红 ", "red_pawn_5", True, self, 'p')
         red_pawn_5.add_to_board(8, 3)
-        black_pawn_1 = chessman.Pawn(u" 卒1黑 ", "black_pawn_1", False, self)
+        black_pawn_1 = chessman.Pawn(u" 卒1黑 ", "black_pawn_1", False, self, 'P')
         black_pawn_1.add_to_board(0, 6)
-        black_pawn_2 = chessman.Pawn(u" 卒2黑 ", "black_pawn_2", False, self)
+        black_pawn_2 = chessman.Pawn(u" 卒2黑 ", "black_pawn_2", False, self, 'P')
         black_pawn_2.add_to_board(2, 6)
-        black_pawn_3 = chessman.Pawn(u" 卒3黑 ", "black_pawn_3", False, self)
+        black_pawn_3 = chessman.Pawn(u" 卒3黑 ", "black_pawn_3", False, self, 'P')
         black_pawn_3.add_to_board(4, 6)
-        black_pawn_4 = chessman.Pawn(u" 卒4黑 ", "black_pawn_4", False, self)
+        black_pawn_4 = chessman.Pawn(u" 卒4黑 ", "black_pawn_4", False, self, 'P')
         black_pawn_4.add_to_board(6, 6)
-        black_pawn_5 = chessman.Pawn(u" 卒5黑 ", "black_pawn_5", False, self)
+        black_pawn_5 = chessman.Pawn(u" 卒5黑 ", "black_pawn_5", False, self, 'P')
         black_pawn_5.add_to_board(8, 6)
+        self.calc_chessmans_moving_list()
 
     def add_chessman(self, chessman, col_num, row_num):
         self.chessmans[col_num][row_num] = chessman
@@ -159,9 +168,34 @@ class Chessboard(object):
         else:
             return False
 
+    def move(self, x0, y0, x1, y1):
+        chessman = self.chessmans[x0][y0]
+        if chessman == None:
+            return False
+        return chessman.move(x1, y1)
+
+    def move_action_str(self, action):
+        x0, y0, x1, y1 = self.str_to_move(action)
+        return self.move(x0, y0, x1, y1)
+
+    def legal_moves(self):
+        '''
+        return all legal moves
+        '''
+        _legal_moves = []
+        for chessman in self.__chessmans_hash.values():
+            if chessman.is_red == self.is_red_turn:
+                p = chessman.position
+                x0 = p.x
+                y0 = p.y
+                for point in chessman.moving_list:
+                    _legal_moves.append(self.move_to_str(x0, y0, point.x, point.y))
+        return _legal_moves
+
+
     def is_end(self):
         if self.turns > 1000:
-            print "Tie"
+            self.winner = Winner.draw
             return True
         if self.is_check():
             for i in range(9):
@@ -175,9 +209,9 @@ class Chessboard(object):
         else:
             return False
         if self.is_red_turn:
-            print "Black win"
+            self.winner = Winner.black
         else:
-            print "Red win"
+            self.winner = Winner.red
         return True
 
     def get_chessman(self, col_num, row_num):
@@ -251,7 +285,7 @@ class Chessboard(object):
                 else:
                     count += 1
 
-    def print_to_cl(self):
+    def print_to_cl(self, is_print = True):
         screen = "\r\n"
         for i in range(9, -1, -1):
             for j in range(9):
@@ -260,7 +294,10 @@ class Chessboard(object):
                 else:
                     screen += "   .   "
             screen += "\r\n" * 3
-        print(screen)
+        if is_print:
+            print(screen)
+        else:
+            self.__screen = screen
 
     def is_check(self):
         global chessman
@@ -276,9 +313,9 @@ class Chessboard(object):
                     chess.calc_moving_list()
                     if chess != None and chess.is_red != self.__is_red_turn:
                         if chess.in_moving_list(king.position.x, king.position.y):
-                            # print "Checking:", chess.name, chess.position.x, chess.position.y
+                            print("Checking:", chess.name, chess.position.x, chess.position.y)
                             return True
-        # the two king cannot exsits in one column with any obstacles
+        # the two king cannot exsits in one column without any obstacles
         red_king = self.get_chessman_by_name("red_king")
         black_king = self.get_chessman_by_name("black_king")
         checking = True
@@ -299,7 +336,7 @@ class Chessboard(object):
                 if chess != None:
                     if chess.position.x != self.chessmans_hash[chess.name].position.x or\
                         chess.position.y != self.chessmans_hash[chess.name].position.y:
-                        print "Error position:", chess.name, chess.position.x, chess.position.y
+                        print("Error position:", chess.name, chess.position.x, chess.position.y)
 
     def make_record(self, chess, old_x, old_y, x, y):
         if self.__is_red_turn:
@@ -355,13 +392,51 @@ class Chessboard(object):
         return (False, u'')
 
     def print_record(self):
-        print self.record
+        print(self.record)
 
     def save_record(self, filename, head = ''):
         with codecs.open(filename, "a", encoding="utf-8") as f:
             if head != '':
                 f.write(head)
             f.write(self.record)
+
+    def str_to_move(self, action: str):
+        x0 = int(action[0])
+        y0 = int(action[1])
+        x1 = int(action[2])
+        y1 = int(action[3])
+        return x0, y0, x1, y1
+
+    def move_to_str(self, x0, y0, x1, y1):
+        return str(x0) + str(y0) + str(x1) + str(y1)
+
+    def FENboard(self):
+        '''
+        rules: https://www.xqbase.com/protocol/pgnfen2.htm
+        '''
+        cnt = 0
+        fen = ''
+        for i in range(10):
+            cnt = 0
+            for j in range(9):
+                if self.chessmans[j][i] == None:
+                    cnt += 1
+                else:
+                    if cnt > 0:
+                        fen = fen + str(cnt)
+                    fen = fen + self.chessmans[j][i].fen
+                    cnt = 0
+            if cnt > 0:
+                fen = fen + str(cnt)
+            if (i < 9):
+                fen = fen + '/'
+        if self.is_red_turn:
+            fen += ' r'
+        else:
+            fen += ' b'
+        fen += ' - - 0 1'
+        return fen
+
 
 
 RECORD_NOTES = [

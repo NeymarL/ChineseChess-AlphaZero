@@ -23,6 +23,26 @@ Idx_2_Chessman = {
     6: chessman.King
 }
 
+Fen_2_Idx = {
+    'p': 0,
+    'P': 0,
+    'c': 1,
+    'C': 1,
+    'r': 2,
+    'R': 2,
+    'k': 3,
+    'K': 3,
+    'e': 4,
+    'E': 4,
+    'm': 5,
+    'M': 5,
+    's': 6,
+    'S': 6
+}
+
 class Color(Enum):
     Black = 0
     Red = 1
+
+Winner = Enum("Winner", "red black draw")
+

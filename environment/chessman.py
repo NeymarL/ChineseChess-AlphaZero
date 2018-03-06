@@ -17,7 +17,7 @@ def creat_points(list_points, list_vs, list_hs):
 
 class Chessman(object):
 
-    def __init__(self, name_cn, name, is_red, chessboard):
+    def __init__(self, name_cn, name, is_red, chessboard, fen):
         self.__name = name
         self.__is_red = is_red
         self.__chessboard = chessboard
@@ -29,6 +29,7 @@ class Chessman(object):
         self.__right = 8
         self.__is_alive = True
         self.__name_cn = name_cn
+        self.__fen = fen
 
     @property
     def row_num(self):
@@ -70,6 +71,10 @@ class Chessman(object):
     def moving_list(self):
         return self.__moving_list
 
+    @property
+    def fen(self):
+        return self.__fen
+
     def clear_moving_list(self):
         self.__moving_list = []
 
@@ -79,7 +84,7 @@ class Chessman(object):
             self.__position.y = row_num
             self.__chessboard.add_chessman(self, col_num, row_num)
         else:
-            print "the worng postion"
+            print("the worng postion")
 
     def move(self, col_num, row_num):
         if self.in_moving_list(col_num, row_num):
@@ -102,9 +107,9 @@ class Chessman(object):
             self.calc_moving_list()
             if self.in_moving_list(col_num, row_num):
                 return self.move(col_num, row_num)
-            print "the worng target_position:", self.name_cn, col_num, row_num
+            print("the worng target_position:", self.name_cn, col_num, row_num)
             for point in self.moving_list:
-                print point.x, point.y
+                print(point.x, point.y)
             return False
 
     def test_move(self, col_num, row_num):
@@ -174,8 +179,8 @@ class Chessman(object):
 class Rook(Chessman):
     '''车'''
 
-    def __init__(self, name_cn, name, is_red, chessboard):
-        super(Rook, self).__init__(name_cn, name, is_red, chessboard)
+    def __init__(self, name_cn, name, is_red, chessboard, fen):
+        super(Rook, self).__init__(name_cn, name, is_red, chessboard, fen)
         self._Chessman__top = 9
         self._Chessman__bottom = 0
         self._Chessman__left = 0
@@ -206,8 +211,8 @@ class Rook(Chessman):
 class Knight(Chessman):
     '''马'''
 
-    def __init__(self, name_cn, name, is_red, chessboard):
-        super(Knight, self).__init__(name_cn, name, is_red, chessboard)
+    def __init__(self, name_cn, name, is_red, chessboard, fen):
+        super(Knight, self).__init__(name_cn, name, is_red, chessboard, fen)
         self._Chessman__top = 9
         self._Chessman__bottom = 0
         self._Chessman__left = 0
@@ -247,8 +252,8 @@ class Knight(Chessman):
 class Cannon(Chessman):
     '''炮'''
 
-    def __init__(self, name_cn, name, is_red, chessboard):
-        super(Cannon, self).__init__(name_cn, name, is_red, chessboard)
+    def __init__(self, name_cn, name, is_red, chessboard, fen):
+        super(Cannon, self).__init__(name_cn, name, is_red, chessboard, fen)
         self._Chessman__top = 9
         self._Chessman__bottom = 0
         self._Chessman__left = 0
@@ -299,8 +304,8 @@ class Cannon(Chessman):
 class Mandarin(Chessman):
     '''仕/士'''
 
-    def __init__(self, name_cn, name, is_red, chessboard):
-        super(Mandarin, self).__init__(name_cn, name, is_red, chessboard)
+    def __init__(self, name_cn, name, is_red, chessboard, fen):
+        super(Mandarin, self).__init__(name_cn, name, is_red, chessboard, fen)
         if self.is_red:
             self._Chessman__top = 2
             self._Chessman__bottom = 0
@@ -328,8 +333,8 @@ class Mandarin(Chessman):
 class Elephant(Chessman):
     '''象/相'''
 
-    def __init__(self, name_cn, name, is_red, chessboard):
-        super(Elephant, self).__init__(name_cn, name, is_red, chessboard)
+    def __init__(self, name_cn, name, is_red, chessboard, fen):
+        super(Elephant, self).__init__(name_cn, name, is_red, chessboard, fen)
         if self.is_red:
             self._Chessman__top = 4
             self._Chessman__bottom = 0
@@ -364,8 +369,8 @@ class Elephant(Chessman):
 class Pawn(Chessman):
     '''卒/兵'''
 
-    def __init__(self, name_cn, name, is_red, chessboard):
-        super(Pawn, self).__init__(name_cn, name, is_red, chessboard)
+    def __init__(self, name_cn, name, is_red, chessboard, fen):
+        super(Pawn, self).__init__(name_cn, name, is_red, chessboard, fen)
         if self.is_red:
             self._Chessman__top = 9
             self._Chessman__bottom = 3
@@ -400,8 +405,8 @@ class Pawn(Chessman):
 class King(Chessman):
     '''将/帅'''
 
-    def __init__(self, name_cn, name, is_red, chessboard):
-        super(King, self).__init__(name_cn, name, is_red, chessboard)
+    def __init__(self, name_cn, name, is_red, chessboard, fen):
+        super(King, self).__init__(name_cn, name, is_red, chessboard, fen)
         if self.is_red:
             self._Chessman__top = 2
             self._Chessman__bottom = 0
