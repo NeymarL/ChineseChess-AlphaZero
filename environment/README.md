@@ -8,4 +8,18 @@
 * 生成训练数据 (Generate training data)
 * 可视化 (Visualization)
 
+**API**
+
+Class: `ChessEnv`
+* `reset()`：重制（初始化）引擎环境
+
+* `observation`：返回当前棋盘
+
+* `copy()`：（深度）复制当前环境
+
+* `input_planes(flip=False)`：返回输入给神经网络的特征平面
+
+  轮到红方时 `flip=True`；轮到黑方时`flip=False`
+
+* `render(gui=False)`：NotImplemented
 
