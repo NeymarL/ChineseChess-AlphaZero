@@ -10,7 +10,7 @@
 
 **API**
 
-Class: `ChessEnv`
+Class: `cchess_alphazero.environment.env.ChessEnv`
 * `reset()`：重制（初始化）引擎环境
 
 * `observation`：返回当前棋盘
