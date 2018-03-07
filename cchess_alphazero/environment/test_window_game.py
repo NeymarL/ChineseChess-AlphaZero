@@ -4,8 +4,8 @@ import sys
 import pygame
 import random
 import os.path
-import chessboard
-import chessman
+
+from cchess_alphazero.environment.chessboard import Chessboard
 from pygame.locals import *
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
@@ -128,7 +128,7 @@ def main(winstyle=0):
     screen.blit(background, (0, 0))
     pygame.display.flip()
 
-    cbd = chessboard.Chessboard('000')
+    cbd = Chessboard('000')
     cbd.init_board()
 
     chessmans = pygame.sprite.Group()

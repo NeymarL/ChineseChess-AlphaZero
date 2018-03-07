@@ -1,7 +1,6 @@
 #-*- coding:utf-8 -*-
 
-import chessboard
-import chessman
+from cchess_alphazero.environment.chessboard import Chessboard
 
 def print_chessman_name(chessman):
     if chessman:
@@ -11,11 +10,9 @@ def print_chessman_name(chessman):
 
 
 def main():
-    cbd = chessboard.Chessboard('000')
+    cbd = Chessboard('000')
     cbd.init_board()
     cbd.print_to_cl()
-    # cbd.remove_chessman_source(0,0)
-    # cbd.print_to_cl()
     while not cbd.is_end():
         cbd.calc_chessmans_moving_list()
         if cbd.is_red_turn:

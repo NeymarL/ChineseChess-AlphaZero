@@ -1,9 +1,9 @@
 import enum
 import numpy as np
 import copy
-import chessman
-from chessboard import Chessboard
-from lookup_tables import Chessman_2_idx
+
+from cchess_alphazero.environment.chessboard import Chessboard
+from cchess_alphazero.environment.lookup_tables import Chessman_2_idx
 
 from logging import getLogger
 
@@ -77,7 +77,7 @@ class ChessEnv:
         return planes
 
 
-if __name__ == '__main__':
+def test():
     env = ChessEnv()
     env.reset()
     print(env.board.legal_moves())
@@ -92,4 +92,7 @@ if __name__ == '__main__':
     print()
     inv_planes = env.input_planes(flip=True)
     print(inv_planes[2])
+
+if __name__ == '__main__':
+    test()
 
