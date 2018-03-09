@@ -5,10 +5,10 @@ from logging import getLogger
 
 
 import tensorflow as tf
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-config.gpu_options.visible_device_list='0'
-session = tf.Session(config=config)
+# config = tf.ConfigProto()
+# config.gpu_options.allow_growth = True
+# config.gpu_options.visible_device_list='0'
+# session = tf.Session(config=config)
 
 from keras.engine.topology import Input
 from keras.engine.training import Model
@@ -20,6 +20,7 @@ from keras.regularizers import l2
 
 from cchess_alphazero.agent.api import CChessModelAPI
 from cchess_alphazero.config import Config
+from cchess_alphazero.environment.lookup_tables import ActionLabelsRed, ActionLabelsBlack
 
 logger = getLogger(__name__)
 
@@ -30,6 +31,7 @@ class CChessModel:
         self.model = None  # type: Model
         self.digest = None
         self.api = None
+        self.n_labels = len(ActionLabelsRed)
 
     def build(self):
         mc = self.config.model
@@ -53,7 +55,7 @@ class CChessModel:
         x = BatchNormalization(axis=1, name="policy_batchnorm")(x)
         x = Activation("relu", name="policy_relu")(x)
         x = Flatten(name="policy_flatten")(x)
-        policy_out = Dense(self.config.n_labels, kernel_regularizer=l2(mc.l2_reg), activation="softmax", name="policy_out")(x)
+        policy_out = Dense(self.n_labels, kernel_regularizer=l2(mc.l2_reg), activation="softmax", name="policy_out")(x)
 
         # for value output
         x = Conv2D(filters=4, kernel_size=1, data_format="channels_first", use_bias=False, 
