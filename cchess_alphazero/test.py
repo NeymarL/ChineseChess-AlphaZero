@@ -8,10 +8,18 @@ _PATH_ = os.path.dirname(os.path.dirname(__file__))
 if _PATH_ not in sys.path:
     sys.path.append(_PATH_)
 
+def test_env():
+    from cchess_alphazero.environment.env import CChessEnv
+    env = CChessEnv()
+    env.reset()
+    print(env.observation)
+    env.step('0001')
+    print(env.observation)
+    env.step('7770')
+    print(env.observation)
+    env.render()
+    print(env.input_planes()[0+7:3+7])
+
 if __name__ == "__main__":
-    # mp.set_start_method('spawn')
-    # sys.setrecursionlimit(10000)
-    # from chess_zero import manager
-    # manager.start()
-    from cchess_alphazero.environment.test_cli_game import main
-    main()
+    test_env()
+    

@@ -3,13 +3,13 @@ import numpy as np
 import copy
 
 from cchess_alphazero.environment.chessboard import Chessboard
-from cchess_alphazero.environment.lookup_tables import Chessman_2_idx
+from cchess_alphazero.environment.lookup_tables import Chessman_2_idx, Fen_2_Idx
 
 from logging import getLogger
 
 logger = getLogger(__name__)
 
-class ChessEnv:
+class CChessEnv:
 
     def __init__(self):
         self.board = None
@@ -42,7 +42,10 @@ class ChessEnv:
 
     @property
     def observation(self):
-        return self.board.FENboard()
+        if self.board.is_red_turn:
+            return self.board.FENboard()
+        else:
+            return self.board.fliped_FENboard()
 
     def step(self, action: str, check_over = True):
         if check_over and action is None:
@@ -66,33 +69,31 @@ class ChessEnv:
         else:
             self.board.print_to_cl()
 
-    def input_planes(self, flip = False):
+    def input_planes(self):
+        planes = self.fen_to_planes(self.observation)
+        return planes
+
+    def fen_to_planes(self, fen):
+        '''
+        e.g.
+            rkemsmekr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR r - - 0 1
+            rkemsmek1/8r/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR b - - 0 1
+        '''
         planes = np.zeros(shape=(14, 10, 9), dtype=np.float32)
-        for chessman in self.board.chessmans_hash.values():
-            point = chessman.position
-            if not flip:
-                planes[Chessman_2_idx[type(chessman)] + int(chessman.is_red) * 7][9 - point.y][point.x] = 1
-            else:
-                planes[Chessman_2_idx[type(chessman)] + int(not chessman.is_red) * 7][point.y][8 - point.x] = 1
+        foo = fen.split(' ')
+        rows = foo[0].split('/')
+
+        for i in range(len(rows)):
+            row = rows[i]
+            j = 0
+            for letter in row:
+                if letter.isalpha():
+                    # 0 ~ 7 : upper, 7 ~ 14: lower
+                    planes[Fen_2_Idx[letter] + int(letter.islower()) * 7][i][j] = 1
+                    j += 1
+                else:
+                    j += int(letter)
         return planes
 
 
-def test():
-    env = ChessEnv()
-    env.reset()
-    print(env.board.legal_moves())
-    print(env.observation)
-    env.step('0001')
-    env.render()
-    print(env.board.legal_moves())
-    print(env.observation)
-    planes = env.input_planes()
-    print("黑卒：\n", planes[0])
-    print("红卒：\n",planes[7])
-    print()
-    inv_planes = env.input_planes(flip=True)
-    print(inv_planes[2])
-
-if __name__ == '__main__':
-    test()
 
