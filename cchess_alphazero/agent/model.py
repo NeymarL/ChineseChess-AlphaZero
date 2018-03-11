@@ -3,12 +3,11 @@ import json
 import os
 from logging import getLogger
 
-
 import tensorflow as tf
-# config = tf.ConfigProto()
-# config.gpu_options.allow_growth = True
-# config.gpu_options.visible_device_list='0'
-# session = tf.Session(config=config)
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+config.gpu_options.visible_device_list='0'
+session = tf.Session(config=config)
 
 from keras.engine.topology import Input
 from keras.engine.training import Model
@@ -30,8 +29,9 @@ class CChessModel:
         self.config = config
         self.model = None  # type: Model
         self.digest = None
-        self.api = None
         self.n_labels = len(ActionLabelsRed)
+        self.graph = None
+        self.api = None
 
     def build(self):
         mc = self.config.model
@@ -67,9 +67,9 @@ class CChessModel:
         value_out = Dense(1, kernel_regularizer=l2(mc.l2_reg), activation="tanh", name="value_out")(x)
 
         self.model = Model(in_x, [policy_out, value_out], name="cchess_model")
+        self.graph = tf.get_default_graph()
 
-
-    def _build_residual_block(x, index):
+    def _build_residual_block(self, x, index):
         mc = self.config.model
         in_x = x
         res_name = "res" + str(index)
@@ -102,6 +102,7 @@ class CChessModel:
                 self.model = Model.from_config(json.load(f))
             self.model.load_weights(weight_path)
             self.digest = self.fetch_digest(weight_path)
+            self.graph = tf.get_default_graph()
             logger.debug(f"loaded model digest = {self.digest}")
             return True
         else:
@@ -116,7 +117,7 @@ class CChessModel:
         self.digest = self.fetch_digest(weight_path)
         logger.debug(f"saved model digest {self.digest}")
 
-    def get_pipes(self, num = 1):
+    def get_pipes(self, num=1, api=None):
         if self.api is None:
             self.api = CChessModelAPI(self.config, self)
             self.api.start()

@@ -31,6 +31,7 @@ def main():
                 print("当前可以落子的位置有：")
                 for point in chessman.moving_list:
                     print(point.x, point.y)
+                print(cbd.legal_moves())
             else:
                 print("没有找到此名字的棋子或未轮到此方走子")
         while not is_correct_position:

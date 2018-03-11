@@ -3,6 +3,10 @@ import codecs
 from cchess_alphazero.environment.lookup_tables import Winner
 from cchess_alphazero.environment.chessman import *
 
+from cchess_alphazero.lib.logger import getLogger
+
+logger = getLogger(__name__)
+
 class Chessboard(object):
 
     def __init__(self, name='000'):
@@ -134,6 +138,7 @@ class Chessboard(object):
         chessman_old = self.get_chessman(col_num, row_num)
         if chessman_old != None:
             self.__chessmans_hash.pop(chessman_old.name)
+            chessman_old.is_alive = False
         return chessman_old
 
     def remove_chessman_source(self, col_num, row_num):
@@ -154,12 +159,12 @@ class Chessboard(object):
         if chessman.is_red == self.__is_red_turn:
             chessman_old = self.remove_chessman_target(col_num, row_num)
             self.add_chessman(chessman, col_num, row_num)
-            if self.is_check():
-                if chessman_old != None:
-                    self.add_chessman(chessman_old, col_num, row_num)
-                else:
-                    self.remove_chessman_source(col_num, row_num)
-                return False
+            # if self.is_check():
+            #     if chessman_old != None:
+            #         self.add_chessman(chessman_old, col_num, row_num)
+            #     else:
+            #         self.remove_chessman_source(col_num, row_num)
+            #     return False
             if is_record:
                 self.make_record(chessman, old_x, old_y, col_num, row_num)
             self.__is_red_turn = not self.__is_red_turn
@@ -194,25 +199,41 @@ class Chessboard(object):
 
 
     def is_end(self):
-        if self.turns > 1000:
-            self.winner = Winner.draw
-            return True
-        if self.is_check():
-            for i in range(9):
-                for j in range(10):
-                    chess = self.chessmans[i][j]
-                    if chess != None and chess.is_red == self.is_red_turn:
-                        for mov in chess.moving_list:
-                            if chess.test_move(mov.x, mov.y):
-                                # print "+1s,", chess.name_cn, mov.x, mov.y
-                                return False
-        else:
-            return False
-        if self.is_red_turn:
+        # if self.is_check():
+        #     for i in range(9):
+        #         for j in range(10):
+        #             chess = self.chessmans[i][j]
+        #             if chess != None and chess.is_red == self.is_red_turn:
+        #                 for mov in chess.moving_list:
+        #                     if chess.test_move(mov.x, mov.y):
+        #                         # print "+1s,", chess.name_cn, mov.x, mov.y
+        #                         return False
+        # else:
+        #     return False
+        # if self.is_red_turn:
+        #     self.winner = Winner.black
+        # else:
+        #     self.winner = Winner.red
+        # return True
+        red_king = self.get_chessman_by_name('red_king')
+        black_king = self.get_chessman_by_name('black_king')
+        if not red_king:
             self.winner = Winner.black
-        else:
+        elif not black_king:
             self.winner = Winner.red
-        return True
+        elif red_king.position.x == black_king.position.x:
+            checking = True
+            for i in range(red_king.position.y + 1, black_king.position.y):
+                if self.chessmans[red_king.position.x][i] != None:
+                    checking = False
+                    break
+            if checking:
+                if self.is_red_turn:
+                    self.winner = Winner.red
+                else:
+                    self.winner = Winner.black
+        return self.winner != None
+
 
     def get_chessman(self, col_num, row_num):
         return self.__chessmans[col_num][row_num]
@@ -312,7 +333,7 @@ class Chessboard(object):
                     chess.calc_moving_list()
                     if chess != None and chess.is_red != self.__is_red_turn:
                         if chess.in_moving_list(king.position.x, king.position.y):
-                            print("Checking:", chess.name, chess.position.x, chess.position.y)
+                            # logger.debug("Checking:", chess.name, chess.position.x, chess.position.y)
                             return True
         # the two king cannot exsits in one column without any obstacles
         red_king = self.get_chessman_by_name("red_king")
@@ -324,8 +345,6 @@ class Chessboard(object):
                     checking = False
         else:
             checking = False
-        # if checking:
-        #     print "Checking by kings", red_king.position.x, black_king.position.x
         return checking
 
     def check_position(self):

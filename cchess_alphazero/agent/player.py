@@ -30,7 +30,6 @@ class ActionState:
         self.p = -1     # P(s, a) : prior probability
 
 class CChessPlayer:
-
     def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None):
         self.moves = []     # store move data
         self.config = config
@@ -43,9 +42,9 @@ class CChessPlayer:
         self.node_lock = defaultdict(Lock)  # key: state key, value: Lock of that state
 
         if search_tree is None:
-            self.search_tree = defaultdict(VisitState)  # key: state key, value: VisitState
+            self.tree = defaultdict(VisitState)  # key: state key, value: VisitState
         else:
-            self.search_tree = search_tree
+            self.tree = search_tree
 
     def get_state_key(self, env: CChessEnv) -> str:
         board = env.observation
@@ -109,6 +108,9 @@ class CChessPlayer:
             # Select
             self.tree[state].visit.append(tid)
             sel_action = self.select_action_q_and_u(state, is_root_node)
+            
+            if sel_action is None:
+                return -1
 
             virtual_loss = self.config.play.virtual_loss
             self.tree[state].sum_n += virtual_loss
@@ -167,7 +169,7 @@ class CChessPlayer:
         c_puct = self.play_config.c_puct
         dir_alpha = self.play_config.dirichlet_alpha
 
-        best_score = -999
+        best_score = -99999999
         best_action = None
 
         for mov in legal_moves:
@@ -183,6 +185,9 @@ class CChessPlayer:
             if score > best_score:
                 best_score = score
                 best_action = mov
+
+        if best_action == None:
+            logger.error(f"Best action is None, legal_moves = {legal_moves}, best_score = {best_score}")
 
         return best_action
 
@@ -204,16 +209,16 @@ class CChessPlayer:
         calculate π(a|s0) according to the visit count
         '''
         state = self.get_state_key(env)
-        node = self.tree[node]
+        node = self.tree[state]
         policy = np.zeros(self.labels_n)
 
-        for mov, action_state in node.a.item():
-            policy[self.move_lookup(mov)] = action_state.n
+        for mov, action_state in node.a.items():
+            policy[self.move_lookup[mov]] = action_state.n
 
         policy /= np.sum(policy)
         return policy
 
-    def apply_temperature(self, policy, num_halfmoves) -> np.ndarray:
+    def apply_temperature(self, policy, turn) -> np.ndarray:
         tau = np.power(self.play_config.tau_decay_rate, turn + 1)
         if tau < 0.1:
             tau = 0
@@ -223,7 +228,7 @@ class CChessPlayer:
             ret[action] = 1.0
             return ret
         else:
-            ret = np.power(policy, 1/tau)
+            ret = np.power(policy, 1 / tau)
             ret /= np.sum(ret)
             return ret
 

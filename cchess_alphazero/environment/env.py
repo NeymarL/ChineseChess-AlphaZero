@@ -52,11 +52,17 @@ class CChessEnv:
             return
 
         if not self.board.move_action_str(action):
-            logger.error("Move Failed, action=%s, board=\n%s" % (action, self.board.screen))
+            logger.error("Move Failed, action=%s, is_red_turn=%d, board=\n%s" % (action, 
+                self.red_to_move, self.board.screen))
+            moves = self.board.legal_moves()
+            logger.error(f"Legal moves: {moves}")
         self.num_halfmoves += 1
 
         if check_over and self.board.is_end():
             self.winner = self.board.winner
+
+        self.board.clear_chessmans_moving_list()
+        self.board.calc_chessmans_moving_list()
 
     def copy(self):
         env = copy.deepcopy(self)
@@ -95,5 +101,6 @@ class CChessEnv:
                     j += int(letter)
         return planes
 
-
+    def save_records(self, filename):
+        self.board.save_record(filename)
 

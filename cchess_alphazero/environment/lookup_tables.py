@@ -2,6 +2,7 @@
 
 from cchess_alphazero.environment.chessman import *
 from enum import Enum
+import numpy as np
 
 Chessman_2_idx = {
     Pawn: 0,

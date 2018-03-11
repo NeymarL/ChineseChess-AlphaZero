@@ -21,5 +21,5 @@ Class: `cchess_alphazero.environment.env.ChessEnv`
 
   轮到红方时 `flip=True`；轮到黑方时`flip=False`
 
-* `render(gui=False)`：NotImplemented
+* `render(gui=False)`：Not Implemented
 

@@ -20,6 +20,7 @@ class PlayDataConfig:
         self.sl_nb_game_in_file = 250
         self.nb_game_in_file = 50
         self.max_file_num = 150
+        self.nb_game_save_record = 200
 
 
 class PlayConfig:
