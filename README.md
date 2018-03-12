@@ -20,10 +20,10 @@ This project is based on these main resources:
 
 ### Reinforcement Learning
 
-This AlphaGo Zero implementation consists of three workers: `self`, `opt` and `eval`.
+This AlphaZero implementation consists of two workers: `self` and  `opt`.
 
 * `self` is Self-Play to generate training data by self-play using BestModel.
-* `opt` is Trainer to train model, and generate next-generation models.
+* `opt` is Trainer to train model, and generate new models.
 
 ### GUI
 
