@@ -29,7 +29,7 @@ class CChessModelAPI:
     def predict_batch_worker(self):
         last_model_check_time = time()
         while True:
-            if last_model_check_time + 120 < time():
+            if last_model_check_time + 600 < time():
                 self.try_reload_model()
                 last_model_check_time = time()
             ready = connection.wait(self.pipes, timeout=0.001)
