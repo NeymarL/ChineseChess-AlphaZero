@@ -46,20 +46,20 @@ def start(config: Config):
             logger.debug("Initialize selfplay worker")
             futures.append(executor.submit(play_worker.start))
 
+buffer = []
+
 class SelfPlayWorker:
     def __init__(self, config: Config, pipes=None, pid=None):
         self.config = config
         self.env = CChessEnv()
         self.red = None
         self.black = None
-        self.buffer = []
         self.cur_pipes = pipes
         self.pid = pid
 
     def start(self):
         logger.debug(f"Selfplay#Start Process index = {self.pid}, pid = {os.getpid()}")
 
-        self.buffer = []
         idx = 1
 
         while True:
@@ -74,6 +74,8 @@ class SelfPlayWorker:
             #     f.write(str(idx))
 
     def start_game(self, idx):
+        global buffer
+
         pipes = self.cur_pipes.pop()
         env = CChessEnv().reset()
         search_tree = defaultdict(VisitState)
@@ -111,19 +113,21 @@ class SelfPlayWorker:
         self.black.finish_game(-red_win)
 
         self.cur_pipes.append(pipes)
-        self.save_record_data(env, write=idx % self.config.play_data.nb_game_save_record == 0)
-        self.save_play_data(write=idx % self.config.play_data.nb_game_in_file == 0)
+        self.save_record_data(env, write=len(buffer) % self.config.play_data.nb_game_save_record == 0)
+        self.save_play_data(write=len(buffer) % self.config.play_data.nb_game_in_file == 0)
         self.remove_play_data()
         return env
 
     def save_play_data(self, write=True):
+        global buffer
+        
         data = []
         for i in range(len(self.red.moves)):
             data.append(self.red.moves[i])
             if i < len(self.black.moves):
                 data.append(self.black.moves[i])
 
-        self.buffer += data
+        buffer += data
 
         if not write:
             return
@@ -132,8 +136,8 @@ class SelfPlayWorker:
         game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
         path = os.path.join(rc.play_data_dir, rc.play_data_filename_tmpl % game_id)
         logger.info(f"Process{self.pid} save play data to {path}")
-        write_game_data_to_file(path, self.buffer)
-        self.buffer = []
+        write_game_data_to_file(path, buffer)
+        buffer = []
 
     def save_record_data(self, env, write=False):
         if not write:
