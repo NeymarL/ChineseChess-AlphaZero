@@ -4,10 +4,6 @@ import os
 from logging import getLogger
 
 import tensorflow as tf
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-config.gpu_options.visible_device_list='0'
-session = tf.Session(config=config)
 
 from keras.engine.topology import Input
 from keras.engine.training import Model

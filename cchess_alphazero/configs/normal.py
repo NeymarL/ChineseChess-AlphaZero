@@ -20,15 +20,15 @@ class PlayDataConfig:
         self.sl_nb_game_in_file = 250
         self.nb_game_in_file = 50
         self.max_file_num = 150
-        self.nb_game_save_record = 200
+        self.nb_game_save_record = 100
 
 
 class PlayConfig:
     def __init__(self):
-        self.max_processes = 9
-        self.search_threads = 18
+        self.max_processes = 18
+        self.search_threads = 8
         self.vram_frac = 1.0
-        self.simulation_num_per_move = 2000
+        self.simulation_num_per_move = 1000
         self.thinking_loop = 1
         self.logging_thinking = False
         self.c_puct = 1.5
@@ -38,7 +38,7 @@ class PlayConfig:
         self.virtual_loss = 3
         self.resign_threshold = -1.01
         self.min_resign_turn = 20
-        self.max_game_length = 200
+        self.max_game_length = 100
 
 
 class TrainerConfig:

@@ -14,6 +14,7 @@ from cchess_alphazero.config import Config
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, read_game_data_from_file
 from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model
 from cchess_alphazero.environment.env import CChessEnv
+from cchess_alphazero.lib.tf_util import set_session_config
 
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
@@ -21,6 +22,7 @@ from keras.callbacks import TensorBoard
 logger = getLogger(__name__)
 
 def start(config: Config):
+    set_session_config(per_process_gpu_memory_fraction=0.5, allow_growth=True, device_list='0')
     return OptimizeWorker(config).start()
 
 class OptimizeWorker:

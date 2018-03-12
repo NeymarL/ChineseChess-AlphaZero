@@ -31,7 +31,7 @@ def load_model(config):
     return model
 
 def start(config: Config):
-    set_session_config(per_process_gpu_memory_fraction=0.5, allow_growth=True)
+    set_session_config(per_process_gpu_memory_fraction=0.5, allow_growth=True, device_list='1')
     current_model = load_model(config)
     m = Manager()
     cur_pipes = m.list([current_model.get_pipes(config.play.search_threads) \

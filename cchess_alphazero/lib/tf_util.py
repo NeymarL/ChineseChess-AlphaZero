@@ -1,5 +1,5 @@
 
-def set_session_config(per_process_gpu_memory_fraction=None, allow_growth=None):
+def set_session_config(per_process_gpu_memory_fraction=None, allow_growth=None, device_list='0'):
     """
 
     :param allow_growth: When necessary, reserve memory
@@ -14,6 +14,7 @@ def set_session_config(per_process_gpu_memory_fraction=None, allow_growth=None):
         gpu_options=tf.GPUOptions(
             per_process_gpu_memory_fraction=per_process_gpu_memory_fraction,
             allow_growth=allow_growth,
+            visible_device_list=device_list
         )
     )
     sess = tf.Session(config=config)
