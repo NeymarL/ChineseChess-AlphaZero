@@ -69,7 +69,7 @@ class CChessEnv:
         env.board = copy.deepcopy(self.board)
         return env
 
-    def render(self, gui = False):
+    def render(self, gui=False):
         if gui:
             pass
         else:

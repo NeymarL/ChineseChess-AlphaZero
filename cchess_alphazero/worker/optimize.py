@@ -45,7 +45,7 @@ class OptimizeWorker:
 
         while True:
             files = get_game_data_filenames(self.config.resource)
-            if (len(files) * self.config.play_data.nb_game_in_file < 1000 \
+            if (len(files) * self.config.play_data.nb_game_in_file < self.config.trainer.min_games_to_begin_learn \
               or ((last_file is not None) and files.index(last_file) + 3 > len(files))):
                 logger.info('Waiting for enough data 600s, ' + str(len(files) * self.config.play_data.nb_game_in_file) \
                             +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
@@ -94,7 +94,7 @@ class OptimizeWorker:
                     break
                 filename = self.filenames.pop()
                 logger.debug("loading data from %s" % (filename))
-                futures.append(executor.submit(self.load_data_from_file, filename))
+                futures.append(executor.submit(load_data_from_file, filename))
             while futures and len(self.dataset[0]) < self.config.trainer.dataset_size: #fill tuples
                 _tuple = futures.popleft().result()
                 if _tuple is not None:
@@ -103,31 +103,7 @@ class OptimizeWorker:
                 if len(self.filenames) > 0:
                     filename = self.filenames.pop()
                     logger.debug("loading data from %s" % (filename))
-                    futures.append(executor.submit(self.load_data_from_file, filename))
-
-    def load_data_from_file(self, filename):
-        data = read_game_data_from_file(filename)
-        if data is None:
-            return None
-        return self.convert_to_trainging_data(data)
-
-    def convert_to_trainging_data(self, data):
-        state_list = []
-        policy_list = []
-        value_list = []
-        env = CChessEnv()
-
-        for state_fen, policy, value in data:
-            state_planes = env.fen_to_planes(state_fen)
-            sl_value = value
-
-            state_list.append(state_planes)
-            policy_list.append(policy)
-            value_list.append(sl_value)
-
-        return np.asarray(state_list, dtype=np.float32), \
-               np.asarray(policy_list, dtype=np.float32), \
-               np.asarray(value_list, dtype=np.float32)
+                    futures.append(executor.submit(load_data_from_file, filename))
 
     def collect_all_loaded_data(self):
         state_ary, policy_ary, value_ary = self.dataset
@@ -147,3 +123,28 @@ class OptimizeWorker:
     def save_current_model(self):
         logger.debug("Save best model")
         save_as_best_model(self.model)
+
+
+def load_data_from_file(filename):
+    data = read_game_data_from_file(filename)
+    if data is None:
+        return None
+    return convert_to_trainging_data(data)
+
+def convert_to_trainging_data(data):
+    state_list = []
+    policy_list = []
+    value_list = []
+    env = CChessEnv()
+
+    for state_fen, policy, value in data:
+        state_planes = env.fen_to_planes(state_fen)
+        sl_value = value
+
+        state_list.append(state_planes)
+        policy_list.append(policy)
+        value_list.append(sl_value)
+
+    return np.asarray(state_list, dtype=np.float32), \
+           np.asarray(policy_list, dtype=np.float32), \
+           np.asarray(value_list, dtype=np.float32)

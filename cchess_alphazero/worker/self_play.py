@@ -42,21 +42,22 @@ def start(config: Config):
     with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
         futures = []
         for i in range(config.play.max_processes):
-            play_worker = SelfPlayWorker(config, cur_pipes)
+            play_worker = SelfPlayWorker(config, cur_pipes, i)
             logger.debug("Initialize selfplay worker")
             futures.append(executor.submit(play_worker.start))
 
 class SelfPlayWorker:
-    def __init__(self, config: Config, pipes=None):
+    def __init__(self, config: Config, pipes=None, pid=None):
         self.config = config
         self.env = CChessEnv()
         self.red = None
         self.black = None
         self.buffer = []
         self.cur_pipes = pipes
+        self.pid = pid
 
     def start(self):
-        logger.debug("Selfplay#Start")
+        logger.debug(f"Selfplay#Start Process index = {self.pid}, pid = {os.getpid()}")
 
         self.buffer = []
         idx = 1
@@ -65,7 +66,7 @@ class SelfPlayWorker:
             start_time = time()
             env = self.start_game(idx)
             end_time = time()
-            logger.debug(f"play game {idx} time={end_time - start_time} sec, "
+            logger.debug(f"Process{self.pid} play game {idx} time={end_time - start_time} sec, "
                          f"turn={env.num_halfmoves / 2}:{env.winner}")
 
             idx += 1
@@ -84,18 +85,20 @@ class SelfPlayWorker:
         cc = 0
 
         while not env.done:
+            start_time = time()
             if env.red_to_move:
                 action = self.red.action(env)
             else:
                 action = self.black.action(env)
-            logger.debug(f"Playing: {env.red_to_move}, action: {action}")
+            end_time = time()
+            logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
             env.step(action)
             history.append(action)
             if len(history) > 6 and history[-1] == history[-5]:
                 cc = cc + 1
             else:
                 cc = 0
-            if env.num_halfmoves >= self.config.play.max_game_length or cc >= 4:
+            if env.num_halfmoves / 2 >= self.config.play.max_game_length or cc >= 4:
                 env.winner = Winner.draw
         if env.winner == Winner.red:
             red_win = 1
@@ -128,7 +131,7 @@ class SelfPlayWorker:
         rc = self.config.resource
         game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
         path = os.path.join(rc.play_data_dir, rc.play_data_filename_tmpl % game_id)
-        logger.info(f"save play data to {path}")
+        logger.info(f"Process{self.pid} save play data to {path}")
         write_game_data_to_file(path, self.buffer)
         self.buffer = []
 

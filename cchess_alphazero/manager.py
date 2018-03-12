@@ -3,7 +3,7 @@ import argparse
 from logging import getLogger
 
 from cchess_alphazero.lib.logger import setup_logger
-from cchess_alphazero.config import Config
+from cchess_alphazero.config import Config, PlayWithHumanConfig
 
 logger = getLogger(__name__)
 
@@ -15,6 +15,7 @@ def create_parser():
     parser.add_argument("--new", help="run from new best model", action="store_true")
     parser.add_argument("--type", help="use normal setting", default="mini")
     parser.add_argument("--total-step", help="set TrainerConfig.start_total_steps", type=int)
+    parser.add_argument("--ai-move-first", help="set human or AI move first", action="store_true")
     return parser
 
 def setup(config: Config, args):
@@ -22,7 +23,12 @@ def setup(config: Config, args):
     if args.total_step is not None:
         config.trainer.start_total_steps = args.total_step
     config.resource.create_directories()
-    setup_logger(config.resource.main_log_path)
+    if args.cmd == 'self':
+        setup_logger(config.resource.main_log_path)
+    elif args.cmd == 'opt':
+        setup_logger(config.resource.opt_log_path)
+    elif args.cmd == 'play':
+        setup_logger(config.resource.play_log_path)
 
 def start():
     parser = create_parser()
@@ -41,4 +47,9 @@ def start():
         from cchess_alphazero.worker import optimize
         return optimize.start(config)
     elif args.cmd == 'play':
-        raise NotImplementedError()
+        from cchess_alphazero.play_games import play
+        pwhc = PlayWithHumanConfig()
+        pwhc.update_play_config(config.play)
+        logger.info(f"AI move first : {args.ai_move_first}")
+        play.start(config, not args.ai_move_first)
+        
