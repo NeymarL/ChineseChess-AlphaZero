@@ -8,7 +8,7 @@ from multiprocessing import Manager
 from threading import Thread
 from time import time
 from collections import defaultdict
-from threading import Lock
+from multiprocessing import Lock
 from random import random
 
 from cchess_alphazero.agent.model import CChessModel
@@ -46,8 +46,6 @@ def start(config: Config):
             logger.debug("Initialize selfplay worker")
             futures.append(executor.submit(play_worker.start))
 
-buffer = []
-
 class SelfPlayWorker:
     def __init__(self, config: Config, pipes=None, pid=None):
         self.config = config
@@ -56,11 +54,13 @@ class SelfPlayWorker:
         self.black = None
         self.cur_pipes = pipes
         self.pid = pid
+        self.buffer = []
 
     def start(self):
         logger.debug(f"Selfplay#Start Process index = {self.pid}, pid = {os.getpid()}")
 
         idx = 1
+        self.buffer = []
 
         while True:
             start_time = time()
@@ -70,12 +70,8 @@ class SelfPlayWorker:
                          f"turn={env.num_halfmoves / 2}:{env.winner}")
 
             idx += 1
-            # with open(self.config.resource.self_play_game_idx_file, "wt") as f:
-            #     f.write(str(idx))
 
     def start_game(self, idx):
-        global buffer
-
         pipes = self.cur_pipes.pop()
         env = CChessEnv().reset()
         search_tree = defaultdict(VisitState)
@@ -113,31 +109,29 @@ class SelfPlayWorker:
         self.black.finish_game(-red_win)
 
         self.cur_pipes.append(pipes)
-        self.save_record_data(env, write=len(buffer) % self.config.play_data.nb_game_save_record == 0)
-        self.save_play_data(write=len(buffer) % self.config.play_data.nb_game_in_file == 0)
+        self.save_record_data(env, write=idx % self.config.play_data.nb_game_save_record == 0)
+        self.save_play_data(idx)
         self.remove_play_data()
         return env
 
-    def save_play_data(self, write=True):
-        global buffer
-        
+    def save_play_data(self, idx):
         data = []
         for i in range(len(self.red.moves)):
             data.append(self.red.moves[i])
             if i < len(self.black.moves):
                 data.append(self.black.moves[i])
 
-        buffer += data
+        self.buffer += data
 
-        if not write:
+        if not idx % self.config.play_data.nb_game_in_file == 0:
             return
 
         rc = self.config.resource
         game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
         path = os.path.join(rc.play_data_dir, rc.play_data_filename_tmpl % game_id)
-        logger.info(f"Process{self.pid} save play data to {path}")
-        write_game_data_to_file(path, buffer)
-        buffer = []
+        logger.info(f"Process {self.pid} save play data to {path}")
+        write_game_data_to_file(path, self.buffer)
+        self.buffer = []
 
     def save_record_data(self, env, write=False):
         if not write:

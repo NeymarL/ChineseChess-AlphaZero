@@ -18,9 +18,9 @@ class PlayDataConfig:
         self.min_elo_policy = 500 # 0 weight
         self.max_elo_policy = 1800 # 1 weight
         self.sl_nb_game_in_file = 250
-        self.nb_game_in_file = 30
-        self.max_file_num = 200
-        self.nb_game_save_record = 30
+        self.nb_game_in_file = 5
+        self.max_file_num = 500
+        self.nb_game_save_record = 10
 
 
 class PlayConfig:
@@ -47,7 +47,7 @@ class TrainerConfig:
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 4 # RAM explosion...
         self.vram_frac = 1.0
-        self.batch_size = 512 # tune this to your gpu memory
+        self.batch_size = 1024 # tune this to your gpu memory
         self.epoch_to_checkpoint = 3
         self.dataset_size = 100000
         self.start_total_steps = 0

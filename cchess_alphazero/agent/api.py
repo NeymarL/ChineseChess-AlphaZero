@@ -29,7 +29,7 @@ class CChessModelAPI:
     def predict_batch_worker(self):
         last_model_check_time = time()
         while True:
-            if last_model_check_time + 600 < time():
+            if last_model_check_time + 60 < time():
                 self.try_reload_model()
                 last_model_check_time = time()
             ready = connection.wait(self.pipes, timeout=0.001)
@@ -53,6 +53,7 @@ class CChessModelAPI:
         try:
             logger.debug("check model")
             if need_to_reload_best_model_weight(self.agent_model):
-                load_best_model_weight(self.agent_model)
+                with self.agent_model.graph.as_default():
+                    load_best_model_weight(self.agent_model)
         except Exception as e:
             logger.error(e)
