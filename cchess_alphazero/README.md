@@ -2,7 +2,7 @@
 
 ```
 ├── cchess_alphazero
-│   ├── agent               : the AI agent
+│   ├── agent               : the AI (AlphaZero) agent
 │   │   ├── api.py          : neural networks' prediction api
 │   │   ├── model.py        : policy & value network model
 │   │   └── player.py       : the final agent that play with neural network and MCTS
@@ -24,7 +24,7 @@
 │   │   ├── play.py         : AI vs human
 │   │   ├── test_cli_game.py    : human vs human with cli
 │   │   └── test_window_game.py : human vs human with gui
-│   ├── worker                 : helper functions
+│   ├── worker
 │   │   ├── optimize.py     : trainer
 │   │   └── self_play.py    : self play worker
 │   ├── config.py           : setup configuration
