@@ -56,5 +56,5 @@ def test_optimise():
     start(c)
 
 if __name__ == "__main__":
-    test_optimise()
+    test_self_play()
     

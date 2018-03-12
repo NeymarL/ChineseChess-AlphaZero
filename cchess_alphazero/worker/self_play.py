@@ -37,12 +37,14 @@ def start(config: Config):
     cur_pipes = m.list([current_model.get_pipes(config.play.search_threads) \
                         for _ in range(config.play.max_processes)])
 
+    # play_worker = SelfPlayWorker(config, cur_pipes)
+    # play_worker.start()
     with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
         futures = []
         for i in range(config.play.max_processes):
             play_worker = SelfPlayWorker(config, cur_pipes)
+            logger.debug("Initialize selfplay worker")
             futures.append(executor.submit(play_worker.start))
-
 
 class SelfPlayWorker:
     def __init__(self, config: Config, pipes=None):
@@ -57,7 +59,7 @@ class SelfPlayWorker:
         logger.debug("Selfplay#Start")
 
         self.buffer = []
-        idx = self.read_as_int(self.config.resource.self_play_game_idx_file) or 1
+        idx = 1
 
         while True:
             start_time = time()

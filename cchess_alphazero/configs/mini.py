@@ -18,14 +18,14 @@ class PlayDataConfig:
         self.min_elo_policy = 500 # 0 weight
         self.max_elo_policy = 1800 # 1 weight
         self.sl_nb_game_in_file = 250 # before 250
-        self.nb_game_in_file = 20 #before 50
+        self.nb_game_in_file = 5 #before 50
         self.max_file_num = 150
-        self.nb_game_save_record = 20
+        self.nb_game_save_record = 1
 
 
 class PlayConfig:
     def __init__(self):
-        self.max_processes = 1 #before 3
+        self.max_processes = 2 #before 3
         self.search_threads = 2 #before 16
         self.vram_frac = 1.0
         self.simulation_num_per_move = 100 # before 1000
@@ -39,11 +39,11 @@ class PlayConfig:
 
 class TrainerConfig:
     def __init__(self):
-        self.min_games_to_begin_learn = 1000
+        self.min_games_to_begin_learn = 20
         self.min_data_size_to_learn = 0
-        self.cleaning_processes = 2 # before: 5 # RAM explosion...
+        self.cleaning_processes = 1 # before: 5 # RAM explosion...
         self.vram_frac = 1.0
-        self.batch_size = 64 #before: 256 # tune this to your gpu memory
+        self.batch_size = 20 #before: 256 # tune this to your gpu memory
         self.epoch_to_checkpoint = 1
         self.dataset_size = 100000
         self.start_total_steps = 0
