@@ -27,14 +27,16 @@ This AlphaGo Zero implementation consists of three workers: `self`, `opt` and `e
 
 ### GUI
 
-This part is still under construction!!
+Requirement: PyGame
 
+```bash
+python cchess_alphazero/run.py play
+```
 
-How to use
-==========
+## How to use
 
-Setup
--------
+### Setup
+
 ### install libraries
 ```bash
 pip install -r requirements.txt
@@ -47,3 +49,58 @@ pip install tensorflow-gpu
 ```
 
 Make sure Keras is using Tensorflow and you have Python 3.6.3+.
+
+### Configuration
+
+**PlayDataConfig**
+
+* `nb_game_in_file,max_file_num`: The max game number of training data is `nb_game_in_file * max_file_num`.
+
+**PlayConfig, PlayWithHumanConfig**
+
+* `simulation_num_per_move` : MCTS number per move.
+* `c_puct`: balance parameter of value network and policy network in MCTS.
+* `search_threads`: balance parameter of speed and accuracy in MCTS.
+* `dirichlet_alpha`: random parameter in self-play.
+* `dirichlet_noise_only_for_legal_moves`: if true, apply dirichlet noise only for legal moves. I don't know whether the DeepMind setting was true or false.
+* `vram_frac`: memory use fraction
+
+### Basic Usage
+
+#### Self-Play
+
+```
+python cchess_alphazero/run.py self
+```
+
+When executed, Self-Play will start using BestModel. If the BestModel does not exist, new random model will be created and become BestModel.
+
+options
+
+* `--new`: create new BestModel
+* `--type mini`: use mini config for testing, (see `cchess_alphazero/configs/mini.py`)
+
+#### Trainer
+
+```
+python cchess_alphazero/run.py opt
+```
+
+When executed, Training will start. The current BestModel will be loaded. Trained model will be saved every epoch as new BestModel.
+
+options
+
+* `--type mini`: use mini config for testing, (see `cchess_alphazero/configs/mini.py`)
+* `--total-step`: specify total step(mini-batch) numbers. The total step affects learning rate of training.
+
+#### Play with human
+
+```
+python cchess_alphazero/run.py play
+```
+
+When executed, the BestModel will be loaded to play against human.
+
+options
+
+* `--ai-move-first`: if set this option, AI will move first, otherwise human move first.
