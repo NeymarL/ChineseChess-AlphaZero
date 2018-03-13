@@ -59,16 +59,12 @@ def test_light():
     from cchess_alphazero.environment.light_env.chessboard import L_Chessboard
     from cchess_alphazero.environment.chessboard import Chessboard
     lboard = L_Chessboard()
-    board = Chessboard()
-    board.init_board()
-    print(lboard.legal_moves())
-    print(lboard.screen)
-    # board.move_action_str('0001')
-    # lboard.move_action_str('0001')
-    # print(board.FENboard())
-    # print(lboard.FENboard())
-    # print(board.fliped_FENboard())
-    # print(lboard.fliped_FENboard())
+    while not lboard.is_end():
+        for i in range(lboard.height):
+            print(lboard.screen[i])
+        action = input(f'Enter move for {lboard.is_red_turn} r/b: ')
+        lboard.move_action_str(action)
+    print(lboard.winner)
 
 def test_light_env():
     from cchess_alphazero.environment.env import CChessEnv
@@ -85,5 +81,5 @@ def test_light_env():
     print(env.input_planes()[0+7:3+7])
 
 if __name__ == "__main__":
-    test_light_env()
+    test_light()
     

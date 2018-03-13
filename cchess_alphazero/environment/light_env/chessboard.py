@@ -228,7 +228,7 @@ class L_Chessboard:
                 i += 1
             if not has_block:
                 if self.turn == RED:
-                    self.winner == Winner.black
+                    self.winner = Winner.black
                 else:
                     self.winner = Winner.red
         return self.winner is not None
