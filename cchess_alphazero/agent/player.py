@@ -196,11 +196,11 @@ class CChessPlayer:
         '''
         state_planes = env.input_planes()
         # communicate with model api
-        # pipe = self.pipe_pool.pop()
-        # pipe.send(state_planes)
-        # leaf_p, leaf_v = pipe.recv()
-        # self.pipe_pool.append(pipe)
-        leaf_p, leaf_v = (np.random.random(len(ActionLabelsRed)), 1)
+        pipe = self.pipe_pool.pop()
+        pipe.send(state_planes)
+        leaf_p, leaf_v = pipe.recv()
+        self.pipe_pool.append(pipe)
+        # leaf_p, leaf_v = (np.random.random(len(ActionLabelsRed)), 1)
         # these are canonical policy and value (i.e. side to move is "red", maybe need flip)
         return leaf_p, leaf_v
 
