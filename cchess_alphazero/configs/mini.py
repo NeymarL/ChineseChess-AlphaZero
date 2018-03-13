@@ -19,14 +19,14 @@ class PlayDataConfig:
         self.max_elo_policy = 1800 # 1 weight
         self.sl_nb_game_in_file = 250 # before 250
         self.nb_game_in_file = 5 #before 50
-        self.max_file_num = 150
+        self.max_file_num = 5
         self.nb_game_save_record = 5
 
 
 class PlayConfig:
     def __init__(self):
         self.max_processes = 2 #before 3
-        self.search_threads = 1 #before 16
+        self.search_threads = 2 #before 16
         self.vram_frac = 1.0
         self.simulation_num_per_move = 200 # before 1000
         self.c_puct = 1.5  #before 1.5
