@@ -42,12 +42,14 @@ def start():
 
     if args.cmd == 'self':
         from cchess_alphazero.worker import self_play
+        config.opts.light = True    # use lighten environment
         return self_play.start(config)
     elif args.cmd == 'opt':
         from cchess_alphazero.worker import optimize
         return optimize.start(config)
     elif args.cmd == 'play':
         from cchess_alphazero.play_games import play
+        config.opts.light = False
         pwhc = PlayWithHumanConfig()
         pwhc.update_play_config(config.play)
         logger.info(f"AI move first : {args.ai_move_first}")

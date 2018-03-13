@@ -55,6 +55,35 @@ def test_optimise():
     setup_logger(c.resource.main_log_path)
     start(c)
 
+def test_light():
+    from cchess_alphazero.environment.light_env.chessboard import L_Chessboard
+    from cchess_alphazero.environment.chessboard import Chessboard
+    lboard = L_Chessboard()
+    board = Chessboard()
+    board.init_board()
+    print(lboard.legal_moves())
+    print(lboard.screen)
+    # board.move_action_str('0001')
+    # lboard.move_action_str('0001')
+    # print(board.FENboard())
+    # print(lboard.FENboard())
+    # print(board.fliped_FENboard())
+    # print(lboard.fliped_FENboard())
+
+def test_light_env():
+    from cchess_alphazero.environment.env import CChessEnv
+    from cchess_alphazero.config import Config
+    c = Config('mini')
+    env = CChessEnv(c)
+    env.reset()
+    print(env.observation)
+    env.step('0001')
+    print(env.observation)
+    env.step('7770')
+    print(env.observation)
+    env.render()
+    print(env.input_planes()[0+7:3+7])
+
 if __name__ == "__main__":
-    test_self_play()
+    test_light_env()
     

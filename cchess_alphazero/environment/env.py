@@ -3,7 +3,8 @@ import numpy as np
 import copy
 
 from cchess_alphazero.environment.chessboard import Chessboard
-from cchess_alphazero.environment.lookup_tables import Chessman_2_idx, Fen_2_Idx
+from cchess_alphazero.environment.lookup_tables import Chessman_2_idx, Fen_2_Idx, Winner
+from cchess_alphazero.environment.light_env.chessboard import L_Chessboard
 
 from logging import getLogger
 
@@ -11,14 +12,20 @@ logger = getLogger(__name__)
 
 class CChessEnv:
 
-    def __init__(self):
+    def __init__(self, config=None):
         self.board = None
         self.winner = None
         self.num_halfmoves = 0
+        self.config = config
 
     def reset(self):
-        self.board = Chessboard()
-        self.board.init_board()
+        if self.config is None or not self.config.opts.light:
+            logger.info("Initialize heavy environment!")
+            self.board = Chessboard()
+            self.board.init_board()
+        else:
+            logger.info("Initialize light environment!")
+            self.board = L_Chessboard()
         self.winner = None
         self.num_halfmoves = 0
         return self

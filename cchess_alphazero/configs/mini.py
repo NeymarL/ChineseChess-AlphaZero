@@ -28,7 +28,7 @@ class PlayConfig:
         self.max_processes = 2 #before 3
         self.search_threads = 1 #before 16
         self.vram_frac = 1.0
-        self.simulation_num_per_move = 50 # before 1000
+        self.simulation_num_per_move = 200 # before 1000
         self.c_puct = 1.5  #before 1.5
         self.noise_eps = 0.25
         self.dirichlet_alpha = 0.3

@@ -49,7 +49,6 @@ def start(config: Config):
 class SelfPlayWorker:
     def __init__(self, config: Config, pipes=None, pid=None):
         self.config = config
-        self.env = CChessEnv()
         self.red = None
         self.black = None
         self.cur_pipes = pipes
@@ -73,7 +72,7 @@ class SelfPlayWorker:
 
     def start_game(self, idx):
         pipes = self.cur_pipes.pop()
-        env = CChessEnv().reset()
+        env = CChessEnv(self.config).reset()
         search_tree = defaultdict(VisitState)
 
         self.red = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes)
@@ -89,7 +88,7 @@ class SelfPlayWorker:
             else:
                 action = self.black.action(env)
             end_time = time()
-            # logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
+            logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
             env.step(action)
             history.append(action)
             if len(history) > 6 and history[-1] == history[-5]:

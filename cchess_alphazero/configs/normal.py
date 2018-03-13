@@ -25,8 +25,8 @@ class PlayDataConfig:
 
 class PlayConfig:
     def __init__(self):
-        self.max_processes = 20
-        self.search_threads = 8
+        self.max_processes = 10
+        self.search_threads = 1
         self.vram_frac = 1.0
         self.simulation_num_per_move = 1000
         self.thinking_loop = 1

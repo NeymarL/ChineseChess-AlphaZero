@@ -199,22 +199,6 @@ class Chessboard(object):
 
 
     def is_end(self):
-        # if self.is_check():
-        #     for i in range(9):
-        #         for j in range(10):
-        #             chess = self.chessmans[i][j]
-        #             if chess != None and chess.is_red == self.is_red_turn:
-        #                 for mov in chess.moving_list:
-        #                     if chess.test_move(mov.x, mov.y):
-        #                         # print "+1s,", chess.name_cn, mov.x, mov.y
-        #                         return False
-        # else:
-        #     return False
-        # if self.is_red_turn:
-        #     self.winner = Winner.black
-        # else:
-        #     self.winner = Winner.red
-        # return True
         red_king = self.get_chessman_by_name('red_king')
         black_king = self.get_chessman_by_name('black_king')
         if not red_king:
@@ -447,7 +431,7 @@ class Chessboard(object):
                     cnt = 0
             if cnt > 0:
                 fen = fen + str(cnt)
-            if (i > 0):
+            if i > 0:
                 fen = fen + '/'
         fen += ' r'
         fen += ' - - 0 1'

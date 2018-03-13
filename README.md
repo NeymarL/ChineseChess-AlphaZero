@@ -93,6 +93,14 @@ options
 * `--type mini`: use mini config for testing, (see `cchess_alphazero/configs/mini.py`)
 * `--total-step`: specify total step(mini-batch) numbers. The total step affects learning rate of training.
 
+**View training log in Tensorboard**
+
+```
+tensorboard --logdir logs/
+```
+
+And access `http://<The Machine IP>:6006/`.
+
 #### Play with human
 
 ```
