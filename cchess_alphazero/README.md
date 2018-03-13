@@ -10,6 +10,10 @@
 │   │   ├── mini.py
 │   │   └── normal.py 
 │   ├── environment         : a Chinese Chess engine
+│   │   │── light_env       : a lightweight chinese chess engine (for training)
+│   │   │      ├── chessboard.py
+│   │   │      ├── common.py
+│   │   │      └── chessman.py.py
 │   │   ├── chessboard.py
 │   │   ├── chessman.py
 │   │   ├── env.py          : the environment api of the engine
