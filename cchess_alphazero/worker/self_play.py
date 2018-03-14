@@ -68,7 +68,7 @@ class SelfPlayWorker:
             end_time = time()
             logger.debug(f"Process{self.pid} play game {idx} time={end_time - start_time} sec, "
                          f"turn={env.num_halfmoves / 2}:{env.winner}")
-            if env.num_halfmoves < 10:
+            if env.num_halfmoves <= 10:
                 for i in range(10):
                     logger.debug(f"{env.board.screen[i]}")
 
@@ -116,7 +116,7 @@ class SelfPlayWorker:
         else:
             red_win = 0
 
-        if env.num_halfmoves < 10:
+        if env.num_halfmoves <= 10:
             debug.logger(f"History moves: {history}")
 
         self.red.finish_game(red_win)
