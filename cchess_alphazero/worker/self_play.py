@@ -116,6 +116,9 @@ class SelfPlayWorker:
         else:
             red_win = 0
 
+        if env.num_halfmoves < 10:
+            debug.logger(f"History moves: {history}")
+
         self.red.finish_game(red_win)
         self.black.finish_game(-red_win)
 
