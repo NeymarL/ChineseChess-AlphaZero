@@ -18,6 +18,7 @@ from cchess_alphazero.lib.tf_util import set_session_config
 
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
+import keras.backend as K
 
 logger = getLogger(__name__)
 
@@ -34,6 +35,7 @@ class OptimizeWorker:
         self.dataset = deque(), deque(), deque()
         self.executor = ProcessPoolExecutor(max_workers=config.trainer.cleaning_processes)
         self.filenames = []
+        self.opt = None
 
     def start(self):
         self.model = self.load_model()
@@ -73,6 +75,7 @@ class OptimizeWorker:
                     a.clear()
                     b.clear()
                     c.clear()
+                    self.update_learning_rate(total_steps)
 
     def train_epoch(self, epochs):
         tc = self.config.trainer
@@ -88,9 +91,20 @@ class OptimizeWorker:
         return steps
 
     def compile_model(self):
-        opt = Adam()
+        self.opt = Adam(lr=1e-2)
         losses = ['categorical_crossentropy', 'mean_squared_error'] # avoid overfit for supervised 
-        self.model.model.compile(optimizer=opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
+        self.model.model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
+
+    def update_learning_rate(self, total_steps):
+        # The deepmind paper says
+        # ~400k: 1e-2
+        # 400k~600k: 1e-3
+        # 600k~: 1e-4
+
+        lr = self.decide_learning_rate(total_steps)
+        if lr:
+            K.set_value(self.opt.lr, lr)
+            logger.debug(f"total step={total_steps}, set learning rate to {lr}")
 
     def fill_queue(self):
         futures = deque()
@@ -129,6 +143,14 @@ class OptimizeWorker:
     def save_current_model(self):
         logger.debug("Save best model")
         save_as_best_model(self.model)
+
+    def decide_learning_rate(self, total_steps):
+        ret = None
+
+        for step, lr in self.config.trainer.lr_schedules:
+            if total_steps >= step:
+                ret = lr
+        return ret
 
 
 def load_data_from_file(filename):

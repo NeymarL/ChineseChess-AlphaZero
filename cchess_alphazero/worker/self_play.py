@@ -60,20 +60,24 @@ class SelfPlayWorker:
 
         idx = 1
         self.buffer = []
+        search_tree = defaultdict(VisitState)
 
         while True:
             start_time = time()
-            env = self.start_game(idx)
+            env, search_tree = self.start_game(idx, search_tree)
             end_time = time()
             logger.debug(f"Process{self.pid} play game {idx} time={end_time - start_time} sec, "
                          f"turn={env.num_halfmoves / 2}:{env.winner}")
 
             idx += 1
 
-    def start_game(self, idx):
+    def start_game(self, idx, search_tree):
         pipes = self.cur_pipes.pop()
         env = CChessEnv(self.config).reset()
-        search_tree = defaultdict(VisitState)
+
+        if not self.config.play.share_mtcs_info_in_self_play or \
+            idx % self.config.play.reset_mtcs_info_per_game == 0:
+            search_tree = defaultdict(VisitState)
 
         self.red = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes)
         self.black = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes)
@@ -116,7 +120,7 @@ class SelfPlayWorker:
         self.save_record_data(env, write=idx % self.config.play_data.nb_game_save_record == 0)
         self.save_play_data(idx)
         self.remove_play_data()
-        return env
+        return env, search_tree
 
     def save_play_data(self, idx):
         data = []

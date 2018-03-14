@@ -35,7 +35,8 @@ class PlayConfig:
         self.tau_decay_rate = 0.99
         self.virtual_loss = 3
         self.max_game_length = 100 # before 1000
-
+        self.share_mtcs_info_in_self_play = True
+        self.reset_mtcs_info_per_game = 5
 
 class TrainerConfig:
     def __init__(self):
@@ -50,7 +51,11 @@ class TrainerConfig:
         self.save_model_steps = 25
         self.load_data_steps = 100
         self.loss_weights = [1.25, 1.0] # [policy, value] prevent value overfit in SL
-
+        self.lr_schedules = [
+            (0, 0.01),
+            (150000, 0.001),
+            (300000, 0.0001),
+        ]
 
 class ModelConfig:
     def __init__(self):

@@ -28,7 +28,7 @@ class PlayConfig:
         self.max_processes = 10
         self.search_threads = 8
         self.vram_frac = 1.0
-        self.simulation_num_per_move = 1000
+        self.simulation_num_per_move = 600
         self.thinking_loop = 1
         self.logging_thinking = False
         self.c_puct = 1.5
@@ -39,6 +39,8 @@ class PlayConfig:
         self.resign_threshold = -1.01
         self.min_resign_turn = 20
         self.max_game_length = 100
+        self.share_mtcs_info_in_self_play = True
+        self.reset_mtcs_info_per_game = 5
 
 
 class TrainerConfig:
@@ -54,6 +56,11 @@ class TrainerConfig:
         self.save_model_steps = 25
         self.load_data_steps = 100
         self.loss_weights = [1.25, 1.0] # [policy, value] prevent value overfit in SL
+        self.lr_schedules = [
+            (0, 0.01),
+            (150000, 0.001),
+            (400000, 0.0001),
+        ]
 
 
 class ModelConfig:
