@@ -89,12 +89,12 @@ class SelfPlayWorker:
         cc = 0
 
         while not env.done:
-            start_time = time()
+            # start_time = time()
             if env.red_to_move:
                 action = self.red.action(env)
             else:
                 action = self.black.action(env)
-            end_time = time()
+            # end_time = time()
             # logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
             env.step(action)
             history.append(action)
@@ -117,7 +117,7 @@ class SelfPlayWorker:
             red_win = 0
 
         if env.num_halfmoves <= 10:
-            debug.logger(f"History moves: {history}")
+            logger.debug(f"History moves: {history}")
 
         self.red.finish_game(red_win)
         self.black.finish_game(-red_win)

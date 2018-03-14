@@ -100,9 +100,9 @@ def get_char(kind, color):
 def move_to_str(x, y, x_, y_):
     move_str = ''
     move_str += str(x)
-    move_str += str(9 - y)
+    move_str += str(y)
     move_str += str(x_)
-    move_str += str(9 - y_)
+    move_str += str(y_)
     return move_str
 
 def str_to_move(move_str):

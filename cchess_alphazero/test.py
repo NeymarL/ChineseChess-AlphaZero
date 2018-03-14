@@ -62,8 +62,11 @@ def test_light():
     while not lboard.is_end():
         for i in range(lboard.height):
             print(lboard.screen[i])
+        print(f"legal_moves = {lboard.legal_moves()}")
         action = input(f'Enter move for {lboard.is_red_turn} r/b: ')
         lboard.move_action_str(action)
+    for i in range(lboard.height):
+        print(lboard.screen[i])
     print(lboard.winner)
     print(f"Turns = {lboard.steps / 2}")
 
