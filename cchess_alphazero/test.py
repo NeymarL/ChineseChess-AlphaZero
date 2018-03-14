@@ -65,6 +65,7 @@ def test_light():
         action = input(f'Enter move for {lboard.is_red_turn} r/b: ')
         lboard.move_action_str(action)
     print(lboard.winner)
+    print(f"Turns = {lboard.steps / 2}")
 
 def test_light_env():
     from cchess_alphazero.environment.env import CChessEnv

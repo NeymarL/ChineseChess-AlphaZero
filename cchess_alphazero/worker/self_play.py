@@ -95,8 +95,13 @@ class SelfPlayWorker:
                 cc = cc + 1
             else:
                 cc = 0
-            if env.num_halfmoves / 2 >= self.config.play.max_game_length or cc >= 4:
+            if env.num_halfmoves / 2 >= self.config.play.max_game_length:
                 env.winner = Winner.draw
+            if cc >= 4:
+                if env.red_to_move:
+                    env.winner = Winner.black
+                else:
+                    env.winner = Winner.red
         if env.winner == Winner.red:
             red_win = 1
         elif env.winner == Winner.black:
