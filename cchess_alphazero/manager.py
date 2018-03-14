@@ -7,7 +7,7 @@ from cchess_alphazero.config import Config, PlayWithHumanConfig
 
 logger = getLogger(__name__)
 
-CMD_LIST = ['self', 'opt', 'eval', 'play']
+CMD_LIST = ['self', 'opt', 'eval', 'play', 'self2']
 
 def create_parser():
     parser = argparse.ArgumentParser()
@@ -24,6 +24,8 @@ def setup(config: Config, args):
         config.trainer.start_total_steps = args.total_step
     config.resource.create_directories()
     if args.cmd == 'self':
+        setup_logger(config.resource.main_log_path)
+    elif args.cmd == 'self2':
         setup_logger(config.resource.main_log_path)
     elif args.cmd == 'opt':
         setup_logger(config.resource.opt_log_path)
@@ -44,6 +46,10 @@ def start():
         from cchess_alphazero.worker import self_play
         config.opts.light = True    # use lighten environment
         return self_play.start(config)
+    elif args.cmd == 'self2':
+        from cchess_alphazero.worker import self_play2
+        config.opts.light = True    # use lighten environment
+        return self_play2.start(config)
     elif args.cmd == 'opt':
         from cchess_alphazero.worker import optimize
         return optimize.start(config)

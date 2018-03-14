@@ -89,13 +89,13 @@ class SelfPlayWorker:
         cc = 0
 
         while not env.done:
-            # start_time = time()
+            start_time = time()
             if env.red_to_move:
                 action = self.red.action(env)
             else:
                 action = self.black.action(env)
-            # end_time = time()
-            # logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
+            end_time = time()
+            logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
             env.step(action)
             history.append(action)
             if len(history) > 6 and history[-1] == history[-5]:
@@ -165,12 +165,3 @@ class SelfPlayWorker:
         except:
             pass
 
-    def read_as_int(self, filename):
-        if os.path.exists(filename):
-            try:
-                with open(filename, "rt") as f:
-                    ret = int(str(f.read()).strip())
-                    if ret:
-                        return ret
-            except ValueError:
-                pass
