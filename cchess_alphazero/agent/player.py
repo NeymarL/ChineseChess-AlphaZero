@@ -156,6 +156,8 @@ class CChessPlayer:
                 node.a[mov].p = mov_p
                 all_p += mov_p
             # rearrange the distribution
+            if all_p == 0:
+                all_p = 1
             for mov in legal_moves:
                 node.a[mov].p /= all_p
             # release the temp policy
@@ -175,7 +177,7 @@ class CChessPlayer:
             action_state = node.a[mov]
             p_ = action_state.p
             if is_root_node:
-                p_ = (1-e) * p_ + e * np.random.dirichlet([dir_alpha])
+                p_ = (1 - e) * p_ + e * np.random.dirichlet([dir_alpha])
             # Q + U
             score = action_state.q + c_puct * p_ * xx_ / (1 + action_state.n)
             if action_state.q > (1 - 1e-7):

@@ -28,7 +28,7 @@ class PlayConfig:
         self.max_processes = 10
         self.search_threads = 10
         self.vram_frac = 1.0
-        self.simulation_num_per_move = 600
+        self.simulation_num_per_move = 150
         self.thinking_loop = 1
         self.logging_thinking = False
         self.c_puct = 1.5
@@ -39,7 +39,7 @@ class PlayConfig:
         self.resign_threshold = -1.01
         self.min_resign_turn = 20
         self.max_game_length = 100
-        self.share_mtcs_info_in_self_play = True
+        self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
 
 

@@ -25,8 +25,8 @@ class PlayDataConfig:
 
 class PlayConfig:
     def __init__(self):
-        self.max_processes = 2 #before 3
-        self.search_threads = 2 #before 16
+        self.max_processes = 1 #before 3
+        self.search_threads = 1 #before 16
         self.vram_frac = 1.0
         self.simulation_num_per_move = 100 # before 1000
         self.c_puct = 1.5  #before 1.5
@@ -35,7 +35,7 @@ class PlayConfig:
         self.tau_decay_rate = 0.99
         self.virtual_loss = 3
         self.max_game_length = 100 # before 1000
-        self.share_mtcs_info_in_self_play = True
+        self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
 
 class TrainerConfig:
