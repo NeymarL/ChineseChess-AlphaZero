@@ -92,7 +92,7 @@ class SelfPlayWorker:
             else:
                 action = self.black.action(env)
             end_time = time()
-            logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
+            # logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
             env.step(action)
             history.append(action)
             if len(history) > 6 and history[-1] == history[-5]:
