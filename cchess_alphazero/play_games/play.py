@@ -3,6 +3,7 @@ import pygame
 import random
 import os.path
 import time
+import numpy as np
 
 from pygame.locals import *
 from logging import getLogger
@@ -105,7 +106,11 @@ class PlayWithHuman:
                                         current_chessman = None
             else:
                 # AI move
+                self.ai.search_results = {}
                 action = self.ai.action(self.env)
+                p, v = self.ai.neural_net_out_p, self.ai.neural_net_out_v
+                print(f"max p = {np.max(p)}, v = {v}")
+                print(f"policy = {self.ai.search_results}")
                 x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
                 chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)
                 sprite_dest = select_sprite_from_group(self.chessmans, x1, y1)

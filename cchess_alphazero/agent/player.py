@@ -45,6 +45,10 @@ class CChessPlayer:
         else:
             self.tree = search_tree
 
+        self.neural_net_out_p = None      # for debug
+        self.neural_net_out_v = None      # for debug
+        self.search_results = {}        # for debug
+
     def get_state_key(self, env: CChessEnv) -> str:
         board = env.observation
         board = board.split(' ')
@@ -64,7 +68,7 @@ class CChessPlayer:
         else:
             pol = policy
         my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(pol, env.num_halfmoves)))
-
+        # my_action = np.argmax(self.apply_temperature(pol, env.num_halfmoves))
         # no resign
         self.moves.append([env.observation, list(policy)])    # do not need flip anymore when training
         return self.labels[my_action]
@@ -97,6 +101,7 @@ class CChessPlayer:
             if state not in self.tree:
                 # Expand and Evaluate
                 leaf_p, leaf_v = self.expand_and_evaluate(env)
+                # self.neural_net_out_p, self.neural_net_out_v = leaf_p, leaf_v
                 self.tree[state].p = leaf_p
                 self.tree[state].legal_moves = self.get_legal_moves(env)
                 return leaf_v
@@ -124,7 +129,7 @@ class CChessPlayer:
         else:
             env.step(flip_move(sel_action))
 
-        leaf_v = self.MCTS_search(env, is_root_node, tid)
+        leaf_v = self.MCTS_search(env, not is_root_node, tid)
         leaf_v = -leaf_v
 
         # Backup
@@ -216,14 +221,22 @@ class CChessPlayer:
 
         for mov, action_state in node.a.items():
             policy[self.move_lookup[mov]] = action_state.n
+            # self.search_results[mov] = action_state.n
 
-        policy /= np.sum(policy)
+        print(node.sum_n)
+        # policy /= np.sum(policy)
+        s = np.sum(policy)
+        policy /= s
         return policy
 
     def apply_temperature(self, policy, turn) -> np.ndarray:
-        tau = np.power(self.play_config.tau_decay_rate, turn + 1)
-        if tau < 0.1:
+        # tau = np.power(self.play_config.tau_decay_rate, turn + 1)
+        if turn < 30:
+            tau = 1
+        else:
             tau = 0
+        # if tau < 0.1:
+        #     tau = 0
         if tau == 0:
             action = np.argmax(policy)
             ret = np.zeros(self.labels_n)
