@@ -52,7 +52,7 @@ class CChessModelAPI:
     def try_reload_model(self):
         try:
             logger.debug("check model")
-            if need_to_reload_best_model_weight(self.agent_model):
+            if not self.config.opts.evaluate and need_to_reload_best_model_weight(self.agent_model):
                 with self.agent_model.graph.as_default():
                     load_best_model_weight(self.agent_model)
         except Exception as e:

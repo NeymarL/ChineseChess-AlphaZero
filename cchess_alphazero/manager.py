@@ -69,5 +69,6 @@ def start():
     elif args.cmd == 'eval':
         from cchess_alphazero.worker import evaluator
         config.opts.light = False
+        config.opts.evaluate = True
         evaluator.start(config)
         

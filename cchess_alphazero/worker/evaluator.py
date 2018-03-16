@@ -98,11 +98,11 @@ class EvaluateWorker:
             if int(env.red_to_move) == idx % 2:
                 action = self.player2.action(env)
                 end_time = time()
-                logger.debug(f"Process{self.pid} Player2 action: {action}, time: {end_time - start_time}s")
+                # logger.debug(f"Process{self.pid} Player2 action: {action}, time: {end_time - start_time}s")
             else:
                 action = self.player1.action(env)
                 end_time = time()
-                logger.debug(f"Process{self.pid} Player1 action: {action}, time: {end_time - start_time}s")
+                # logger.debug(f"Process{self.pid} Player1 action: {action}, time: {end_time - start_time}s")
             
             env.step(action)
 

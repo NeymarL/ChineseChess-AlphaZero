@@ -223,10 +223,7 @@ class CChessPlayer:
             policy[self.move_lookup[mov]] = action_state.n
             # self.search_results[mov] = action_state.n
 
-        print(node.sum_n)
-        # policy /= np.sum(policy)
-        s = np.sum(policy)
-        policy /= s
+        policy /= np.sum(policy)
         return policy
 
     def apply_temperature(self, policy, turn) -> np.ndarray:

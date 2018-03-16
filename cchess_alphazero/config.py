@@ -63,6 +63,7 @@ class ResourceConfig:
 class Options:
     new = False
     light = True
+    evaluate = False
 
 class PlayWithHumanConfig:
     def __init__(self):
