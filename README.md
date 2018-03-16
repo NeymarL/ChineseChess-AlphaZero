@@ -78,7 +78,7 @@ When executed, Self-Play will start using BestModel. If the BestModel does not e
 options
 
 * `--new`: create new BestModel
-* `--type mini`: use mini config for testing, (see `cchess_alphazero/configs/mini.py`)
+* `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 
 #### Trainer
 
@@ -90,7 +90,7 @@ When executed, Training will start. The current BestModel will be loaded. Traine
 
 options
 
-* `--type mini`: use mini config for testing, (see `cchess_alphazero/configs/mini.py`)
+* `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--total-step`: specify total step(mini-batch) numbers. The total step affects learning rate of training.
 
 **View training log in Tensorboard**
@@ -112,3 +112,18 @@ When executed, the BestModel will be loaded to play against human.
 options
 
 * `--ai-move-first`: if set this option, AI will move first, otherwise human move first.
+* `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
+
+#### Evaluator
+
+```
+python cchess_alphazero/run.py eval
+```
+
+When executed, the two model saved in `config.resource.eval_model_dir` (see `cchess_alphazero/config.py`) will start to battle with each other.
+
+options
+
+* `--name1 player1`: set the first player's name
+* `--name2 player2`: set the second player's name
+* `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
