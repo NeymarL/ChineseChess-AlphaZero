@@ -36,3 +36,8 @@ def need_to_reload_best_model_weight(model):
 
         logger.debug("the best model is not changed")
         return False
+
+def load_model_weight(model, config_path, weight_path, name=None):
+    if name is not None:
+        logger.info(f"{name}: load model from {config_path}")
+    return model.load(config_path, weight_path)

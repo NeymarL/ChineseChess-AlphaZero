@@ -34,6 +34,14 @@ class ResourceConfig:
         self.model_best_config_path = os.path.join(self.model_dir, "model_best_config.json")
         self.model_best_weight_path = os.path.join(self.model_dir, "model_best_weight.h5")
 
+        self.eval_model_dir = os.path.join(self.model_dir, "eval_models")
+        self.eval_model1_config_path = os.path.join(self.eval_model_dir, "model1_config.json")
+        self.eval_model1_weight_path = os.path.join(self.eval_model_dir, "model1_weight.h5")
+        self.eval_model2_config_path = os.path.join(self.eval_model_dir, "model2_config.json")
+        self.eval_model2_weight_path = os.path.join(self.eval_model_dir, "model2_weight.h5")
+        self.model1_name = "model1"
+        self.model2_name = "model2"
+
         self.play_data_dir = os.path.join(self.data_dir, "play_data")
         self.play_data_filename_tmpl = "play_%s.json"
         self.self_play_game_idx_file = os.path.join(self.data_dir, "play_data_idx")
@@ -47,7 +55,7 @@ class ResourceConfig:
 
     def create_directories(self):
         dirs = [self.project_dir, self.data_dir, self.model_dir, self.play_data_dir, self.log_dir,
-                self.play_record_dir]
+                self.play_record_dir, self.eval_model_dir]
         for d in dirs:
             if not os.path.exists(d):
                 os.makedirs(d)

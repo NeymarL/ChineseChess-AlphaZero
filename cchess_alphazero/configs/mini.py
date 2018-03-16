@@ -1,7 +1,7 @@
 class EvaluateConfig:
     def __init__(self):
         self.vram_frac = 1.0
-        self.game_num = 2
+        self.game_num = 10
         self.replace_rate = 0.55
         self.play_config = PlayConfig()
         self.play_config.simulation_num_per_move = 100 # before 200
@@ -11,7 +11,8 @@ class EvaluateConfig:
         self.play_config.noise_eps = 0
         self.evaluate_latest_first = True
         self.max_game_length = 100  # before 1000
-
+        self.max_processes = 1 #before 3
+        self.search_threads = 1 #before 16
 
 class PlayDataConfig:
     def __init__(self):

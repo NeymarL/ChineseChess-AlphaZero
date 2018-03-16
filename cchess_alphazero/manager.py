@@ -7,7 +7,7 @@ from cchess_alphazero.config import Config, PlayWithHumanConfig
 
 logger = getLogger(__name__)
 
-CMD_LIST = ['self', 'opt', 'eval', 'play', 'self2']
+CMD_LIST = ['self', 'opt', 'eval', 'play', 'self2', 'eval']
 
 def create_parser():
     parser = argparse.ArgumentParser()
@@ -16,6 +16,8 @@ def create_parser():
     parser.add_argument("--type", help="use normal setting", default="mini")
     parser.add_argument("--total-step", help="set TrainerConfig.start_total_steps", type=int)
     parser.add_argument("--ai-move-first", help="set human or AI move first", action="store_true")
+    parser.add_argument("--name1", help="player1's name", default="player1")
+    parser.add_argument("--name2", help="player1's name", default="player2")
     return parser
 
 def setup(config: Config, args):
@@ -23,6 +25,8 @@ def setup(config: Config, args):
     if args.total_step is not None:
         config.trainer.start_total_steps = args.total_step
     config.resource.create_directories()
+    config.resource.model1_name = args.name1
+    config.resource.model2_name = args.name2
     if args.cmd == 'self':
         setup_logger(config.resource.main_log_path)
     elif args.cmd == 'self2':
@@ -30,6 +34,8 @@ def setup(config: Config, args):
     elif args.cmd == 'opt':
         setup_logger(config.resource.opt_log_path)
     elif args.cmd == 'play':
+        setup_logger(config.resource.play_log_path)
+    elif args.cmd == 'eval':
         setup_logger(config.resource.play_log_path)
 
 def start():
@@ -60,4 +66,8 @@ def start():
         pwhc.update_play_config(config.play)
         logger.info(f"AI move first : {args.ai_move_first}")
         play.start(config, not args.ai_move_first)
+    elif args.cmd == 'eval':
+        from cchess_alphazero.worker import evaluator
+        config.opts.light = False
+        evaluator.start(config)
         
