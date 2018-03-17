@@ -69,6 +69,7 @@ class OptimizeWorker:
                         files = files[-30:]
                 last_file = files[-1]
                 self.filenames = deque(files)
+                logger.debug(f"Start training {len(self.filenames)} files")
                 shuffle(self.filenames)
                 self.fill_queue()
                 if len(self.dataset[0]) > self.config.trainer.batch_size:
