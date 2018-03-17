@@ -60,10 +60,14 @@ class OptimizeWorker:
                 time.sleep(600)
                 continue
             else:
-                last_file = files[-1]
                 bef_files = files
-                if (len(files) > 100):
-                    files = files[-100:]
+                if last_file is not None:
+                    if (len(files) - files.index(last_file) >= 20):
+                        files = files[files.index(last_file) - len(files):]
+                else:
+                    if (len(files) >= 30):
+                        files = files[-30:]
+                last_file = files[-1]
                 self.filenames = deque(files)
                 shuffle(self.filenames)
                 self.fill_queue()

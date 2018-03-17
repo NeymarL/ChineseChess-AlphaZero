@@ -15,6 +15,7 @@ class CChessModelAPI:
     def __init__(self, config: Config, agent_model):  
         self.agent_model = agent_model  # CChessModel
         self.pipes = []     # use for communication between processes/threads
+        self.config = config
 
     def start(self):
         prediction_worker = Thread(target=self.predict_batch_worker, name="prediction_worker")
