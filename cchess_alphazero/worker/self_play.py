@@ -5,10 +5,8 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from logging import getLogger
 from multiprocessing import Manager
-from threading import Thread
 from time import time
 from collections import defaultdict
-from multiprocessing import Lock
 from random import random
 
 from cchess_alphazero.agent.model import CChessModel

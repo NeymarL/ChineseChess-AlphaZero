@@ -297,6 +297,101 @@ class L_Chessboard:
     def save_record(self, filename):
         return
 
+    def parse_WXF_move(self, wxf):
+        '''
+        red is upper, black is lower alphabet
+        '''
+        p = self.swapcase(wxf[0])
+        col = wxf[1]
+        mov = wxf[2]
+        dest_col = wxf[3]
+        src_row, src_col = self.find_row(p, col)
+        if mov == '.' or mov == '=':
+            # move horizontally
+            dest_row = src_row
+            if p.islower():
+                dest_col = int(dest_col) - 1
+            else:
+                dest_col = self.width - int(dest_col)
+        else:
+            if p == 'h' or p == 'H' or p == 'e' or p == 'E' or p == 'a' or p == 'A':
+                if p.islower():
+                    dest_col = int(dest_col) - 1
+                else:
+                    dest_col = self.width - int(dest_col)
+
+                if p == 'h' or p == 'H':
+                    # for house/knight
+                    step = 1 if abs(dest_col - src_col) == 2 else 2
+                elif p == 'e' or p == 'E':
+                    # for elephant/bishop
+                    step = 2
+                else:
+                    # for advisor
+                    step = 1 
+                if mov == '+' and p.islower() or mov == '-' and p.isupper():
+                    dest_row = src_row + step
+                else:
+                    dest_row = src_row - step
+            else:
+                # move vertically
+                step = int(dest_col)
+                if mov == '+' and p.islower() or mov == '-' and p.isupper():
+                    dest_row = src_row + step
+                else:
+                    dest_row = src_row - step
+                dest_col = src_col
+        return move_to_str(src_col, src_row, dest_col, dest_row)
+
+    def find_row(self, piece, col):
+        if piece == 'h' or piece == 'H':
+            piece = 'n' if piece == 'h' else 'N'
+        if piece == 'e' or piece == 'E':
+            piece = 'b' if piece == 'e' else 'B'
+        column = 0
+        row = -1
+        if col.isdigit():
+            if piece.isupper():
+                column = self.width - int(col)
+            else:
+                column = int(col) - 1
+            for i in range(self.height):
+                if self.board[i][int(column)] == piece:
+                    row = i
+                    break
+        else:
+            first_row = -1
+            second_row = -1
+            column = -1
+            for j in range(self.width):
+                column = -1
+                for i in range(self.height):
+                    if self.board[i][j] == piece:
+                        if column == -1:
+                            column = j
+                            first_row = i
+                        else:
+                            if column == j:
+                                second_row = i
+                                break
+                            else:
+                                column = j
+                                first_row = second_row = -1
+                if first_row != -1 and second_row != -1:
+                    break
+            if (piece.islower() and col == '+') or (piece.isupper() and col == '-'):
+                row = second_row
+            else:
+                row = first_row
+        return row, column
+
+    def swapcase(self, a):
+        if a.isalpha():
+            return a.lower() if a.isupper() else a.upper()
+        return a
+
+
+
 if __name__ == '__main__': # test
     board = Chessboard()
     print(board.legal_moves)

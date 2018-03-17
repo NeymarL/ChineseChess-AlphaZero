@@ -7,7 +7,7 @@ from cchess_alphazero.config import Config, PlayWithHumanConfig
 
 logger = getLogger(__name__)
 
-CMD_LIST = ['self', 'opt', 'eval', 'play', 'self2', 'eval']
+CMD_LIST = ['self', 'opt', 'eval', 'play', 'self2', 'eval', 'sl']
 
 def create_parser():
     parser = argparse.ArgumentParser()
@@ -37,6 +37,8 @@ def setup(config: Config, args):
         setup_logger(config.resource.play_log_path)
     elif args.cmd == 'eval':
         setup_logger(config.resource.play_log_path)
+    elif args.cmd == 'sl':
+        setup_logger(config.resource.sl_log_path)
 
 def start():
     parser = create_parser()
@@ -71,4 +73,7 @@ def start():
         config.opts.light = False
         config.opts.evaluate = True
         evaluator.start(config)
+    elif args.cmd == 'sl':
+        from cchess_alphazero.worker import sl
+        sl.start(config)
         

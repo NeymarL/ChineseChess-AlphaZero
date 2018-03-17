@@ -181,3 +181,4 @@ def convert_to_trainging_data(data):
     return np.asarray(state_list, dtype=np.float32), \
            np.asarray(policy_list, dtype=np.float32), \
            np.asarray(value_list, dtype=np.float32)
+

@@ -106,7 +106,7 @@ def move_to_str(x, y, x_, y_):
     return move_str
 
 def str_to_move(move_str):
-    move_arr = [0]*4
+    move_arr = [0] * 4
     move_arr[0] = int(move_str[0])
     move_arr[1] = int(move_str[1])
     move_arr[2] = int(move_str[2])

@@ -41,3 +41,20 @@ def load_model_weight(model, config_path, weight_path, name=None):
     if name is not None:
         logger.info(f"{name}: load model from {config_path}")
     return model.load(config_path, weight_path)
+
+
+def load_sl_best_model_weight(model):
+    """
+    :param cchess_alphazero.agent.model.CChessModel model:
+    :return:
+    """
+    return model.load(model.config.resource.sl_best_config_path, model.config.resource.sl_best_weight_path)
+
+
+def save_as_sl_best_model(model):
+    """
+
+    :param cchess_alphazero.agent.model.CChessModel model:
+    :return:
+    """
+    return model.save(model.config.resource.sl_best_config_path, model.config.resource.sl_best_weight_path)

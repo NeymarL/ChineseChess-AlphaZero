@@ -33,6 +33,8 @@ class ResourceConfig:
         self.model_dir = os.environ.get("MODEL_DIR", os.path.join(self.data_dir, "model"))
         self.model_best_config_path = os.path.join(self.model_dir, "model_best_config.json")
         self.model_best_weight_path = os.path.join(self.model_dir, "model_best_weight.h5")
+        self.sl_best_config_path = os.path.join(self.model_dir, "sl_best_config.json")
+        self.sl_best_weight_path = os.path.join(self.model_dir, "sl_best_weight.h5")
 
         self.eval_model_dir = os.path.join(self.model_dir, "eval_models")
         self.eval_model1_config_path = os.path.join(self.eval_model_dir, "model1_config.json")
@@ -52,6 +54,11 @@ class ResourceConfig:
         self.main_log_path = os.path.join(self.log_dir, "main.log")
         self.opt_log_path = os.path.join(self.log_dir, "opt.log")
         self.play_log_path = os.path.join(self.log_dir, "play.log")
+        self.sl_log_path = os.path.join(self.log_dir, "sl.log")
+
+        self.sl_data_dir = os.path.join(self.data_dir, "sl_data")
+        self.sl_data_gameinfo = os.path.join(self.sl_data_dir, "gameinfo.csv")
+        self.sl_data_move = os.path.join(self.sl_data_dir, "moves.csv")
 
     def create_directories(self):
         dirs = [self.project_dir, self.data_dir, self.model_dir, self.play_data_dir, self.log_dir,

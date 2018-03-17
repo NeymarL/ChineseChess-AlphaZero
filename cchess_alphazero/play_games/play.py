@@ -41,7 +41,7 @@ class PlayWithHuman:
     def load_model(self):
         self.model = CChessModel(self.config)
         if self.config.opts.new or not load_best_model_weight(self.model):
-            model.build()
+            self.model.build()
 
     def start(self, human_first=True):
         self.env.reset()
