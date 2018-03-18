@@ -79,14 +79,14 @@ class PlayWithHumanConfig:
         self.c_puct = 1
         self.search_threads = 2
         self.noise_eps = 0
-        self.change_tau_turn = 0
+        self.tau_decay_rate = 0
 
     def update_play_config(self, pc):
         pc.simulation_num_per_move = self.simulation_num_per_move
         pc.thinking_loop = self.thinking_loop
         pc.c_puct = self.c_puct
         pc.noise_eps = self.noise_eps
-        pc.change_tau_turn = self.change_tau_turn
+        pc.tau_decay_rate = self.tau_decay_rate
         pc.search_threads = self.search_threads
 
 

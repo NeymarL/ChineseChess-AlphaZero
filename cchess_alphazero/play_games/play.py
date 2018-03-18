@@ -17,7 +17,7 @@ from cchess_alphazero.agent.player import CChessPlayer, VisitState
 from cchess_alphazero.agent.api import CChessModelAPI
 from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
-from cchess_alphazero.environment.lookup_tables import Winner
+from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed
 from cchess_alphazero.lib.model_helper import load_best_model_weight
 
 logger = getLogger(__name__)
@@ -64,6 +64,9 @@ class PlayWithHuman:
         self.chessmans = pygame.sprite.Group()
         framerate = pygame.time.Clock()
 
+        labels = ActionLabelsRed
+        labels_n = len(ActionLabelsRed)
+
         creat_sprite_group(self.chessmans, self.env.board.chessmans_hash)
         current_chessman = None
         if human_first:
@@ -109,8 +112,13 @@ class PlayWithHuman:
                 self.ai.search_results = {}
                 action = self.ai.action(self.env)
                 p, v = self.ai.neural_net_out_p, self.ai.neural_net_out_v
-                print(f"max p = {np.max(p)}, v = {v}")
-                print(f"policy = {self.ai.search_results}")
+                mov_idx = np.argmax(p)
+                mov = labels[mov_idx]
+                logger.info(f"NN recommend move: {mov} with probability {np.max(p)}, v = {v}")
+                logger.info("MCTS results:")
+                for move, action_state in self.ai.search_results.items():
+                    if action_state[0] >= 10:
+                        logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]}")
                 x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
                 chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)
                 sprite_dest = select_sprite_from_group(self.chessmans, x1, y1)
@@ -128,7 +136,7 @@ class PlayWithHuman:
             self.chessmans.draw(screen)
             pygame.display.update()
 
-        print(f"Winner is {self.env.board.winner} !!!")
+        logger.info(f"Winner is {self.env.board.winner} !!!")
         self.env.board.print_record()
         
 

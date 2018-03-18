@@ -71,6 +71,9 @@ class EvaluateWorker:
                 score2 += 1
             elif score > 0:
                 score1 += 1
+            else:
+                score2 += 0.5
+                score1 += 0.5
 
             logger.debug(f"Process{self.pid} play game {idx} time={end_time - start_time} sec, "
                          f"turn={env.num_halfmoves / 2}, {self.config.resource.model1_name}:{self.config.resource.model2_name}"

@@ -101,7 +101,8 @@ class CChessPlayer:
             if state not in self.tree:
                 # Expand and Evaluate
                 leaf_p, leaf_v = self.expand_and_evaluate(env)
-                # self.neural_net_out_p, self.neural_net_out_v = leaf_p, leaf_v
+                if is_root_node:
+                    self.neural_net_out_p, self.neural_net_out_v = leaf_p, leaf_v
                 self.tree[state].p = leaf_p
                 self.tree[state].legal_moves = self.get_legal_moves(env)
                 return leaf_v
@@ -129,7 +130,7 @@ class CChessPlayer:
         else:
             env.step(flip_move(sel_action))
 
-        leaf_v = self.MCTS_search(env, not is_root_node, tid)
+        leaf_v = self.MCTS_search(env, False, tid)
         leaf_v = -leaf_v
 
         # Backup
@@ -221,14 +222,14 @@ class CChessPlayer:
 
         for mov, action_state in node.a.items():
             policy[self.move_lookup[mov]] = action_state.n
-            # self.search_results[mov] = action_state.n
+            self.search_results[mov] = (action_state.n, action_state.q)
 
         policy /= np.sum(policy)
         return policy
 
     def apply_temperature(self, policy, turn) -> np.ndarray:
         # tau = np.power(self.play_config.tau_decay_rate, turn + 1)
-        if turn < 30:
+        if turn < 30 and self.config.play.tau_decay_rate != 0:
             tau = 1
         else:
             tau = 0
