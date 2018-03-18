@@ -63,7 +63,6 @@ class SupervisedWorker:
                 a.clear()
                 b.clear()
                 c.clear()
-                self.update_learning_rate(total_steps)
 
     def train_epoch(self, epochs):
         tc = self.config.trainer
