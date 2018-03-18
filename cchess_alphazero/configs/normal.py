@@ -9,7 +9,7 @@ class EvaluateConfig:
         self.play_config.c_puct = 1 # lower  = prefer mean action value
         self.play_config.tau_decay_rate = 0.6 # I need a better distribution...
         self.play_config.noise_eps = 0
-        self.play_config.self.max_processes = 1
+        self.play_config.max_processes = 1
         self.play_config.search_threads = 10
         self.evaluate_latest_first = True
         self.max_game_length = 200 # before: 1000
