@@ -61,12 +61,8 @@ class OptimizeWorker:
                 continue
             else:
                 bef_files = files
-                if last_file is not None:
-                    if (len(files) - files.index(last_file) >= 20):
-                        files = files[files.index(last_file) - len(files):]
-                else:
-                    if (len(files) >= 30):
-                        files = files[-30:]
+                if len(files) > 80:
+                    files = files[-80:]
                 last_file = files[-1]
                 self.filenames = deque(files)
                 logger.debug(f"Start training {len(self.filenames)} files")
