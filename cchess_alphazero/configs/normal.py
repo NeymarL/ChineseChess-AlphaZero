@@ -2,23 +2,30 @@ class EvaluateConfig:
     def __init__(self):
         self.vram_frac = 1.0
         self.game_num = 10
-        self.play_config = PlayConfig()
-        self.play_config.simulation_num_per_move = 600
-        self.play_config.thinking_loop = 1
-        self.play_config.c_puct = 1 # lower  = prefer mean action value
-        self.play_config.tau_decay_rate = 0
-        self.play_config.noise_eps = 0
-        self.play_config.max_processes = 1
-        self.play_config.search_threads = 10
-        self.max_game_length = 200 # before: 1000
+        self.simulation_num_per_move = 50 # before 200
+        self.thinking_loop = 1
+        self.c_puct = 1 # lower  = prefer mean action value
+        self.tau_decay_rate = 0
+        self.noise_eps = 0
+        self.max_game_length = 200
+        self.max_processes = 1 
+        self.search_threads = 5
+
+    def update_play_config(self, pc):
+        pc.simulation_num_per_move = self.simulation_num_per_move
+        pc.thinking_loop = self.thinking_loop
+        pc.c_puct = self.c_puct
+        pc.tau_decay_rate = self.tau_decay_rate
+        pc.noise_eps = self.noise_eps
+        pc.max_game_length = self.max_game_length
+        pc.max_processes = self.max_processes
+        pc.search_threads = self.search_threads
 
 
 class PlayDataConfig:
     def __init__(self):
-        self.min_elo_policy = 500 # 0 weight
-        self.max_elo_policy = 1800 # 1 weight
         self.sl_nb_game_in_file = 250
-        self.nb_game_in_file = 5
+        self.nb_game_in_file = 10
         self.max_file_num = 200
         self.nb_game_save_record = 1
 
@@ -26,16 +33,16 @@ class PlayDataConfig:
 class PlayConfig:
     def __init__(self):
         self.max_processes = 10
-        self.search_threads = 10
+        self.search_threads = 8
         self.vram_frac = 1.0
-        self.simulation_num_per_move = 150
+        self.simulation_num_per_move = 100
         self.thinking_loop = 1
         self.logging_thinking = False
         self.c_puct = 1.5
         self.noise_eps = 0.25
         self.dirichlet_alpha = 0.2
         self.tau_decay_rate = 0.98
-        self.virtual_loss = 5
+        self.virtual_loss = 3
         self.resign_threshold = -0.92
         self.min_resign_turn = 20
         self.enable_resign_rate = 0.1
@@ -46,7 +53,7 @@ class PlayConfig:
 
 class TrainerConfig:
     def __init__(self):
-        self.min_games_to_begin_learn = 100 
+        self.min_games_to_begin_learn = 1000 
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 4 # RAM explosion...
         self.vram_frac = 1.0

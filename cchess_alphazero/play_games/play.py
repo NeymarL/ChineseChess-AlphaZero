@@ -37,6 +37,7 @@ class PlayWithHuman:
         self.ai = None
         self.winstyle = 0
         self.chessmans = None
+        self.human_move_first = True
 
     def load_model(self):
         self.model = CChessModel(self.config)
@@ -47,7 +48,9 @@ class PlayWithHuman:
         self.env.reset()
         self.load_model()
         self.pipe = self.model.get_pipes(self.config.play.search_threads)
-        self.ai = CChessPlayer(self.config, search_tree=defaultdict(VisitState), pipes=self.pipe, enable_resign=True)
+        self.ai = CChessPlayer(self.config, search_tree=defaultdict(VisitState), pipes=self.pipe,
+                              enable_resign=True, debugging=True)
+        self.human_move_first = human_first
 
         pygame.init()
         bestdepth = pygame.display.mode_ok(SCREENRECT.size, self.winstyle, 32)
@@ -72,13 +75,17 @@ class PlayWithHuman:
         if human_first:
             self.env.board.calc_chessmans_moving_list()
 
+        ai_worker = Thread(target=self.ai_move, name="ai_worker")
+        ai_worker.daemon = True
+        ai_worker.start()
+
         while not self.env.board.is_end():
-            if human_first == self.env.red_to_move:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        self.env.board.print_record()
-                        sys.exit()
-                    elif event.type == MOUSEBUTTONDOWN:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.env.board.print_record()
+                    sys.exit()
+                elif event.type == MOUSEBUTTONDOWN:
+                    if human_first == self.env.red_to_move:
                         pressed_array = pygame.mouse.get_pressed()
                         for index in range(len(pressed_array)):
                             if index == 0 and pressed_array[index]:
@@ -107,28 +114,7 @@ class PlayWithHuman:
                                     if success:
                                         current_chessman.is_selected = False
                                         current_chessman = None
-            else:
-                # AI move
-                self.ai.search_results = {}
-                action = self.ai.action(self.env)
-                if action is None:
-                    logger.info("AI has resigned!")
-                    break
-                p, v = self.ai.neural_net_out_p, self.ai.neural_net_out_v
-                mov_idx = np.argmax(p)
-                mov = labels[mov_idx]
-                logger.info(f"NN recommend move: {mov} with probability {np.max(p)}, v = {v}")
-                logger.info("MCTS results:")
-                for move, action_state in self.ai.search_results.items():
-                    if action_state[0] >= 10:
-                        logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]}")
-                x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
-                chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)
-                sprite_dest = select_sprite_from_group(self.chessmans, x1, y1)
-                if sprite_dest:
-                    self.chessmans.remove(sprite_dest)
-                    sprite_dest.kill()
-                chessman_sprite.move(x1, y1)
+                
                 
             framerate.tick(20)
             # clear/erase the last drawn sprites
@@ -141,6 +127,37 @@ class PlayWithHuman:
 
         logger.info(f"Winner is {self.env.board.winner} !!!")
         self.env.board.print_record()
+
+    def ai_move(self):
+        ai_move_first = not self.human_move_first
+        while not self.env.done:
+            if ai_move_first == self.env.red_to_move:
+                labels = ActionLabelsRed
+                labels_n = len(ActionLabelsRed)
+                self.ai.search_results = {}
+                action = self.ai.action(self.env)
+                if action is None:
+                    logger.info("AI has resigned!")
+                    return
+                key = self.ai.get_state_key(self.env)
+                p, v = self.ai.debug[key]
+                mov_idx = np.argmax(p)
+                mov = labels[mov_idx]
+                mov = self.env.board.make_single_record(int(mov[0]), int(mov[1]), int(mov[2]), int(mov[3]))
+                logger.info(f"NN recommend move: {mov} with probability {np.max(p)}, v = {v}")
+                logger.info("MCTS results:")
+                for move, action_state in self.ai.search_results.items():
+                    if action_state[0] >= 2:
+                        move = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+                        logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]}")
+                
+                x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
+                chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)
+                sprite_dest = select_sprite_from_group(self.chessmans, x1, y1)
+                if sprite_dest:
+                    self.chessmans.remove(sprite_dest)
+                    sprite_dest.kill()
+                chessman_sprite.move(x1, y1)
         
 
 class Chessman_Sprite(pygame.sprite.Sprite):

@@ -10,13 +10,14 @@ from time import time
 from collections import defaultdict
 from multiprocessing import Lock
 from random import random
+import numpy as np
 
 from cchess_alphazero.agent.model import CChessModel
 from cchess_alphazero.agent.player import CChessPlayer, VisitState
 from cchess_alphazero.agent.api import CChessModelAPI
 from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
-from cchess_alphazero.environment.lookup_tables import Winner
+from cchess_alphazero.environment.lookup_tables import Winner, flip_move, ActionLabelsRed
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, write_game_data_to_file
 from cchess_alphazero.lib.model_helper import load_model_weight
 from cchess_alphazero.lib.tf_util import set_session_config
@@ -35,16 +36,16 @@ def start(config: Config):
     model2 = load_model(config, config.resource.eval_model2_config_path, config.resource.eval_model2_weight_path, 
                         config.resource.model2_name)
     m = Manager()
-    model1_pipes = m.list([model1.get_pipes(config.eval.play_config.search_threads) \
-                        for _ in range(config.eval.play_config.max_processes)])
-    model2_pipes = m.list([model2.get_pipes(config.eval.play_config.search_threads) \
-                        for _ in range(config.eval.play_config.max_processes)])
+    model1_pipes = m.list([model1.get_pipes(config.play.search_threads) \
+                        for _ in range(config.play.max_processes)])
+    model2_pipes = m.list([model2.get_pipes(config.play.search_threads) \
+                        for _ in range(config.play.max_processes)])
 
     # play_worker = EvaluateWorker(config, model1_pipes, model2_pipes)
     # play_worker.start()
-    with ProcessPoolExecutor(max_workers=config.eval.play_config.max_processes) as executor:
+    with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
         futures = []
-        for i in range(config.eval.play_config.max_processes):
+        for i in range(config.play.max_processes):
             eval_worker = EvaluateWorker(config, model1_pipes, model2_pipes, i)
             futures.append(executor.submit(eval_worker.start))
 
@@ -89,8 +90,8 @@ class EvaluateWorker:
 
         env = CChessEnv(self.config).reset()
 
-        self.player1 = CChessPlayer(self.config, search_tree=search_tree1, pipes=pipe1)
-        self.player2 = CChessPlayer(self.config, search_tree=search_tree2, pipes=pipe2)
+        self.player1 = CChessPlayer(self.config, search_tree=search_tree1, pipes=pipe1, debugging=False)
+        self.player2 = CChessPlayer(self.config, search_tree=search_tree2, pipes=pipe2, debugging=False)
 
         history = []
         cc = 0
@@ -101,11 +102,49 @@ class EvaluateWorker:
             if int(env.red_to_move) == idx % 2:
                 action = self.player2.action(env)
                 end_time = time()
-                # logger.debug(f"Process{self.pid} Player2 action: {action}, time: {end_time - start_time}s")
+                # --------------------- debug logs ---------------------------
+                # if not env.red_to_move:
+                #     move = flip_move(action)
+                # else:
+                #     move = action
+                # move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+                # logger.debug(f"Process{self.pid} Player2 action: {move}, time: {end_time - start_time}s")
+                # key = self.player2.get_state_key(env)
+                # p, v = self.player2.debug[key]
+                # mov_idx = np.argmax(p)
+                # move = ActionLabelsRed[mov_idx]
+                # move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+                # logger.debug(f"P2 NN recommend move: {move} with probability {np.max(p)}, v = {v}")
+                # logger.info("MCTS results:")
+                # for move, action_state in self.player2.search_results.items():
+                #     if action_state[0] >= 5:
+                #         move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+                #         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]}")
+                # self.player2.search_results = {}
+                # --------------------- debug logs ---------------------------
             else:
                 action = self.player1.action(env)
                 end_time = time()
-                # logger.debug(f"Process{self.pid} Player1 action: {action}, time: {end_time - start_time}s")
+                # --------------------- debug logs ---------------------------
+                # if not env.red_to_move:
+                #     move = flip_move(action)
+                # else:
+                #     move = action
+                # move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+                # logger.debug(f"Process{self.pid} Player1 action: {move}, time: {end_time - start_time}s")
+                # key = self.player1.get_state_key(env)
+                # p, v = self.player1.debug[key]
+                # mov_idx = np.argmax(p)
+                # move = ActionLabelsRed[mov_idx]
+                # move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+                # logger.debug(f"P1 NN recommend move: {move} with probability {np.max(p)}, v = {v}")
+                # logger.info("MCTS results:")
+                # for move, action_state in self.player1.search_results.items():
+                #     if action_state[0] >= 5:
+                #         move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+                #         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]}")
+                # self.player1.search_results = {}
+                # --------------------- debug logs ---------------------------
             
             env.step(action)
 

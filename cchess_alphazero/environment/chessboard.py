@@ -453,6 +453,53 @@ class Chessboard(object):
             + " " + foo[2] \
             + " " + foo[3] + " " + foo[4] + " " + foo[5]
 
+    def make_single_record(self, old_x, old_y, x, y):
+        record = ''
+        if not self.is_red_turn:
+            old_y = 9 - old_y
+            y = 9 - y
+            x = 8 - x
+            old_x = 8 - old_x
+        chess = self.chessmans[old_x][old_y]
+        if chess is None:
+            logger.error(f"No chessman! {old_x}{old_y}{x}{y}")
+            self.print_to_cl()
+        has_two, mark = self.check_two_chesses_in_one_row(chess, old_x, old_y)
+        if has_two:
+            record += mark
+        record += chess.name_cn[1]
+        # horizontal move
+        if old_y == y:
+            if not self.is_red_turn:
+                if not has_two:
+                    record += RECORD_NOTES[old_x + 1][0]
+                record += u'平' + RECORD_NOTES[x + 1][0]
+            else:
+                if not has_two:
+                    record += RECORD_NOTES[9 - old_x][1]
+                record += u'平' + RECORD_NOTES[9 - x][1]
+        # vertical move
+        else:
+            if not has_two:
+                if not self.is_red_turn:
+                    record += RECORD_NOTES[old_x + 1][0]
+                else:
+                    record += RECORD_NOTES[9 - old_x][1]
+            if (y > old_y and self.is_red_turn) or (y < old_y and not self.is_red_turn):
+                record += u'进'
+            else:
+                record += u'退'
+            if type(chess) == Rook or type(chess) == Pawn or\
+               type(chess) == Cannon or type(chess) == King:
+               record += RECORD_NOTES[abs(y - old_y)][self.is_red_turn]
+            else:
+                if not self.is_red_turn:
+                    record += RECORD_NOTES[x + 1][0]
+                else:
+                    record += RECORD_NOTES[9 - x][1]
+        return record
+
+
 
 
 RECORD_NOTES = [

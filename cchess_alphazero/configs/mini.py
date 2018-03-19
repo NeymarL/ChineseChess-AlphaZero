@@ -1,25 +1,31 @@
 class EvaluateConfig:
     def __init__(self):
         self.vram_frac = 1.0
-        self.game_num = 10
-        self.replace_rate = 0.55
-        self.play_config = PlayConfig()
-        self.play_config.simulation_num_per_move = 100 # before 200
-        self.play_config.thinking_loop = 1
-        self.play_config.c_puct = 1 # lower  = prefer mean action value
-        self.play_config.tau_decay_rate = 0
-        self.play_config.noise_eps = 0
-        self.evaluate_latest_first = True
-        self.max_game_length = 100  # before 1000
-        self.max_processes = 1 #before 3
-        self.search_threads = 1 #before 16
+        self.game_num = 1
+        self.simulation_num_per_move = 50 # before 200
+        self.thinking_loop = 1
+        self.c_puct = 1 # lower  = prefer mean action value
+        self.tau_decay_rate = 0
+        self.noise_eps = 0
+        self.max_game_length = 100
+        self.max_processes = 1 
+        self.search_threads = 2
+
+    def update_play_config(self, pc):
+        pc.simulation_num_per_move = self.simulation_num_per_move
+        pc.thinking_loop = self.thinking_loop
+        pc.c_puct = self.c_puct
+        pc.tau_decay_rate = self.tau_decay_rate
+        pc.noise_eps = self.noise_eps
+        pc.max_game_length = self.max_game_length
+        pc.max_processes = self.max_processes
+        pc.search_threads = self.search_threads
+
 
 class PlayDataConfig:
     def __init__(self):
-        self.min_elo_policy = 500 # 0 weight
-        self.max_elo_policy = 1800 # 1 weight
-        self.sl_nb_game_in_file = 250 # before 250
-        self.nb_game_in_file = 10 #before 50
+        self.sl_nb_game_in_file = 250
+        self.nb_game_in_file = 10
         self.max_file_num = 5
         self.nb_game_save_record = 1
 

@@ -72,6 +72,7 @@ def start():
         from cchess_alphazero.worker import evaluator
         config.opts.light = False
         config.opts.evaluate = True
+        config.eval.update_play_config(config.play)
         evaluator.start(config)
     elif args.cmd == 'sl':
         from cchess_alphazero.worker import sl

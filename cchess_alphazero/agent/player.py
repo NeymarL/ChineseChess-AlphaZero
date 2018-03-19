@@ -29,7 +29,7 @@ class ActionState:
         self.p = -1     # P(s, a) : prior probability
 
 class CChessPlayer:
-    def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, enable_resign=False):
+    def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, enable_resign=False, debugging=False):
         self.moves = []     # store move data
         self.config = config
         self.play_config = play_config or self.config.play
@@ -45,10 +45,10 @@ class CChessPlayer:
             self.tree = search_tree
 
         self.enable_resign = enable_resign
+        self.debugging = debugging
 
-        self.neural_net_out_p = None      # for debug
-        self.neural_net_out_v = None      # for debug
         self.search_results = {}        # for debug
+        self.debug = {}
 
     def get_state_key(self, env: CChessEnv) -> str:
         board = env.observation
@@ -106,8 +106,10 @@ class CChessPlayer:
             if state not in self.tree:
                 # Expand and Evaluate
                 leaf_p, leaf_v = self.expand_and_evaluate(env)
-                if is_root_node:
-                    self.neural_net_out_p, self.neural_net_out_v = leaf_p, leaf_v
+                if self.debugging:
+                    # for debug -------------------------
+                    self.debug[state] = (leaf_p, leaf_v)
+                    # -----------------------------------
                 self.tree[state].p = leaf_p
                 self.tree[state].legal_moves = self.get_legal_moves(env)
                 return leaf_v
@@ -228,7 +230,8 @@ class CChessPlayer:
         max_q_value = -100
         for mov, action_state in node.a.items():
             policy[self.move_lookup[mov]] = action_state.n
-            self.search_results[mov] = (action_state.n, action_state.q)
+            if self.debugging:
+                self.search_results[mov] = (action_state.n, action_state.q)
             if action_state.q > max_q_value:
                 max_q_value = action_state.q
 
