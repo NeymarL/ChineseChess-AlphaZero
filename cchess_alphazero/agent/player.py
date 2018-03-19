@@ -63,7 +63,7 @@ class CChessPlayer:
 
     def action(self, env: CChessEnv) -> str:
         value = self.search_moves(env)  # MCTS search
-        policy = self.calc_policy(env)  # policy will not be flipped in `calc_policy`
+        policy = self.calc_policy(env, env.num_halfmoves)  # policy will not be flipped in `calc_policy`
 
         if policy is None:  # resign
             return None
@@ -217,7 +217,7 @@ class CChessPlayer:
         # these are canonical policy and value (i.e. side to move is "red", maybe need flip)
         return leaf_p, leaf_v
 
-    def calc_policy(self, env: CChessEnv) -> np.ndarray:
+    def calc_policy(self, env: CChessEnv, turns) -> np.ndarray:
         '''
         calculate π(a|s0) according to the visit count
         '''
@@ -232,7 +232,7 @@ class CChessPlayer:
             if action_state.q > max_q_value:
                 max_q_value = action_state.q
 
-        if max_q_value < self.play_config.resign_threshold and self.enable_resign:
+        if max_q_value < self.play_config.resign_threshold and self.enable_resign and turns > self.play_config.min_resign_turn:
             return None
 
         policy /= np.sum(policy)

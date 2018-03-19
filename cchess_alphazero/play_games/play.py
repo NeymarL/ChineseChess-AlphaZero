@@ -47,7 +47,7 @@ class PlayWithHuman:
         self.env.reset()
         self.load_model()
         self.pipe = self.model.get_pipes(self.config.play.search_threads)
-        self.ai = CChessPlayer(self.config, search_tree=defaultdict(VisitState), pipes=self.pipe)
+        self.ai = CChessPlayer(self.config, search_tree=defaultdict(VisitState), pipes=self.pipe, enable_resign=True)
 
         pygame.init()
         bestdepth = pygame.display.mode_ok(SCREENRECT.size, self.winstyle, 32)
@@ -111,6 +111,9 @@ class PlayWithHuman:
                 # AI move
                 self.ai.search_results = {}
                 action = self.ai.action(self.env)
+                if action is None:
+                    logger.info("AI has resigned!")
+                    break
                 p, v = self.ai.neural_net_out_p, self.ai.neural_net_out_v
                 mov_idx = np.argmax(p)
                 mov = labels[mov_idx]

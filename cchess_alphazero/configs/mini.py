@@ -39,7 +39,7 @@ class PlayConfig:
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
         self.enable_resign_rate = 0.1
-        self.resign_threshold = -0.9
+        self.resign_threshold = -0.92
         self.min_resign_turn = 20
 
 class TrainerConfig:
