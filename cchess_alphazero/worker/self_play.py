@@ -80,26 +80,35 @@ class SelfPlayWorker:
             idx % self.config.play.reset_mtcs_info_per_game == 0:
             search_tree = defaultdict(VisitState)
 
-        self.red = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes)
-        self.black = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes)
+        if random() > self.config.play.enable_resign_rate:
+            enable_resign = True
+            logger.debug(f"game {idx} enable resign!")
+        else:
+            enable_resign = False
+            logger.debug(f"game {idx} disable resign!")
+        self.red = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, enable_resign=enable_resign)
+        self.black = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, enable_resign=enable_resign)
 
         history = []
-        cc = 0
 
         while not env.done:
             start_time = time()
             if env.red_to_move:
                 action = self.red.action(env)
+                if action is None:
+                    env.winner = Winner.black
             else:
                 action = self.black.action(env)
+                if action is None:
+                    env.winner = Winner.red
             end_time = time()
+            if action is None:
+                logger.debug(f"{env.red_to_move} (1 = red; 0 = black) has resigned!")
+                break
             # logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
             env.step(action)
             history.append(action)
-            if len(history) > 6 and history[-1] == history[-5]:
-                cc = cc + 1
-            else:
-                cc = 0
+
             if env.num_halfmoves / 2 >= self.config.play.max_game_length:
                 env.winner = Winner.draw
 

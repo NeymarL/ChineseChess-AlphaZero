@@ -16,7 +16,7 @@ from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_be
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.lib.tf_util import set_session_config
 
-from keras.optimizers import Adam
+from keras.optimizers import SGD
 from keras.callbacks import TensorBoard
 import keras.backend as K
 
@@ -92,7 +92,7 @@ class OptimizeWorker:
         return steps
 
     def compile_model(self):
-        self.opt = Adam(lr=1e-2)
+        self.opt = SGD(lr=1e-2, momentum=self.config.trainer.momentum)
         losses = ['categorical_crossentropy', 'mean_squared_error'] # avoid overfit for supervised 
         self.model.model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
 

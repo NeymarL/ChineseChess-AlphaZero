@@ -32,12 +32,15 @@ class PlayConfig:
         self.simulation_num_per_move = 100 # before 1000
         self.c_puct = 1.5  #before 1.5
         self.noise_eps = 0.25
-        self.dirichlet_alpha = 0.3
+        self.dirichlet_alpha = 0.2
         self.tau_decay_rate = 0.99
         self.virtual_loss = 3
         self.max_game_length = 100 # before 1000
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
+        self.enable_resign_rate = 0.1
+        self.resign_threshold = -0.9
+        self.min_resign_turn = 20
 
 class TrainerConfig:
     def __init__(self):
@@ -51,6 +54,7 @@ class TrainerConfig:
         self.start_total_steps = 0
         self.save_model_steps = 25
         self.load_data_steps = 100
+        self.momentum = 0.9
         self.loss_weights = [1.25, 1.0] # [policy, value] prevent value overfit in SL
         self.lr_schedules = [
             (0, 0.01),

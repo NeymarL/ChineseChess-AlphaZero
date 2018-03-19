@@ -29,14 +29,13 @@ class ActionState:
         self.p = -1     # P(s, a) : prior probability
 
 class CChessPlayer:
-    def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None):
+    def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, enable_resign=False):
         self.moves = []     # store move data
         self.config = config
         self.play_config = play_config or self.config.play
         self.labels_n = len(ActionLabelsRed)
         self.labels = ActionLabelsRed
         self.move_lookup = {move: i for move, i in zip(self.labels, range(self.labels_n))}
-
         self.pipe_pool = pipes              # pipes that used to communicate with CChessModelAPI thread
         self.node_lock = defaultdict(Lock)  # key: state key, value: Lock of that state
 
@@ -44,6 +43,8 @@ class CChessPlayer:
             self.tree = defaultdict(VisitState)  # key: state key, value: VisitState
         else:
             self.tree = search_tree
+
+        self.enable_resign = enable_resign
 
         self.neural_net_out_p = None      # for debug
         self.neural_net_out_v = None      # for debug
@@ -63,6 +64,10 @@ class CChessPlayer:
     def action(self, env: CChessEnv) -> str:
         value = self.search_moves(env)  # MCTS search
         policy = self.calc_policy(env)  # policy will not be flipped in `calc_policy`
+
+        if policy is None:  # resign
+            return None
+
         if not env.red_to_move:
             pol = flip_policy(policy)
         else:
@@ -220,16 +225,22 @@ class CChessPlayer:
         node = self.tree[state]
         policy = np.zeros(self.labels_n)
 
+        max_q_value = -100
         for mov, action_state in node.a.items():
             policy[self.move_lookup[mov]] = action_state.n
             self.search_results[mov] = (action_state.n, action_state.q)
+            if action_state.q > max_q_value:
+                max_q_value = action_state.q
+
+        if max_q_value < self.play_config.resign_threshold and self.enable_resign:
+            return None
 
         policy /= np.sum(policy)
         return policy
 
     def apply_temperature(self, policy, turn) -> np.ndarray:
         # tau = np.power(self.play_config.tau_decay_rate, turn + 1)
-        if turn < 30 and self.config.play.tau_decay_rate != 0:
+        if turn < 15 and self.play_config.tau_decay_rate != 0:
             tau = 1
         else:
             tau = 0

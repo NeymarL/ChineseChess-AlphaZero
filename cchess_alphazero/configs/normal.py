@@ -33,11 +33,12 @@ class PlayConfig:
         self.logging_thinking = False
         self.c_puct = 1.5
         self.noise_eps = 0.25
-        self.dirichlet_alpha = 0.3
+        self.dirichlet_alpha = 0.2
         self.tau_decay_rate = 0.98
-        self.virtual_loss = 3
-        self.resign_threshold = -1.01
+        self.virtual_loss = 5
+        self.resign_threshold = -0.9
         self.min_resign_turn = 20
+        self.enable_resign_rate = 0.1
         self.max_game_length = 100
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
@@ -45,7 +46,7 @@ class PlayConfig:
 
 class TrainerConfig:
     def __init__(self):
-        self.min_games_to_begin_learn = 100  # about 1h train once
+        self.min_games_to_begin_learn = 100 
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 4 # RAM explosion...
         self.vram_frac = 1.0
@@ -55,7 +56,8 @@ class TrainerConfig:
         self.start_total_steps = 0
         self.save_model_steps = 25
         self.load_data_steps = 100
-        self.loss_weights = [1.25, 1.0] # [policy, value] prevent value overfit in SL
+        self.momentum = 0.9
+        self.loss_weights = [1.0, 1.0]
         self.lr_schedules = [
             (0, 0.01),
             (150000, 0.001),
