@@ -228,9 +228,9 @@ class L_Chessboard:
                 i += 1
             if not has_block:
                 if self.turn == RED:
-                    self.winner = Winner.black
-                else:
                     self.winner = Winner.red
+                else:
+                    self.winner = Winner.black
         return self.winner is not None
 
     def print_to_cl(self):

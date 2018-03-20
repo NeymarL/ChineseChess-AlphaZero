@@ -97,6 +97,8 @@ class CChessPlayer:
         if env.done:
             if env.winner == Winner.draw:
                 return 0
+            elif (env.winner == Winner.red and env.red_to_move) or (env.winner == Winner.black and not env.red_to_move):
+                return 1
             else:
                 return -1
 
