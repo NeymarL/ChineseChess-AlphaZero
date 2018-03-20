@@ -34,7 +34,7 @@ def load_rival_model(config):
     return model
 
 def start(config: Config):
-    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list='0,1')
+    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list='1')
     current_model = load_model(config)
     m = Manager()
     cur_pipes = m.list([current_model.get_pipes(config.play.search_threads) \
@@ -146,8 +146,12 @@ class SelfPlayWorker:
         if env.num_halfmoves <= 10:
             logger.debug(f"History moves: {history}")
 
-        self.red.finish_game(red_win)
-        self.black.finish_game(-red_win)
+        if idx % 1 == 0:
+            self.current.finish_game(red_win)
+            self.rival.finish_game(-red_win)
+        else:
+            self.current.finish_game(-red_win)
+            self.rival.finish_game(red_win)
 
         self.cur_pipes.append(pipes)
         self.save_record_data(env, write=idx % self.config.play_data.nb_game_save_record == 0)
@@ -157,10 +161,10 @@ class SelfPlayWorker:
 
     def save_play_data(self, idx):
         data = []
-        for i in range(len(self.red.moves)):
-            data.append(self.red.moves[i])
-            if i < len(self.black.moves):
-                data.append(self.black.moves[i])
+        for i in range(len(self.current.moves)):
+            data.append(self.current.moves[i])
+            if i < len(self.rival.moves):
+                data.append(self.rival.moves[i])
 
         self.buffer += data
 

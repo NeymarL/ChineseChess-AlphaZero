@@ -110,5 +110,5 @@ def test_sl():
     print(p2[move_lookup[flip_move('0001')]])
 
 if __name__ == "__main__":
-    test_light()
+    test_gui_play()
     

@@ -233,7 +233,7 @@ class CChessPlayer:
         for mov, action_state in node.a.items():
             policy[self.move_lookup[mov]] = action_state.n
             if self.debugging:
-                self.search_results[mov] = (action_state.n, action_state.q)
+                self.search_results[mov] = (action_state.n, action_state.q, action_state.p)
             if action_state.q > max_q_value:
                 max_q_value = action_state.q
 

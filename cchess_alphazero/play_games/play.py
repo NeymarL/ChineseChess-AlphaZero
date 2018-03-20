@@ -144,12 +144,12 @@ class PlayWithHuman:
                 mov_idx = np.argmax(p)
                 mov = labels[mov_idx]
                 mov = self.env.board.make_single_record(int(mov[0]), int(mov[1]), int(mov[2]), int(mov[3]))
-                logger.info(f"NN recommend move: {mov} with probability {np.max(p)}, v = {v}")
+                logger.info(f"NN value = {v:.2f}")
                 logger.info("MCTS results:")
                 for move, action_state in self.ai.search_results.items():
                     if action_state[0] >= 5:
                         move = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                        logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]}")
+                        logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]:.2f}, Prior: {action_state[2]:.3f}")
                 
                 x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
                 chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)

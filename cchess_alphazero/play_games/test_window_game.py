@@ -138,6 +138,7 @@ def main(winstyle=0):
     creat_sprite_group(chessmans, cbd.chessmans_hash)
     current_chessman = None
     cbd.calc_chessmans_moving_list()
+    print(cbd.legal_moves())
     while not cbd.is_end():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -167,11 +168,13 @@ def main(winstyle=0):
                                     chessman_sprite.kill()
                                     current_chessman.is_selected = False
                                     current_chessman = None
+                                    print(cbd.legal_moves())
                         elif current_chessman != None and chessman_sprite is None:
                             success = current_chessman.move(col_num, row_num)
                             if success:
                                 current_chessman.is_selected = False
                                 current_chessman = None
+                                print(cbd.legal_moves())
         framerate.tick(20)
         # clear/erase the last drawn sprites
         chessmans.clear(screen, background)
