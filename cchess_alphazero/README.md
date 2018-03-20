@@ -30,8 +30,9 @@
 │   │   └── test_window_game.py : human vs human with gui
 │   ├── worker
 │   │   ├── optimize.py     : trainer
+│   │   ├── sl.py           : supervised learning worker
 │   │   ├── self_play.py    : self play worker
-│   │   ├── self_play2.py   : just another implementation of self play worker (can ignore)
+│   │   ├── self_play2.py   : play with a(n) certain model/other AI
 │   │   └── evaluator.py    : evaluate with two players
 │   ├── config.py           : setup configuration
 │   ├── manager.py          : manage to start which worker

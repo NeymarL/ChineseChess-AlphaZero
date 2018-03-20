@@ -16,15 +16,17 @@ class CChessModelAPI:
         self.agent_model = agent_model  # CChessModel
         self.pipes = []     # use for communication between processes/threads
         self.config = config
+        self.need_reload = True
 
     def start(self):
         prediction_worker = Thread(target=self.predict_batch_worker, name="prediction_worker")
         prediction_worker.daemon = True
         prediction_worker.start()
 
-    def get_pipe(self):
+    def get_pipe(self, need_reload=True):
         me, you = Pipe()
         self.pipes.append(me)
+        self.need_reload = need_reload
         return you
 
     def predict_batch_worker(self):
@@ -53,7 +55,7 @@ class CChessModelAPI:
     def try_reload_model(self):
         try:
             logger.debug("check model")
-            if not self.config.opts.evaluate and need_to_reload_best_model_weight(self.agent_model):
+            if not self.config.opts.evaluate and need_to_reload_best_model_weight(self.agent_model) and need_reload:
                 with self.agent_model.graph.as_default():
                     load_best_model_weight(self.agent_model)
         except Exception as e:

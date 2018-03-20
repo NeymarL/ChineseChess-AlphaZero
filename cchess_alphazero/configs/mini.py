@@ -1,8 +1,8 @@
 class EvaluateConfig:
     def __init__(self):
         self.vram_frac = 1.0
-        self.game_num = 1
-        self.simulation_num_per_move = 50 # before 200
+        self.game_num = 10
+        self.simulation_num_per_move = 75 # before 200
         self.thinking_loop = 1
         self.c_puct = 1 # lower  = prefer mean action value
         self.tau_decay_rate = 0

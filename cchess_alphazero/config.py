@@ -43,6 +43,8 @@ class ResourceConfig:
         self.eval_model2_weight_path = os.path.join(self.eval_model_dir, "model2_weight.h5")
         self.model1_name = "model1"
         self.model2_name = "model2"
+        self.rival_model_config_path = os.path.join(self.model_dir, "rival_config.json")
+        self.rival_model_weight_path = os.path.join(self.model_dir, "rival_weight.h5")
 
         self.play_data_dir = os.path.join(self.data_dir, "play_data")
         self.play_data_filename_tmpl = "play_%s.json"
@@ -74,7 +76,7 @@ class Options:
 
 class PlayWithHumanConfig:
     def __init__(self):
-        self.simulation_num_per_move = 800
+        self.simulation_num_per_move = 100
         self.thinking_loop = 1
         self.c_puct = 1
         self.search_threads = 2

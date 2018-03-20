@@ -113,9 +113,9 @@ class CChessModel:
         self.digest = self.fetch_digest(weight_path)
         logger.debug(f"saved model digest {self.digest}")
 
-    def get_pipes(self, num=1, api=None):
+    def get_pipes(self, num=1, api=None, need_reload=True):
         if self.api is None:
             self.api = CChessModelAPI(self.config, self)
             self.api.start()
-        return [self.api.get_pipe() for _ in range(num)]
+        return [self.api.get_pipe(need_reload) for _ in range(num)]
 
