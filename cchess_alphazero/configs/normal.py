@@ -43,9 +43,9 @@ class PlayConfig:
         self.dirichlet_alpha = 0.2
         self.tau_decay_rate = 0.98
         self.virtual_loss = 3
-        self.resign_threshold = -0.92
-        self.min_resign_turn = 20
-        self.enable_resign_rate = 0.1
+        self.resign_threshold = -0.95
+        self.min_resign_turn = 40
+        self.enable_resign_rate = 0.5
         self.max_game_length = 100
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
