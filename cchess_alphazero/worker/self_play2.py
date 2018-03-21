@@ -154,6 +154,7 @@ class SelfPlayWorker:
             self.rival.finish_game(red_win)
 
         self.cur_pipes.append(pipes)
+        self.pipes_rival.append(pipes_r)
         self.save_record_data(env, write=idx % self.config.play_data.nb_game_save_record == 0)
         self.save_play_data(idx)
         self.remove_play_data()
