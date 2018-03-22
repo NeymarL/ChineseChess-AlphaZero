@@ -147,7 +147,7 @@ class PlayWithHuman:
                 logger.info(f"NN value = {v:.2f}")
                 logger.info("MCTS results:")
                 for move, action_state in self.ai.search_results.items():
-                    if action_state[0] >= 5:
+                    if action_state[0] >= 15:
                         move = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
                         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]:.2f}, Prior: {action_state[2]:.3f}")
                 
