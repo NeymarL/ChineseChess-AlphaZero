@@ -2,7 +2,7 @@ class EvaluateConfig:
     def __init__(self):
         self.vram_frac = 1.0
         self.game_num = 10
-        self.simulation_num_per_move = 50 # before 200
+        self.simulation_num_per_move = 800 # before 200
         self.thinking_loop = 1
         self.c_puct = 1 # lower  = prefer mean action value
         self.tau_decay_rate = 0
@@ -35,7 +35,7 @@ class PlayConfig:
         self.max_processes = 10
         self.search_threads = 6
         self.vram_frac = 1.0
-        self.simulation_num_per_move = 50
+        self.simulation_num_per_move = 400
         self.thinking_loop = 1
         self.logging_thinking = False
         self.c_puct = 1.5
@@ -53,7 +53,7 @@ class PlayConfig:
 
 class TrainerConfig:
     def __init__(self):
-        self.min_games_to_begin_learn = 1000 
+        self.min_games_to_begin_learn = 500 
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 4 # RAM explosion...
         self.vram_frac = 1.0
