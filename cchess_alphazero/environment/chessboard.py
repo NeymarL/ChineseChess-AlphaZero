@@ -193,7 +193,6 @@ class Chessboard(object):
                 p = chessman.position
                 x0 = p.x
                 y0 = p.y
-                print(f"{chessman.name_cn}, pos ({x0}, {y0})")
                 for point in chessman.moving_list:
                     _legal_moves.append(self.move_to_str(x0, y0, point.x, point.y))
         return _legal_moves
