@@ -86,6 +86,10 @@ class CChessEnv:
         planes = self.fen_to_planes(self.observation)
         return planes
 
+    def state_to_planes(self, state):
+        planes = self.fen_to_planes(state)
+        return planes
+
     def fen_to_planes(self, fen):
         '''
         e.g.

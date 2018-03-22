@@ -58,10 +58,10 @@ class L_Chessboard:
             elif ch >= '1' and ch <= '9':
                 for i in range(int(ch)):
                     self.board[y][x] = '.'
-                    x = x+1
+                    x = x + 1
             else:
                 self.board[y][x] = ch
-                x = x+1
+                x = x + 1
 
     def FENboard(self):
         def swapcase(a):

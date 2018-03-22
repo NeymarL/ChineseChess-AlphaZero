@@ -43,7 +43,24 @@ replace_dict = {
     'p': 'p',
     'P': 'P',
     'c': 'c',
-    'C': 'C'
+    'C': 'C',
+}
+
+state_to_board_dict = {
+    'k': 'n',
+    'K': 'N',
+    'e': 'b',
+    'E': 'B',
+    'm': 'a',
+    'M': 'A',
+    's': 'k',
+    'S': 'K',
+    'r': 'r',
+    'R': 'R',
+    'p': 'p',
+    'P': 'P',
+    'c': 'c',
+    'C': 'C',
 }
 
 mov_dir = {

@@ -109,6 +109,37 @@ def test_sl():
     p2 = slworker.build_policy('0001', True)
     print(p2[move_lookup[flip_move('0001')]])
 
+def test_static_env():
+    from cchess_alphazero.environment.env import CChessEnv
+    import cchess_alphazero.environment.static_env as senv
+    from cchess_alphazero.environment.static_env import INIT_STATE
+    from cchess_alphazero.environment.lookup_tables import flip_move
+    env = CChessEnv()
+    env.reset()
+    print("env:  " + env.observation)
+    print("senv: " + INIT_STATE)
+    state = INIT_STATE
+    env.step('0001')
+    state = senv.step(state, '0001')
+    print("env:  " + env.observation)
+    print("senv: " + state)
+    env.step('7770')
+    state = senv.step(state, flip_move('7770'))
+    print("env:  " + env.observation)
+    print("senv: " + state)
+    env.render()
+    board = senv.state_to_board(state)
+    for i in range(9, -1, -1):
+        print(board[i])
+    print("env: ")
+    print(env.input_planes()[0+7:3+7])
+    print("senv: ")
+    print(senv.state_to_planes(state)[0+7:3+7])
+    print(f"env:  {env.board.legal_moves()}" )
+    print(f"senv: {senv.get_legal_moves(state)}")
+    print(set(env.board.legal_moves()) == set(senv.get_legal_moves(state)))
+
 if __name__ == "__main__":
-    test_gui_play()
+    test_static_env()
+    # test_light_env()
     

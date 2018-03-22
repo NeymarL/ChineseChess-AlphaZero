@@ -4,7 +4,7 @@ from logging import getLogger
 from threading import Lock, Condition
 
 import numpy as np
-
+import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_policy, flip_move, flip_action_labels
@@ -31,7 +31,6 @@ class ActionState:
 
 class CChessPlayer:
     def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, enable_resign=False, debugging=False):
-        self.moves = []     # store move data
         self.config = config
         self.play_config = play_config or self.config.play
         self.labels_n = len(ActionLabelsRed)
@@ -67,11 +66,6 @@ class CChessPlayer:
         self.executor.submit(self.receiver)
         self.executor.submit(self.sender)
         self.pp = None
-
-    def get_state_key(self, env: CChessEnv) -> str:
-        board = env.observation
-        board = board.split(' ')
-        return board[0]
 
     def get_legal_moves(self, env: CChessEnv):
         legal_moves = env.board.legal_moves()
@@ -118,45 +112,44 @@ class CChessPlayer:
                 self.buffer_history = self.buffer_history[k:]
             self.run_lock.release()
 
-    def action(self, env: CChessEnv) -> str:
-        value = self.search_moves(env)  # MCTS search
-        policy = self.calc_policy(env, env.num_halfmoves)  # policy will not be flipped in `calc_policy`
+    def action(self, state, turns) -> str:
+        self.all_done.acquire(True)
+
+        done = 0
+        if state in self.tree:
+            done = self.tree[state].sum_n
+        self.num_task = self.play_config.simulation_num_per_move - done
+
+        # MCTS search
+        if self.num_task > 0:
+            for i in range(self.num_task):
+                self.executor.submit(self.MCTS_search, state, [state])
+            self.all_done.acquire(True)
+        self.all_done.release()
+
+        policy = self.calc_policy(state, turns)
 
         if policy is None:  # resign
             return None
 
-        if not env.red_to_move:
-            pol = flip_policy(policy)
-        else:
-            pol = policy
-        my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(pol, env.num_halfmoves)))
-        # my_action = np.argmax(self.apply_temperature(pol, env.num_halfmoves))
-        # no resign
-        self.moves.append([env.observation, list(policy)])    # do not need flip anymore when training
+        my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(policy, env.num_halfmoves)))
         return self.labels[my_action]
 
-    def MCTS_search(self, env: CChessEnv, is_root_node=False, history=[]) -> float:
+    def MCTS_search(self, state, history=[], is_root_node=False) -> float:
         """
         Monte Carlo Tree Search
         """
         while True:
-            if env.done:
-                if env.winner == Winner.draw:
-                    v = 0
-                elif (env.winner == Winner.red and env.red_to_move) or (env.winner == Winner.black and not env.red_to_move):
-                    v = 1
-                else:
-                    v = -1
+            game_over, v = senv.done(state)
+            if game_over:
                 self.executor.submit(self.update_tree, None, v, history)
                 break
-
-            state = self.get_state_key(env)
 
             with self.node_lock[state]:
                 if state not in self.tree:
                     # Expand and Evaluate
                     self.tree[state].sum_n = 1
-                    self.tree[state].legal_moves = self.get_legal_moves(env)
+                    self.tree[state].legal_moves = senv.get_legal_moves(state)
                     self.expand_and_evaluate(state, history)
                     break
 
@@ -172,39 +165,22 @@ class CChessPlayer:
 
                 sel_action = self.select_action_q_and_u(state, is_root_node)
                 is_root_node = False
-                
-                if sel_action is None:
-                    return -1
 
-                virtual_loss = self.config.play.virtual_loss
-                self.tree[state].sum_n += virtual_loss
+                # virtual_loss = self.config.play.virtual_loss
+                self.tree[state].sum_n += 1
                 
                 action_state = self.tree[state].a[sel_action]
-                action_state.n += virtual_loss
-                action_state.w -= virtual_loss
-                action_state.q = action_state.w / action_state.n
+                action_state.n += 1
+                # action_state.w -= virtual_loss
+                # action_state.q = action_state.w / action_state.n
+                
+                if self.tree[state].next is None:
+                    next_state = senv.step(state, sel_action)
+                    self.tree[state] = next_state
 
-        if env.red_to_move:
-            env.step(sel_action)
-        else:
-            env.step(flip_move(sel_action))
-
-        leaf_v = self.MCTS_search(env, False, tid)
-        leaf_v = -leaf_v
-
-        # Backup
-        # update N, W, Q
-        with self.node_lock[state]:
-            node = self.tree[state]
-            node.visit.remove(tid)
-            node.sum_n = node.sum_n - virtual_loss + 1
-
-            action_state = node.a[sel_action]
-            action_state.n += 1 - virtual_loss
-            action_state.w += leaf_v + virtual_loss
-            action_state.q = action_state.w / action_state.n
-
-        return leaf_v
+            history.append(sel_action)
+            state = self.tree[state].next
+            history.append(state)
 
     def select_action_q_and_u(self, state, is_root_node) -> str:
         '''
@@ -257,29 +233,55 @@ class CChessPlayer:
 
         return best_action
 
-    def expand_and_evaluate(self, env: CChessEnv) -> (np.ndarray, float):
+    def expand_and_evaluate(self, state, history):
         '''
         Evaluate the state, return its policy and value computed by neural network
         '''
-        state_planes = env.input_planes()
-        # communicate with model api
-        pipe = self.pipe_pool.pop()
-        pipe.send(state_planes)
-        leaf_p, leaf_v = pipe.recv()
-        self.pipe_pool.append(pipe)
-        # leaf_p, leaf_v = (np.random.random(len(ActionLabelsRed)), 1)
-        # these are canonical policy and value (i.e. side to move is "red", maybe need flip)
-        return leaf_p, leaf_v
+        state_planes = senv.state_to_planes(state)
+        with self.q_lock:
+            self.buffer_planes.append(state_planes)
+            self.buffer_history.append(history)
 
-    def calc_policy(self, env: CChessEnv, turns) -> np.ndarray:
+    def update_tree(self, p, v, history):
+        state = history.pop()
+        z = v
+        if p is not None:
+            with self.node_lock[state]:
+                node = self.tree[state]
+                node.p = p
+                node.waiting = False
+                if self.debugging:
+                    self.debug[state] = (p, v)
+                for hist in node.visit:
+                    self.executor.submit(self.MCTS_search, state, hist)
+                node.visit = []
+                node.w += v
+                z = node.w * 1.0 / node.sum_n
+
+        while len(history) > 0:
+            action = history.pop()
+            state = history.pop()
+            v = - v
+            with self.node_lock[state]:
+                node = self.tree[state]
+                node.w += v
+                my_stats = node.a[action]
+                my_stats.q = -z
+                z = node.w * 1.0 / node.sum_n
+
+        with self.t_lock:
+            self.num_task -= 1
+            if (self.num_task <= 0):
+                self.all_done.release()
+
+    def calc_policy(self, state) -> np.ndarray:
         '''
         calculate π(a|s0) according to the visit count
         '''
-        state = self.get_state_key(env)
         node = self.tree[state]
         policy = np.zeros(self.labels_n)
-
         max_q_value = -100
+
         for mov, action_state in node.a.items():
             policy[self.move_lookup[mov]] = action_state.n
             if self.debugging:
@@ -311,11 +313,4 @@ class CChessPlayer:
             ret /= np.sum(ret)
             return ret
 
-    def finish_game(self, z):
-        """
-        :param z: win=1, lose=-1, draw=0
-        """
-        # add the game winner result to all past moves.
-        for move in self.moves:  
-            move += [z]
 
