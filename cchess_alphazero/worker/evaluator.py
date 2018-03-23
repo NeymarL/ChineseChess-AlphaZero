@@ -124,9 +124,9 @@ class EvaluateWorker:
             if action is None:
                 logger.debug(f"{turn % 2 == idx % 2} (1 = best model; 0 = next generation) has resigned!")
                 if turn % 2 == idx % 2:
-                    score = 1
-                else:
                     score = -1
+                else:
+                    score = 1
                 written = True
                 break
             
@@ -135,7 +135,7 @@ class EvaluateWorker:
 
             if turns / 2 >= self.config.play.max_game_length:
                 game_over = True
-                score = 0.5
+                score = 0
                 written = True
             else:
                 game_over, value = senv.done(state)
