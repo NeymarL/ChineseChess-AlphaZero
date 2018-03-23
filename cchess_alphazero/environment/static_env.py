@@ -2,6 +2,9 @@ import numpy as np
 
 from cchess_alphazero.environment.light_env.common import *
 from cchess_alphazero.environment.lookup_tables import Winner, Fen_2_Idx
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 INIT_STATE = 'rkemsmekr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR'
 
@@ -224,4 +227,4 @@ def swapcase(a, s2b=False):
 def render(state):
     board = state_to_board(state)
     for i in range(9, -1, -1):
-        print(board[i])
+        logger.info(board[i])

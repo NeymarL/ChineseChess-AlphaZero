@@ -6,8 +6,7 @@ from threading import Lock, Condition
 import numpy as np
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.config import Config
-from cchess_alphazero.environment.env import CChessEnv
-from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_policy, flip_move, flip_action_labels
+from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed
 from time import time, sleep
 
 logger = getLogger(__name__)
@@ -20,6 +19,7 @@ class VisitState:
         self.p = None                       # policy of this state
         self.legal_moves = None             # all leagal moves of this state
         self.waiting = False                # is waiting for NN's predict
+        self.w = 0
 
 
 class ActionState:
@@ -28,6 +28,7 @@ class ActionState:
         self.w = 0      # W(s, a) : total action value
         self.q = 0      # Q(s, a) = N / W : action value
         self.p = -1     # P(s, a) : prior probability
+        self.next = None
 
 class CChessPlayer:
     def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, enable_resign=False, debugging=False):
@@ -62,16 +63,9 @@ class CChessPlayer:
 
         self.job_done = False
 
-        self.executor = ThreadPoolExecutor(max_workers=self.play_config.search_threads+2)
+        self.executor = ThreadPoolExecutor(max_workers=self.play_config.search_threads + 2)
         self.executor.submit(self.receiver)
         self.executor.submit(self.sender)
-        self.pp = None
-
-    def get_legal_moves(self, env: CChessEnv):
-        legal_moves = env.board.legal_moves()
-        if not env.red_to_move:
-            legal_moves = flip_action_labels(legal_moves)
-        return legal_moves
 
     def close(self):
         self.job_done = True
@@ -89,6 +83,7 @@ class CChessPlayer:
                 l = min(limit, len(self.buffer_history))
                 if l > 0:
                     t_data = self.buffer_planes[0:l]
+                    # logger.debug(f"send queue size = {l}")
                     self.pipe.send(t_data)
                 else:
                     self.run_lock.release()
@@ -122,8 +117,9 @@ class CChessPlayer:
 
         # MCTS search
         if self.num_task > 0:
+            logger.debug(f"num_task = {self.num_task}")
             for i in range(self.num_task):
-                self.executor.submit(self.MCTS_search, state, [state])
+                self.executor.submit(self.MCTS_search, state, [state], True)
             self.all_done.acquire(True)
         self.all_done.release()
 
@@ -132,8 +128,8 @@ class CChessPlayer:
         if policy is None:  # resign
             return None
 
-        my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(policy, env.num_halfmoves)))
-        return self.labels[my_action]
+        my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(policy, turns)))
+        return self.labels[my_action], list(policy)
 
     def MCTS_search(self, state, history=[], is_root_node=False) -> float:
         """
@@ -150,10 +146,12 @@ class CChessPlayer:
                     # Expand and Evaluate
                     self.tree[state].sum_n = 1
                     self.tree[state].legal_moves = senv.get_legal_moves(state)
+                    self.tree[state].waiting = True
                     self.expand_and_evaluate(state, history)
                     break
 
                 if state in history[:-1]: # loop -> loss
+                    # logger.debug(f"loop -> loss, state = {state}, history = {history[:-1]}")
                     self.executor.submit(self.update_tree, None, 0, history)
                     break
 
@@ -164,7 +162,6 @@ class CChessPlayer:
                     break
 
                 sel_action = self.select_action_q_and_u(state, is_root_node)
-                is_root_node = False
 
                 # virtual_loss = self.config.play.virtual_loss
                 self.tree[state].sum_n += 1
@@ -174,12 +171,11 @@ class CChessPlayer:
                 # action_state.w -= virtual_loss
                 # action_state.q = action_state.w / action_state.n
                 
-                if self.tree[state].next is None:
-                    next_state = senv.step(state, sel_action)
-                    self.tree[state] = next_state
+                if action_state.next is None:
+                    action_state.next = senv.step(state, sel_action)
 
             history.append(sel_action)
-            state = self.tree[state].next
+            state = action_state.next
             history.append(state)
 
     def select_action_q_and_u(self, state, is_root_node) -> str:
@@ -265,16 +261,16 @@ class CChessPlayer:
             with self.node_lock[state]:
                 node = self.tree[state]
                 node.w += v
-                my_stats = node.a[action]
-                my_stats.q = -z
+                action_state = node.a[action]
+                action_state.q = -z
                 z = node.w * 1.0 / node.sum_n
 
         with self.t_lock:
             self.num_task -= 1
-            if (self.num_task <= 0):
+            if self.num_task <= 0:
                 self.all_done.release()
 
-    def calc_policy(self, state) -> np.ndarray:
+    def calc_policy(self, state, turns) -> np.ndarray:
         '''
         calculate π(a|s0) according to the visit count
         '''

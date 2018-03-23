@@ -38,19 +38,28 @@ class CChessModelAPI:
             ready = connection.wait(self.pipes, timeout=0.001)
             if not ready:
                 continue
-            data, result_pipes = [], []
+            data, result_pipes, data_len = [], [], []
             for pipe in ready:
-                while pipe.poll():
-                    try:
-                        data.append(pipe.recv())
-                        result_pipes.append(pipe)
-                    except EOFError as e:
-                        pipe.close()
+                try:
+                    tmp = pipe.recv()
+                except EOFError as e:
+                    pipe.close()
+                data.extend(tmp)
+                data_len.append(len(tmp))
+                result_pipes.append(pipe)
             data = np.asarray(data, dtype=np.float32)
             with self.agent_model.graph.as_default():
                 policy_ary, value_ary = self.agent_model.model.predict_on_batch(data)
-            for pipe, p, v in zip(result_pipes, policy_ary, value_ary):
-                pipe.send((p, float(v)))
+            buf = []
+            k, i = 0, 0
+            for p, v in zip(policy_ary, value_ary):
+                buf.append((p, float(v)))
+                k += 1
+                if k >= data_len[i]:
+                    result_pipes[i].send(buf)
+                    buf = []
+                    k = 0
+                    i += 1
 
     def try_reload_model(self):
         try:

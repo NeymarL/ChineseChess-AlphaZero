@@ -117,5 +117,5 @@ class CChessModel:
         if self.api is None:
             self.api = CChessModelAPI(self.config, self)
             self.api.start()
-        return [self.api.get_pipe(need_reload) for _ in range(num)]
+        return self.api.get_pipe(need_reload)
 

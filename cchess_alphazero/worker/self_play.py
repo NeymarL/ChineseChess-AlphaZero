@@ -5,10 +5,11 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from logging import getLogger
 from multiprocessing import Manager
-from time import time
+from time import time, sleep
 from collections import defaultdict
 from random import random
 
+import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.agent.model import CChessModel
 from cchess_alphazero.agent.player import CChessPlayer, VisitState
 from cchess_alphazero.agent.api import CChessModelAPI
@@ -32,23 +33,21 @@ def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list='0,1')
     current_model = load_model(config)
     m = Manager()
-    cur_pipes = m.list([current_model.get_pipes(config.play.search_threads) \
-                        for _ in range(config.play.max_processes)])
+    cur_pipes = m.list([current_model.get_pipes() for _ in range(config.play.max_processes)])
 
-    # play_worker = SelfPlayWorker(config, cur_pipes)
-    # play_worker.start()
-    with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-        futures = []
-        for i in range(config.play.max_processes):
-            play_worker = SelfPlayWorker(config, cur_pipes, i)
-            logger.debug("Initialize selfplay worker")
-            futures.append(executor.submit(play_worker.start))
+    play_worker = SelfPlayWorker(config, cur_pipes, 0)
+    play_worker.start()
+    # with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+    #     futures = []
+    #     for i in range(config.play.max_processes):
+    #         play_worker = SelfPlayWorker(config, cur_pipes, i)
+    #         logger.debug("Initialize selfplay worker")
+    #         futures.append(executor.submit(play_worker.start))
 
 class SelfPlayWorker:
     def __init__(self, config: Config, pipes=None, pid=None):
         self.config = config
-        self.red = None
-        self.black = None
+        self.player = None
         self.cur_pipes = pipes
         self.pid = pid
         self.buffer = []
@@ -62,19 +61,17 @@ class SelfPlayWorker:
 
         while True:
             start_time = time()
-            env, search_tree = self.start_game(idx, search_tree)
+            value, turns, state, search_tree = self.start_game(idx, search_tree)
             end_time = time()
-            logger.debug(f"Process{self.pid} play game {idx} time={end_time - start_time} sec, "
-                         f"turn={env.num_halfmoves / 2}:{env.winner}")
-            if env.num_halfmoves <= 10:
-                for i in range(10):
-                    logger.debug(f"{env.board.screen[i]}")
+            logger.debug(f"Process{self.pid} play game {idx} time={(end_time - start_time):.1f} sec, "
+                         f"turn={turns / 2}, winner = {value} (1 = red, -1 = black, 0 draw)")
+            if turns <= 10:
+                senv.render(state)
 
             idx += 1
 
     def start_game(self, idx, search_tree):
         pipes = self.cur_pipes.pop()
-        env = CChessEnv(self.config).reset()
 
         if not self.config.play.share_mtcs_info_in_self_play or \
             idx % self.config.play.reset_mtcs_info_per_game == 0:
@@ -86,58 +83,55 @@ class SelfPlayWorker:
         else:
             enable_resign = False
             logger.debug(f"game {idx} disable resign!")
-        self.red = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, enable_resign=enable_resign)
-        self.black = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, enable_resign=enable_resign)
 
-        history = []
+        self.player = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, enable_resign=enable_resign, debugging=True)
 
-        while not env.done:
+        state = senv.INIT_STATE
+        history = [state]
+        policys = [] 
+        value = 0
+        turns = 0       # even == red; odd == black
+        game_over = False
+
+        while not game_over:
             start_time = time()
-            if env.red_to_move:
-                action = self.red.action(env)
-                if action is None:
-                    env.winner = Winner.black
-            else:
-                action = self.black.action(env)
-                if action is None:
-                    env.winner = Winner.red
+            action, policy = self.player.action(state, turns)
             end_time = time()
             if action is None:
-                logger.debug(f"{env.red_to_move} (1 = red; 0 = black) has resigned!")
+                logger.debug(f"{turn % 2} (0 = red; 1 = black) has resigned!")
                 break
-            # logger.debug(f"Process{self.pid} Playing: {env.red_to_move}, action: {action}, time: {end_time - start_time}s")
-            env.step(action)
-            history.append(action)
+            logger.debug(f"Process{self.pid} Playing: {turns % 2}, action: {action}, time: {(end_time - start_time):.1f}s")
+            # for move, action_state in self.player.search_results.items():
+            #     if action_state[0] >= 20:
+            #         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]:.2f}, Prior: {action_state[2]:.3f}")
+            self.player.search_results = {}
+            policys.append(policy)
+            state = senv.step(state, action)
+            turns += 1
+            history.append(state)
 
-            if env.num_halfmoves / 2 >= self.config.play.max_game_length:
-                env.winner = Winner.draw
+            if turns / 2 >= self.config.play.max_game_length:
+                game_over = True
+                value = 0
+            else:
+                game_over, value = senv.done(state)
 
-        if env.winner == Winner.red:
-            red_win = 1
-        elif env.winner == Winner.black:
-            red_win = -1
-        else:
-            red_win = 0
+        self.player.close()
+        if turns % 2 == 1:  # balck turn
+            value = -value
 
-        if env.num_halfmoves <= 10:
-            logger.debug(f"History moves: {history}")
-
-        self.red.finish_game(red_win)
-        self.black.finish_game(-red_win)
+        v = value
+        data = []
+        for i in range(turns):
+            data.append([history[i], policys[i], value])
+            value = -value
 
         self.cur_pipes.append(pipes)
-        self.save_record_data(env, write=idx % self.config.play_data.nb_game_save_record == 0)
-        self.save_play_data(idx)
+        self.save_play_data(idx, data)
         self.remove_play_data()
-        return env, search_tree
+        return value, turns, state, search_tree
 
-    def save_play_data(self, idx):
-        data = []
-        for i in range(len(self.red.moves)):
-            data.append(self.red.moves[i])
-            if i < len(self.black.moves):
-                data.append(self.black.moves[i])
-
+    def save_play_data(self, idx, data):
         self.buffer += data
 
         if not idx % self.config.play_data.nb_game_in_file == 0:
@@ -149,14 +143,6 @@ class SelfPlayWorker:
         logger.info(f"Process {self.pid} save play data to {path}")
         write_game_data_to_file(path, self.buffer)
         self.buffer = []
-
-    def save_record_data(self, env, write=False):
-        if not write:
-            return
-        rc = self.config.resource
-        game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
-        path = os.path.join(rc.play_record_dir, rc.play_record_filename_tmpl % game_id)
-        env.save_records(path)
 
     def remove_play_data(self):
         files = get_game_data_filenames(self.config.resource)
