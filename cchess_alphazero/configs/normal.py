@@ -25,8 +25,8 @@ class EvaluateConfig:
 class PlayDataConfig:
     def __init__(self):
         self.sl_nb_game_in_file = 250
-        self.nb_game_in_file = 10
-        self.max_file_num = 200
+        self.nb_game_in_file = 5
+        self.max_file_num = 300
         self.nb_game_save_record = 1
 
 
@@ -53,7 +53,7 @@ class PlayConfig:
 
 class TrainerConfig:
     def __init__(self):
-        self.min_games_to_begin_learn = 500 
+        self.min_games_to_begin_learn = 150 
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 4 # RAM explosion...
         self.vram_frac = 1.0
