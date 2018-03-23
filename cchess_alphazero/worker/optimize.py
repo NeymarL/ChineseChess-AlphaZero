@@ -12,7 +12,7 @@ from random import shuffle
 from cchess_alphazero.agent.model import CChessModel
 from cchess_alphazero.config import Config
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, read_game_data_from_file
-from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model
+from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model, save_as_next_generation_model
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.lib.tf_util import set_session_config
 
@@ -142,8 +142,8 @@ class OptimizeWorker:
         return model
 
     def save_current_model(self):
-        logger.debug("Save best model")
-        save_as_best_model(self.model)
+        logger.debug("Save as next generation model")
+        save_as_next_generation_model(self.model)
 
     def decide_learning_rate(self, total_steps):
         ret = None
