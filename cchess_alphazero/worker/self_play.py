@@ -30,7 +30,7 @@ def load_model(config):
     return model
 
 def start(config: Config):
-    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list='0')
+    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
     current_model = load_model(config)
     m = Manager()
     cur_pipes = m.list([current_model.get_pipes() for _ in range(config.play.max_processes)])

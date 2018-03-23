@@ -54,6 +54,11 @@ class CChessEnv:
         else:
             return self.board.fliped_FENboard()
 
+    def get_state(self):
+        fen = self.observation
+        foo = fen.split(' ')
+        return foo[0]
+
     def step(self, action: str, check_over = True):
         if check_over and action is None:
             return

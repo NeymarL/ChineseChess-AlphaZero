@@ -36,13 +36,9 @@ class ResourceConfig:
         self.sl_best_config_path = os.path.join(self.model_dir, "sl_best_config.json")
         self.sl_best_weight_path = os.path.join(self.model_dir, "sl_best_weight.h5")
 
-        self.eval_model_dir = os.path.join(self.model_dir, "eval_models")
-        self.eval_model1_config_path = os.path.join(self.eval_model_dir, "model1_config.json")
-        self.eval_model1_weight_path = os.path.join(self.eval_model_dir, "model1_weight.h5")
-        self.eval_model2_config_path = os.path.join(self.eval_model_dir, "model2_config.json")
-        self.eval_model2_weight_path = os.path.join(self.eval_model_dir, "model2_weight.h5")
-        self.model1_name = "model1"
-        self.model2_name = "model2"
+        self.next_generation_model_dir = os.path.join(self.model_dir, "next_generation")
+        self.next_generation_config_path = os.path.join(self.next_generation_model_dir, "next_generation_config.json")
+        self.next_generation_weight_path = os.path.join(self.next_generation_model_dir, "next_generation_weight.h5")
         self.rival_model_config_path = os.path.join(self.model_dir, "rival_config.json")
         self.rival_model_weight_path = os.path.join(self.model_dir, "rival_weight.h5")
 
@@ -57,6 +53,7 @@ class ResourceConfig:
         self.opt_log_path = os.path.join(self.log_dir, "opt.log")
         self.play_log_path = os.path.join(self.log_dir, "play.log")
         self.sl_log_path = os.path.join(self.log_dir, "sl.log")
+        self.eval_log_path = os.path.join(self.log_dir, "eval.log")
 
         self.sl_data_dir = os.path.join(self.data_dir, "sl_data")
         self.sl_data_gameinfo = os.path.join(self.sl_data_dir, "gameinfo.csv")
@@ -64,7 +61,7 @@ class ResourceConfig:
 
     def create_directories(self):
         dirs = [self.project_dir, self.data_dir, self.model_dir, self.play_data_dir, self.log_dir,
-                self.play_record_dir, self.eval_model_dir]
+                self.play_record_dir, self.next_generation_model_dir]
         for d in dirs:
             if not os.path.exists(d):
                 os.makedirs(d)
@@ -72,11 +69,11 @@ class ResourceConfig:
 class Options:
     new = False
     light = True
-    evaluate = False
+    device_list = '0,1'
 
 class PlayWithHumanConfig:
     def __init__(self):
-        self.simulation_num_per_move = 500
+        self.simulation_num_per_move = 200
         self.thinking_loop = 1
         self.c_puct = 1
         self.search_threads = 2

@@ -1,17 +1,19 @@
 import os
+import shutil
 from time import sleep
 from collections import deque
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, wait
 from datetime import datetime
 from logging import getLogger
 from multiprocessing import Manager
 from threading import Thread
-from time import time
+from time import time, sleep
 from collections import defaultdict
 from multiprocessing import Lock
 from random import random
 import numpy as np
 
+import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.agent.model import CChessModel
 from cchess_alphazero.agent.player import CChessPlayer, VisitState
 from cchess_alphazero.agent.api import CChessModelAPI
@@ -24,39 +26,57 @@ from cchess_alphazero.lib.tf_util import set_session_config
 
 logger = getLogger(__name__)
 
-def load_model(config, config_path, weight_path, name=None):
-    model = CChessModel(config)
-    load_model_weight(model, config_path, weight_path, name)
-    return model
-
 def start(config: Config):
-    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list='0,1')
-    model1 = load_model(config, config.resource.eval_model1_config_path, config.resource.eval_model1_weight_path, 
-                        config.resource.model1_name)
-    model2 = load_model(config, config.resource.eval_model2_config_path, config.resource.eval_model2_weight_path, 
-                        config.resource.model2_name)
+    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
     m = Manager()
-    model1_pipes = m.list([model1.get_pipes(config.play.search_threads) \
-                        for _ in range(config.play.max_processes)])
-    model2_pipes = m.list([model2.get_pipes(config.play.search_threads) \
-                        for _ in range(config.play.max_processes)])
+    while True:
+        model_bt = load_model(config, config.resource.model_best_config_path, config.resource.model_best_weight_path)
+        bt_api = CChessModelAPI(config, model_bt)
+        bt_api.start()
+        modelbt_pipes = m.list([model_bt.get_pipes(api=bt_api, need_reload=False) for _ in range(config.play.max_processes)])
+        model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)
+        while not model_ng:
+            logger.info(f"Next generation model is None, wait for 300s")
+            sleep(300)
+            model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)
+        logger.info(f"Next generation model has loaded!")
+        ng_api = CChessModelAPI(config, model_ng)
+        ng_api.start()
+        modelng_pipes = m.list([model_ng.get_pipes(api=ng_api, need_reload=False) for _ in range(config.play.max_processes)])
 
-    # play_worker = EvaluateWorker(config, model1_pipes, model2_pipes)
-    # play_worker.start()
-    with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-        futures = []
-        for i in range(config.play.max_processes):
-            eval_worker = EvaluateWorker(config, model1_pipes, model2_pipes, i)
-            futures.append(executor.submit(eval_worker.start))
+        # play_worker = EvaluateWorker(config, model1_pipes, model2_pipes)
+        # play_worker.start()
+        with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+            futures = []
+            for i in range(config.play.max_processes):
+                eval_worker = EvaluateWorker(config, modelbt_pipes, modelng_pipes, pid=i)
+                futures.append(executor.submit(eval_worker.start))
+        
+        wait(futures)
+        bt_api.close()
+        ng_api.close()
+        # compute whether to update best model
+        # and remove next generation model
+        score = 0
+        for future in futures:
+            score += future.result()
+        game_num = config.eval.game_num * config.play.max_processes
+        logger.info(f"Evaluate over, next generation win {score}/{game_num}")
+        if score * 1.0 / game_num >= config.eval.next_generation_replace_rate:
+            logger.info("Best model will be replaced by next generation model")
+            replace_best_model(config)
+        else:
+            logger.info("Next generation fail to defeat best model and will be removed")
+            remove_ng_model(config)
 
 class EvaluateWorker:
     def __init__(self, config: Config, pipes1=None, pipes2=None, pid=None):
         self.config = config
-        self.player1 = None
-        self.player2 = None
+        self.player_bt = None
+        self.player_ng = None
         self.pid = pid
-        self.pipes1 = pipes1
-        self.pipes2 = pipes2
+        self.pipes_bt = pipes1
+        self.pipes_ng = pipes2
 
     def start(self):
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
@@ -65,7 +85,7 @@ class EvaluateWorker:
 
         for idx in range(self.config.eval.game_num):
             start_time = time()
-            env, score = self.start_game(idx)
+            score, turns = self.start_game(idx)
             end_time = time()
 
             if score < 0:
@@ -76,111 +96,92 @@ class EvaluateWorker:
                 score2 += 0.5
                 score1 += 0.5
 
-            logger.debug(f"Process{self.pid} play game {idx} time={end_time - start_time} sec, "
-                         f"turn={env.num_halfmoves / 2}, {self.config.resource.model1_name}:{self.config.resource.model2_name}"
-                         f" = {score1}-{score2}")
-        logger.info(f"Final result: {self.config.resource.model1_name} {score1} - {score2} {self.config.resource.model2_name}")
-
+            logger.debug(f"Process{self.pid} play game {idx} time={(end_time - start_time):.1f} sec, "
+                         f"turn={turns / 2}, best model {score1} - {score2} next generation model")
+        return score2  # return next generation model's score
 
     def start_game(self, idx):
-        pipe1 = self.pipes1.pop()
-        pipe2 = self.pipes2.pop()
+        pipe1 = self.pipes_bt.pop()
+        pipe2 = self.pipes_ng.pop()
         search_tree1 = defaultdict(VisitState)
         search_tree2 = defaultdict(VisitState)
 
-        env = CChessEnv(self.config).reset()
+        self.player1 = CChessPlayer(self.config, search_tree=search_tree1, pipes=pipe1, 
+                        debugging=False, enable_resign=True)
+        self.player2 = CChessPlayer(self.config, search_tree=search_tree2, pipes=pipe2, 
+                        debugging=False, enable_resign=True)
 
-        self.player1 = CChessPlayer(self.config, search_tree=search_tree1, pipes=pipe1, debugging=False)
-        self.player2 = CChessPlayer(self.config, search_tree=search_tree2, pipes=pipe2, debugging=False)
+        state = senv.INIT_STATE
+        score = 0
+        value = 0
+        turns = 0       # even == red; odd == black
+        game_over = False
+        written = False
 
-        history = []
-        cc = 0
-
-        while not env.done:
-            start_time = time()
+        while not game_over:
             # idx == 0 (even): player1 red; idx == 1 (odd): player2 red
-            if int(env.red_to_move) == idx % 2:
-                action = self.player2.action(env)
-                end_time = time()
-                # --------------------- debug logs ---------------------------
-                # if not env.red_to_move:
-                #     move = flip_move(action)
-                # else:
-                #     move = action
-                # move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                # logger.debug(f"Process{self.pid} Player2 action: {move}, time: {end_time - start_time}s")
-                # key = self.player2.get_state_key(env)
-                # p, v = self.player2.debug[key]
-                # mov_idx = np.argmax(p)
-                # move = ActionLabelsRed[mov_idx]
-                # move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                # logger.debug(f"P2 NN recommend move: {move} with probability {np.max(p)}, v = {v}")
-                # logger.info("MCTS results:")
-                # for move, action_state in self.player2.search_results.items():
-                #     if action_state[0] >= 5:
-                #         move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                #         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]}")
-                # self.player2.search_results = {}
-                # --------------------- debug logs ---------------------------
+            if turns % 2 == idx % 2:
+                action, _ = self.player1.action(state, turns)
             else:
-                action = self.player1.action(env)
-                end_time = time()
-                # --------------------- debug logs ---------------------------
-                # if not env.red_to_move:
-                #     move = flip_move(action)
-                # else:
-                #     move = action
-                # move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                # logger.debug(f"Process{self.pid} Player1 action: {move}, time: {end_time - start_time}s")
-                # key = self.player1.get_state_key(env)
-                # p, v = self.player1.debug[key]
-                # mov_idx = np.argmax(p)
-                # move = ActionLabelsRed[mov_idx]
-                # move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                # logger.debug(f"P1 NN recommend move: {move} with probability {np.max(p)}, v = {v}")
-                # logger.info("MCTS results:")
-                # for move, action_state in self.player1.search_results.items():
-                #     if action_state[0] >= 5:
-                #         move = env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                #         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]}")
-                # self.player1.search_results = {}
-                # --------------------- debug logs ---------------------------
+                action, _ = self.player2.action(state, turns)
             
-            env.step(action)
+            if action is None:
+                logger.debug(f"{turn % 2 == idx % 2} (1 = best model; 0 = next generation) has resigned!")
+                if turn % 2 == idx % 2:
+                    score = 1
+                else:
+                    score = 0
+                written = True
+                break
+            
+            state = senv.step(state, action)
+            turns += 1
 
-            history.append(action)
-            if len(history) > 6 and history[-1] == history[-5]:
-                cc = cc + 1
+            if turns / 2 >= self.config.play.max_game_length:
+                game_over = True
+                score = 0.5
             else:
-                cc = 0
-            if env.num_halfmoves / 2 >= self.config.play.max_game_length:
-                env.winner = Winner.draw
+                game_over, value = senv.done(state)
 
-        if env.winner == Winner.red:
-            if idx % 2 == 0:
-                p1_win = 1
+        self.player1.close()
+        self.player2.close()
+
+        if turns % 2 == 1:  # black turn
+            value = -value
+
+        if not written:
+            if turns % 2 == idx % 2:
+                # best model = red
+                if value == 1:
+                    score = 1
+                else:
+                    score = 0
             else:
-                p1_win = -1
-        elif env.winner == Winner.black:
-            if idx % 2 == 0:
-                p1_win = -1
-            else:
-                p1_win = 1
-        else:
-            p1_win = 0
+                # best model = black
+                if value == -1:
+                    score = 1
+                else:
+                    score = 0
 
-        self.pipes1.append(pipe1)
-        self.pipes2.append(pipe2)
-        self.save_record_data(env, write=idx % self.config.play_data.nb_game_save_record == 0)
-        return env, p1_win
-
-    def save_record_data(self, env, write=False):
-        if not write:
-            return
-        rc = self.config.resource
-        game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
-        path = os.path.join(rc.play_record_dir, rc.play_record_filename_tmpl % game_id)
-        env.save_records(path)
+        self.pipes_bt.append(pipe1)
+        self.pipes_ng.append(pipe2)
+        return score, turns
 
 
+def replace_best_model(config):
+    rc = config.resource
+    shutil.copyfile(rc.next_generation_config_path, rc.model_best_config_path)
+    shutil.copyfile(rc.next_generation_weight_path, rc.model_best_weight_path)
+    remove_ng_model(config)
+
+def remove_ng_model(config):
+    rc = config.resource
+    os.remove(rc.next_generation_config_path)
+    os.remove(rc.next_generation_weight_path)
+
+def load_model(config, config_path, weight_path, name=None):
+    model = CChessModel(config)
+    if not load_model_weight(model, config_path, weight_path, name):
+        return None
+    return model
 

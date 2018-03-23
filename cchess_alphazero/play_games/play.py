@@ -10,6 +10,7 @@ from logging import getLogger
 from collections import defaultdict
 from threading import Thread
 
+import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.environment.chessboard import Chessboard
 from cchess_alphazero.environment.chessman import *
 from cchess_alphazero.agent.model import CChessModel
@@ -17,7 +18,7 @@ from cchess_alphazero.agent.player import CChessPlayer, VisitState
 from cchess_alphazero.agent.api import CChessModelAPI
 from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
-from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed
+from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_move
 from cchess_alphazero.lib.model_helper import load_best_model_weight
 
 logger = getLogger(__name__)
@@ -47,7 +48,7 @@ class PlayWithHuman:
     def start(self, human_first=True):
         self.env.reset()
         self.load_model()
-        self.pipe = self.model.get_pipes(self.config.play.search_threads)
+        self.pipe = self.model.get_pipes()
         self.ai = CChessPlayer(self.config, search_tree=defaultdict(VisitState), pipes=self.pipe,
                               enable_resign=True, debugging=True)
         self.human_move_first = human_first
@@ -83,6 +84,7 @@ class PlayWithHuman:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.env.board.print_record()
+                    self.ai.close()
                     sys.exit()
                 elif event.type == MOUSEBUTTONDOWN:
                     if human_first == self.env.red_to_move:
@@ -125,6 +127,7 @@ class PlayWithHuman:
             self.chessmans.draw(screen)
             pygame.display.update()
 
+        self.ai.close()
         logger.info(f"Winner is {self.env.board.winner} !!!")
         self.env.board.print_record()
 
@@ -135,11 +138,13 @@ class PlayWithHuman:
                 labels = ActionLabelsRed
                 labels_n = len(ActionLabelsRed)
                 self.ai.search_results = {}
-                action = self.ai.action(self.env)
+                action, policy = self.ai.action(self.env.get_state(), self.env.num_halfmoves)
+                if not self.env.red_to_move:
+                    action = flip_move(action)
                 if action is None:
                     logger.info("AI has resigned!")
                     return
-                key = self.ai.get_state_key(self.env)
+                key = self.env.get_state()
                 p, v = self.ai.debug[key]
                 mov_idx = np.argmax(p)
                 mov = labels[mov_idx]
@@ -147,7 +152,7 @@ class PlayWithHuman:
                 logger.info(f"NN value = {v:.2f}")
                 logger.info("MCTS results:")
                 for move, action_state in self.ai.search_results.items():
-                    if action_state[0] >= 15:
+                    if action_state[0] >= 5:
                         move = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
                         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]:.2f}, Prior: {action_state[2]:.3f}")
                 

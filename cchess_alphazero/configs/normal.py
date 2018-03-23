@@ -7,9 +7,10 @@ class EvaluateConfig:
         self.c_puct = 1 # lower  = prefer mean action value
         self.tau_decay_rate = 0
         self.noise_eps = 0
-        self.max_game_length = 200
+        self.max_game_length = 100
         self.max_processes = 10
         self.search_threads = 8
+        self.next_generation_replace_rate = 0.55
 
     def update_play_config(self, pc):
         pc.simulation_num_per_move = self.simulation_num_per_move
