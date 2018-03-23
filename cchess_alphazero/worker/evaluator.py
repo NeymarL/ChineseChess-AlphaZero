@@ -120,13 +120,13 @@ class EvaluateWorker:
                 action, _ = self.player1.action(state, turns)
             else:
                 action, _ = self.player2.action(state, turns)
-            
+            # logger.debug(f"pid = {self.pid}, idx = {idx}, action = {action}, turns = {turns}")
             if action is None:
                 logger.debug(f"{turn % 2 == idx % 2} (1 = best model; 0 = next generation) has resigned!")
                 if turn % 2 == idx % 2:
                     score = 1
                 else:
-                    score = 0
+                    score = -1
                 written = True
                 break
             
@@ -136,6 +136,7 @@ class EvaluateWorker:
             if turns / 2 >= self.config.play.max_game_length:
                 game_over = True
                 score = 0.5
+                written = True
             else:
                 game_over, value = senv.done(state)
 
@@ -148,16 +149,10 @@ class EvaluateWorker:
         if not written:
             if turns % 2 == idx % 2:
                 # best model = red
-                if value == 1:
-                    score = 1
-                else:
-                    score = 0
+                score = value
             else:
                 # best model = black
-                if value == -1:
-                    score = 1
-                else:
-                    score = 0
+                score = -value
 
         self.pipes_bt.append(pipe1)
         self.pipes_ng.append(pipe2)

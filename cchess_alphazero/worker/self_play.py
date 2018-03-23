@@ -84,7 +84,7 @@ class SelfPlayWorker:
             enable_resign = False
             logger.debug(f"game {idx} disable resign!")
 
-        self.player = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, enable_resign=enable_resign, debugging=True)
+        self.player = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, enable_resign=enable_resign, debugging=False)
 
         state = senv.INIT_STATE
         history = [state]
@@ -104,7 +104,7 @@ class SelfPlayWorker:
             # for move, action_state in self.player.search_results.items():
             #     if action_state[0] >= 20:
             #         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]:.2f}, Prior: {action_state[2]:.3f}")
-            self.player.search_results = {}
+            # self.player.search_results = {}
             policys.append(policy)
             state = senv.step(state, action)
             turns += 1
