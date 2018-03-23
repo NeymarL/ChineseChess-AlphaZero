@@ -31,18 +31,14 @@ def start(config: Config):
     m = Manager()
     while True:
         model_bt = load_model(config, config.resource.model_best_config_path, config.resource.model_best_weight_path)
-        bt_api = CChessModelAPI(config, model_bt)
-        bt_api.start()
-        modelbt_pipes = m.list([model_bt.get_pipes(api=bt_api, need_reload=False) for _ in range(config.play.max_processes)])
+        modelbt_pipes = m.list([model_bt.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
         model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)
         while not model_ng:
             logger.info(f"Next generation model is None, wait for 300s")
             sleep(300)
             model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)
         logger.info(f"Next generation model has loaded!")
-        ng_api = CChessModelAPI(config, model_ng)
-        ng_api.start()
-        modelng_pipes = m.list([model_ng.get_pipes(api=ng_api, need_reload=False) for _ in range(config.play.max_processes)])
+        modelng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
 
         # play_worker = EvaluateWorker(config, model1_pipes, model2_pipes)
         # play_worker.start()
@@ -53,8 +49,8 @@ def start(config: Config):
                 futures.append(executor.submit(eval_worker.start))
         
         wait(futures)
-        bt_api.close()
-        ng_api.close()
+        model_bt.close_pipes()
+        model_ng.close_pipes()
         # compute whether to update best model
         # and remove next generation model
         score = 0
