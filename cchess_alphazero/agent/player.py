@@ -117,7 +117,7 @@ class CChessPlayer:
 
         # MCTS search
         if self.num_task > 0:
-            logger.debug(f"num_task = {self.num_task}")
+            # logger.debug(f"num_task = {self.num_task}")
             for i in range(self.num_task):
                 self.executor.submit(self.MCTS_search, state, [state], True)
             self.all_done.acquire(True)
