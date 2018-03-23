@@ -30,7 +30,7 @@ def load_model(config):
     return model
 
 def start(config: Config):
-    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list='0,1')
+    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list='0')
     current_model = load_model(config)
     m = Manager()
     cur_pipes = m.list([current_model.get_pipes() for _ in range(config.play.max_processes)])
@@ -129,7 +129,7 @@ class SelfPlayWorker:
         self.cur_pipes.append(pipes)
         self.save_play_data(idx, data)
         self.remove_play_data()
-        return value, turns, state, search_tree
+        return v, turns, state, search_tree
 
     def save_play_data(self, idx, data):
         self.buffer += data
