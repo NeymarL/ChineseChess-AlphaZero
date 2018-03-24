@@ -9,6 +9,9 @@ This project is based on these main resources:
 2. The **great** Reversi/Chess/Chinese chess development of the DeepMind ideas that @mokemokechicken/@Akababa/@TDteach did in their repo: https://github.com/mokemokechicken/reversi-alpha-zero, https://github.com/Akababa/Chess-Zero, https://github.com/TDteach/AlphaZero_ChineseChess
 3. A Chinese chess engine with gui: https://github.com/mm12432/MyChess
 
+
+**Note**: This repo is still under contruction. There is also a slower implementation of MCTS player (previous version), see branch [old](https://github.com/NeymarL/ChineseChess-AlphaZero/tree/old).
+
 ## Environment
 
 * Python 3.6.3

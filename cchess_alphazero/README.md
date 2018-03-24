@@ -16,7 +16,8 @@
 │   │   │      └── chessman.py.py
 │   │   ├── chessboard.py
 │   │   ├── chessman.py
-│   │   ├── env.py          : the environment api of the engine
+│   │   ├── env.py          : the environment api of the engine (mainly used in play-with-human and previous MCTS player)
+│   │   ├── static_env.py   : a static chess engine which does not store the board (used in new MCTS player)
 │   │   └── lookup_tables.py 
 │   ├── lib                 : helper functions
 │   │   ├── data_helper.py  : load & save data
