@@ -8,8 +8,8 @@ class EvaluateConfig:
         self.tau_decay_rate = 0
         self.noise_eps = 0.2
         self.max_game_length = 100
-        self.max_processes = 10
-        self.search_threads = 8
+        self.max_processes = 5
+        self.search_threads = 6
         self.next_generation_replace_rate = 0.55
 
     def update_play_config(self, pc):
