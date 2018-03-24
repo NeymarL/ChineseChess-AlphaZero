@@ -67,8 +67,8 @@ class SelfPlayWorker:
                          f"turn={turns / 2}, winner = {value} (1 = red, -1 = black, 0 draw)")
             if turns <= 10:
                 senv.render(state)
-
-            idx += 1
+            if value != 0:
+                idx += 1
 
     def start_game(self, idx, search_tree):
         pipes = self.cur_pipes.pop()
@@ -121,13 +121,14 @@ class SelfPlayWorker:
             value = -value
 
         v = value
-        data = []
-        for i in range(turns):
-            data.append([history[i], policys[i], value])
-            value = -value
+        if v != 0:
+            data = []
+            for i in range(turns):
+                data.append([history[i], policys[i], value])
+                value = -value
+            self.save_play_data(idx, data)
 
         self.cur_pipes.append(pipes)
-        self.save_play_data(idx, data)
         self.remove_play_data()
         return v, turns, state, search_tree
 
