@@ -107,27 +107,32 @@ class EvaluateWorker:
         self.player2 = CChessPlayer(self.config, search_tree=search_tree2, pipes=pipe2, 
                         debugging=False, enable_resign=True)
 
+        # even: bst = red, ng = black; odd: bst = black, ng = red
+        if idx % 2 == 0:
+            red = self.player1
+            black = self.player2
+            logger.debug(f"best model is red, ng is black")
+        else:
+            red = self.player2
+            black = self.player1
+            logger.debug(f"best model is black, ng is red")
+
         state = senv.INIT_STATE
-        score = 0
-        value = 0
+        value = 0       # best model's value
         turns = 0       # even == red; odd == black
         game_over = False
-        written = False
 
         while not game_over:
-            # idx == 0 (even): player1 red; idx == 1 (odd): player2 red
-            if turns % 2 == idx % 2:
-                action, _ = self.player1.action(state, turns)
+            start_time = time()
+            if turns % 2 == 0:
+                action, _ = red.action(state, turns)
             else:
-                action, _ = self.player2.action(state, turns)
-            # logger.debug(f"pid = {self.pid}, idx = {idx}, action = {action}, turns = {turns}")
+                action, _ = black.action(state, turns)
+            end_time = time()
+            # logger.debug(f"pid = {self.pid}, idx = {idx}, action = {action}, turns = {turns}, time = {(end_time-start_time):.1f}")
             if action is None:
-                logger.debug(f"{turn % 2 == idx % 2} (1 = best model; 0 = next generation) has resigned!")
-                if turn % 2 == idx % 2:
-                    score = -1
-                else:
-                    score = 1
-                written = True
+                logger.debug(f"{turn % 2} (0 = red; 1 = black) has resigned!")
+                value = -1
                 break
             
             state = senv.step(state, action)
@@ -135,8 +140,7 @@ class EvaluateWorker:
 
             if turns / 2 >= self.config.play.max_game_length:
                 game_over = True
-                score = 0
-                written = True
+                value = 0
             else:
                 game_over, value = senv.done(state)
 
@@ -146,17 +150,15 @@ class EvaluateWorker:
         if turns % 2 == 1:  # black turn
             value = -value
 
-        if not written:
-            if turns % 2 == idx % 2:
-                # best model = red
-                score = value
-            else:
-                # best model = black
-                score = -value
+        if idx % 2 == 1:
+            value = -value
+
+        # debug
+        senv.render(state)
 
         self.pipes_bt.append(pipe1)
         self.pipes_ng.append(pipe2)
-        return score, turns
+        return value, turns
 
 
 def replace_best_model(config):

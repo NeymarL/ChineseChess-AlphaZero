@@ -73,7 +73,7 @@ class Options:
 
 class PlayWithHumanConfig:
     def __init__(self):
-        self.simulation_num_per_move = 200
+        self.simulation_num_per_move = 100
         self.thinking_loop = 1
         self.c_puct = 1
         self.search_threads = 2

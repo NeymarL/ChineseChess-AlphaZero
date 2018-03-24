@@ -12,7 +12,8 @@ from random import shuffle
 from cchess_alphazero.agent.model import CChessModel
 from cchess_alphazero.config import Config
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, read_game_data_from_file
-from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model, save_as_next_generation_model
+from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model
+from cchess_alphazero.lib.model_helper import need_to_reload_best_model_weight, save_as_next_generation_model
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.lib.tf_util import set_session_config
 
@@ -60,6 +61,7 @@ class OptimizeWorker:
                 time.sleep(600)
                 continue
             else:
+                self.try_reload_model()
                 bef_files = files
                 if len(files) > 30:
                     files = files[-30:]
@@ -152,6 +154,12 @@ class OptimizeWorker:
             if total_steps >= step:
                 ret = lr
         return ret
+
+    def try_reload_model(self):
+        logger.debug("check model")
+        if need_to_reload_best_model_weight(self.model):
+            with self.model.graph.as_default():
+                load_best_model_weight(self.model)
 
 
 def load_data_from_file(filename):
