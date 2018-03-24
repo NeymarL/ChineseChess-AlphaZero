@@ -153,9 +153,6 @@ class EvaluateWorker:
         if idx % 2 == 1:
             value = -value
 
-        # debug
-        senv.render(state)
-
         self.pipes_bt.append(pipe1)
         self.pipes_ng.append(pipe2)
         return value, turns
