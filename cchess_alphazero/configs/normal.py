@@ -7,7 +7,7 @@ class EvaluateConfig:
         self.c_puct = 1 # lower  = prefer mean action value
         self.tau_decay_rate = 0
         self.noise_eps = 0.2
-        self.max_game_length = 100
+        self.max_game_length = 60
         self.max_processes = 5
         self.search_threads = 6
         self.next_generation_replace_rate = 0.55
@@ -47,7 +47,7 @@ class PlayConfig:
         self.resign_threshold = -0.95
         self.min_resign_turn = 40
         self.enable_resign_rate = 0.5
-        self.max_game_length = 100
+        self.max_game_length = 60
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
 
