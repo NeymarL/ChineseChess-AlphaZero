@@ -25,6 +25,11 @@ This AlphaZero implementation consists of two workers: `self` and  `opt`.
 * `self` is Self-Play to generate training data by self-play using BestModel.
 * `opt` is Trainer to train model, and generate new models.
 
+For the sake of faster training (since I don't have 5000 TPUs), another two workers are involved:
+
+* `sl` is Supervised learning to train data crawled from the Internet.
+* `eval` is Evaluator to evaluate the NextGenerationModel with the current BestModel.
+
 ### GUI
 
 Requirement: PyGame
@@ -79,6 +84,7 @@ options
 
 * `--new`: create new BestModel
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
+* `--gpu '1'`: specify which gpu to use
 
 #### Trainer
 
@@ -92,6 +98,7 @@ options
 
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--total-step`: specify total step(mini-batch) numbers. The total step affects learning rate of training.
+* `--gpu '1'`: specify which gpu to use
 
 **View training log in Tensorboard**
 
@@ -113,6 +120,7 @@ options
 
 * `--ai-move-first`: if set this option, AI will move first, otherwise human move first.
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
+* `--gpu '1'`: specify which gpu to use
 
 #### Evaluator
 
@@ -120,10 +128,9 @@ options
 python cchess_alphazero/run.py eval
 ```
 
-When executed, the two model saved in `config.resource.eval_model_dir` (see `cchess_alphazero/config.py`) will start to battle with each other.
+When executed, evaluate the NextGenerationModel with the current BestModel. If the NextGenerationModel does not exist, worker will wait until it exists and check every 5 minutes.
 
 options
 
-* `--name1 player1`: set the first player's name
-* `--name2 player2`: set the second player's name
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
+* `--gpu '1'`: specify which gpu to use

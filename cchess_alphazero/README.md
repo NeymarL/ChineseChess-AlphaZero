@@ -33,7 +33,7 @@
 │   │   ├── sl.py           : supervised learning worker
 │   │   ├── self_play.py    : self play worker
 │   │   ├── self_play2.py   : play with a(n) certain model/other AI
-│   │   └── evaluator.py    : evaluate with two players
+│   │   └── evaluator.py    : evaluate next generation model with current best model
 │   ├── config.py           : setup configuration
 │   ├── manager.py          : manage to start which worker
 │   ├── run.py              : start interface
