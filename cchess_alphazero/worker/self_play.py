@@ -49,11 +49,12 @@ class SelfPlayWorker:
         self.config = config
         self.player = None
         self.cur_pipes = pipes
-        self.pid = pid
+        self.id = pid
         self.buffer = []
+        self.pid = os.getpid()
 
     def start(self):
-        logger.debug(f"Selfplay#Start Process index = {self.pid}, pid = {os.getpid()}")
+        logger.debug(f"Selfplay#Start Process index = {self.id}, pid = {self.pid}")
 
         idx = 1
         self.buffer = []
@@ -63,7 +64,7 @@ class SelfPlayWorker:
             start_time = time()
             value, turns, state, search_tree, store = self.start_game(idx, search_tree)
             end_time = time()
-            logger.debug(f"Process{self.pid} play game {idx} time={(end_time - start_time):.1f} sec, "
+            logger.debug(f"Process {self.pid}-{self.id} play game {idx} time={(end_time - start_time):.1f} sec, "
                          f"turn={turns / 2}, winner = {value} (1 = red, -1 = black, 0 draw)")
             if turns <= 10:
                 senv.render(state)
