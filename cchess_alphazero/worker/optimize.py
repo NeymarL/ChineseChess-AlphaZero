@@ -13,7 +13,7 @@ from cchess_alphazero.agent.model import CChessModel
 from cchess_alphazero.config import Config
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, read_game_data_from_file
 from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model
-from cchess_alphazero.lib.model_helper import need_to_reload_best_model_weight, save_as_next_generation_model
+from cchess_alphazero.lib.model_helper import need_to_reload_best_model_weight, save_as_next_generation_model, save_as_best_model
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.lib.tf_util import set_session_config
 
@@ -61,8 +61,8 @@ class OptimizeWorker:
                 time.sleep(600)
                 continue
             else:
-                if self.try_reload_model():
-                    self.compile_model()
+                # if self.try_reload_model():
+                #     self.compile_model()
                 bef_files = files
                 if last_file is not None and len(files) > 20:
                     files = files[-20:]
@@ -146,7 +146,8 @@ class OptimizeWorker:
 
     def save_current_model(self):
         logger.debug("Save as next generation model")
-        save_as_next_generation_model(self.model)
+        # save_as_next_generation_model(self.model)
+        save_as_best_model(self.model)
 
     def decide_learning_rate(self, total_steps):
         ret = None
