@@ -61,7 +61,8 @@ class OptimizeWorker:
                 time.sleep(600)
                 continue
             else:
-                self.try_reload_model()
+                if self.try_reload_model():
+                    self.compile_model()
                 bef_files = files
                 if len(files) > 40:
                     files = files[-40:]
@@ -160,6 +161,8 @@ class OptimizeWorker:
         if need_to_reload_best_model_weight(self.model):
             with self.model.graph.as_default():
                 load_best_model_weight(self.model)
+            return True
+        return False
 
 
 def load_data_from_file(filename):
