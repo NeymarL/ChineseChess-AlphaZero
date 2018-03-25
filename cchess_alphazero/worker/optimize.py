@@ -51,7 +51,7 @@ class OptimizeWorker:
         while True:
             files = get_game_data_filenames(self.config.resource)
             if (len(files) * self.config.play_data.nb_game_in_file < self.config.trainer.min_games_to_begin_learn \
-              or ((last_file is not None) and files.index(last_file) + 40 > len(files))):
+              or ((last_file is not None) and files.index(last_file) + 20 > len(files))):
                 if last_file is not None:
                     logger.info('Waiting for enough data 600s, ' + str((len(files) - files.index(last_file)) * self.config.play_data.nb_game_in_file) \
                             +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
@@ -64,8 +64,8 @@ class OptimizeWorker:
                 if self.try_reload_model():
                     self.compile_model()
                 bef_files = files
-                if len(files) > 40:
-                    files = files[-40:]
+                if last_file is not None and len(files) > 20:
+                    files = files[-20:]
                 last_file = files[-1]
                 self.filenames = deque(files)
                 logger.debug(f"Start training {len(self.filenames)} files")
