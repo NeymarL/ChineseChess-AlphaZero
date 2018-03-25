@@ -61,13 +61,13 @@ class SelfPlayWorker:
 
         while True:
             start_time = time()
-            value, turns, state, search_tree = self.start_game(idx, search_tree)
+            value, turns, state, search_tree, store = self.start_game(idx, search_tree)
             end_time = time()
             logger.debug(f"Process{self.pid} play game {idx} time={(end_time - start_time):.1f} sec, "
                          f"turn={turns / 2}, winner = {value} (1 = red, -1 = black, 0 draw)")
             if turns <= 10:
                 senv.render(state)
-            if value != 0:
+            if store:
                 idx += 1
 
     def start_game(self, idx, search_tree):
@@ -121,7 +121,15 @@ class SelfPlayWorker:
             value = -value
 
         v = value
-        if v != 0:
+        if v == 0:
+            if random() > 0.5:
+                store = True
+            else:
+                store = False
+        else:
+            store = True
+
+        if store:
             data = []
             for i in range(turns):
                 data.append([history[i], policys[i], value])
@@ -130,7 +138,7 @@ class SelfPlayWorker:
 
         self.cur_pipes.append(pipes)
         self.remove_play_data()
-        return v, turns, state, search_tree
+        return v, turns, state, search_tree, store
 
     def save_play_data(self, idx, data):
         self.buffer += data
