@@ -50,6 +50,23 @@ def step(state, action):
     state = board_to_state(board)
     return fliped_state(state)
 
+def evaluate(state):
+    piece_vals = {'R': 14, 'K': 7, 'E': 3, 'M': 2, 'S':1, 'C': 5, 'P': 1} # for RED account
+    ans = 0.0
+    tot = 0
+    for c in state:
+        if not c.isalpha():
+            continue
+
+        if c.isupper():
+            ans += piece_vals[c]
+            tot += piece_vals[c]
+        else:
+            ans -= piece_vals[c.upper()]
+            tot += piece_vals[c.upper()]
+    v = ans / tot
+    return np.tanh(v * 3)
+
 def state_to_board(state):
     board = [['.' for col in range(BOARD_WIDTH)] for row in range(BOARD_HEIGHT)]
     x = 0

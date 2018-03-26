@@ -113,7 +113,7 @@ class SelfPlayWorker:
 
             if turns / 2 >= self.config.play.max_game_length:
                 game_over = True
-                value = 0
+                value = senv.evaluate(state)
             else:
                 game_over, value = senv.done(state)
 

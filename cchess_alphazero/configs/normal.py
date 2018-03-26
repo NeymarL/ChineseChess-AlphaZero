@@ -47,14 +47,14 @@ class PlayConfig:
         self.resign_threshold = -0.95
         self.min_resign_turn = 40
         self.enable_resign_rate = 0.5
-        self.max_game_length = 60
+        self.max_game_length = 80
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
 
 
 class TrainerConfig:
     def __init__(self):
-        self.min_games_to_begin_learn = 100 
+        self.min_games_to_begin_learn = 200 
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 4 # RAM explosion...
         self.vram_frac = 1.0

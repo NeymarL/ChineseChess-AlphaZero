@@ -121,10 +121,12 @@ def test_static_env():
     state = INIT_STATE
     env.step('0001')
     state = senv.step(state, '0001')
+    print(senv.evaluate(state))
     print("env:  " + env.observation)
     print("senv: " + state)
     env.step('7770')
     state = senv.step(state, flip_move('7770'))
+    print(senv.evaluate(state))
     print("env:  " + env.observation)
     print("senv: " + state)
     env.render()
@@ -141,5 +143,4 @@ def test_static_env():
 
 if __name__ == "__main__":
     test_static_env()
-    # test_light_env()
     
