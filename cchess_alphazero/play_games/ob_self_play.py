@@ -54,9 +54,9 @@ class ObSelfPlay:
             if state in history[:-1]:
                 no_act = []
                 for i in range(len(history) - 1):
-                    if history[-i] == state:
-                        no_act.append(history[-i+1])
-            action, policy = self.ai.action(state, self.env.num_halfmoves)
+                    if history[i] == state:
+                        no_act.append(history[i + 1])
+            action, policy = self.ai.action(state, self.env.num_halfmoves, no_act)
             history.append(action)
             if action is None:
                 print("AI投降了!")
