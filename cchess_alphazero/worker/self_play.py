@@ -65,7 +65,7 @@ class SelfPlayWorker:
             value, turns, state, search_tree, store = self.start_game(idx, search_tree)
             end_time = time()
             logger.debug(f"Process {self.pid}-{self.id} play game {idx} time={(end_time - start_time):.1f} sec, "
-                         f"turn={turns / 2}, winner = {value} (1 = red, -1 = black, 0 draw)")
+                         f"turn={turns / 2}, winner = {value:.2f} (1 = red, -1 = black, 0 draw)")
             if turns <= 10:
                 senv.render(state)
             if store:
@@ -102,7 +102,7 @@ class SelfPlayWorker:
                     if history[-i] == state:
                         no_act.append(history[-i + 1])
                 if no_act != []:
-                    logger.debug(f"no action = {no_act}")
+                    logger.debug(f"no action = {no_act}, history = {history}")
             start_time = time()
             action, policy = self.player.action(state, turns, no_act)
             end_time = time()
