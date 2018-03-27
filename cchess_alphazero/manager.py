@@ -16,6 +16,7 @@ def create_parser():
     parser.add_argument("--type", help="use normal setting", default="mini")
     parser.add_argument("--total-step", help="set TrainerConfig.start_total_steps", type=int)
     parser.add_argument("--ai-move-first", help="set human or AI move first", action="store_true")
+    parser.add_argument("--cli", help="play with AI with CLI, default with GUI", action="store_true")
     parser.add_argument("--gpu", help="device list", default="0,1")
     return parser
 
@@ -60,7 +61,10 @@ def start():
         from cchess_alphazero.worker import optimize
         return optimize.start(config)
     elif args.cmd == 'play':
-        from cchess_alphazero.play_games import play
+        if args.cli:
+            import cchess_alphazero.play_games.play_cli as play
+        else:
+            from cchess_alphazero.play_games import play
         config.opts.light = False
         pwhc = PlayWithHumanConfig()
         pwhc.update_play_config(config.play)
