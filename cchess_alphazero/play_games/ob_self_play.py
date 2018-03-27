@@ -55,7 +55,8 @@ class ObSelfPlay:
                 print("AI投降了!")
                 break
             self.env.step(action)
-            print(f"AI选择移动 {action}")
+            move = self.env.board.make_single_record(int(action[0]), int(action[1]), int(action[2]), int(action[3]))
+            print(f"AI选择移动 {move}")
             self.env.board.print_to_cl()
             sleep(1)
 

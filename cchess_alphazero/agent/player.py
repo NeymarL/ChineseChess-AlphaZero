@@ -110,7 +110,7 @@ class CChessPlayer:
                 self.buffer_history = self.buffer_history[k:]
             self.run_lock.release()
 
-    def action(self, state, turns) -> str:
+    def action(self, state, turns, no_act) -> str:
         self.all_done.acquire(True)
         self.root_state = state
         done = 0
@@ -130,6 +130,9 @@ class CChessPlayer:
 
         if policy is None:  # resign
             return None
+        if no_act is not None:
+            for act in no_act:
+                policy[self.move_lookup[act]] = 0
 
         my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(policy, turns)))
         return self.labels[my_action], list(policy)

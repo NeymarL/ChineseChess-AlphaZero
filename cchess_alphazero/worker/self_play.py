@@ -95,8 +95,14 @@ class SelfPlayWorker:
         game_over = False
 
         while not game_over:
+            no_act = None
+            if state in history[:-1]:
+                no_act = []
+                for i in range(len(history) - 1):
+                    if history[-i] == state:
+                        no_act.append(history[-i+1])
             start_time = time()
-            action, policy = self.player.action(state, turns)
+            action, policy = self.player.action(state, turns, no_act)
             end_time = time()
             if action is None:
                 logger.debug(f"{turn % 2} (0 = red; 1 = black) has resigned!")
