@@ -110,7 +110,7 @@ class CChessPlayer:
                 self.buffer_history = self.buffer_history[k:]
             self.run_lock.release()
 
-    def action(self, state, turns, no_act) -> str:
+    def action(self, state, turns, no_act=None) -> str:
         self.all_done.acquire(True)
         self.root_state = state
         done = 0
