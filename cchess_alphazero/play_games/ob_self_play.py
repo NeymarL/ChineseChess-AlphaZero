@@ -49,12 +49,12 @@ class ObSelfPlay:
 
         while not self.env.board.is_end():
             action, policy = self.ai.action(self.env.get_state(), self.env.num_halfmoves)
-            if not self.env.red_to_move:
-                action = flip_move(action)
             if action is None:
                 print("AI投降了!")
                 break
             move = self.env.board.make_single_record(int(action[0]), int(action[1]), int(action[2]), int(action[3]))
+            if not self.env.red_to_move:
+                action = flip_move(action)
             self.env.step(action)
             print(f"AI选择移动 {move}")
             self.env.board.print_to_cl()
