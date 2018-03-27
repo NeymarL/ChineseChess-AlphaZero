@@ -46,9 +46,17 @@ class ObSelfPlay:
         labels_n = len(ActionLabelsRed)
 
         self.env.board.print_to_cl()
+        history = [state]
 
         while not self.env.board.is_end():
+            no_act = None
+            if state in history[:-1]:
+                no_act = []
+                for i in range(len(history) - 1):
+                    if history[-i] == state:
+                        no_act.append(history[-i+1])
             action, policy = self.ai.action(self.env.get_state(), self.env.num_halfmoves)
+            history.append(action)
             if action is None:
                 print("AI投降了!")
                 break
@@ -56,6 +64,7 @@ class ObSelfPlay:
             if not self.env.red_to_move:
                 action = flip_move(action)
             self.env.step(action)
+            history.append(self.env.get_state())
             print(f"AI选择移动 {move}")
             self.env.board.print_to_cl()
             sleep(1)
