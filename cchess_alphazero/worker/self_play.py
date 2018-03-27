@@ -101,8 +101,6 @@ class SelfPlayWorker:
                 for i in range(len(history) - 1):
                     if history[-i] == state:
                         no_act.append(history[-i + 1])
-                if no_act != []:
-                    logger.debug(f"no action = {no_act}")
             start_time = time()
             action, policy = self.player.action(state, turns, no_act)
             end_time = time()
@@ -114,6 +112,7 @@ class SelfPlayWorker:
             #     if action_state[0] >= 20:
             #         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]:.2f}, Prior: {action_state[2]:.3f}")
             # self.player.search_results = {}
+            history.append(action)
             policys.append(policy)
             state = senv.step(state, action)
             turns += 1
@@ -141,7 +140,8 @@ class SelfPlayWorker:
         if store:
             data = []
             for i in range(turns):
-                data.append([history[i], policys[i], value])
+                k = i * 2
+                data.append([history[k], policys[i], value])
                 value = -value
             self.save_play_data(idx, data)
 
