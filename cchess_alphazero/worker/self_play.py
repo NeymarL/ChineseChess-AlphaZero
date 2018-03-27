@@ -101,6 +101,8 @@ class SelfPlayWorker:
                 for i in range(len(history) - 1):
                     if history[-i] == state:
                         no_act.append(history[-i + 1])
+                if no_act != []:
+                    logger.debug(f"no action = {no_act}")
             start_time = time()
             action, policy = self.player.action(state, turns, no_act)
             end_time = time()
