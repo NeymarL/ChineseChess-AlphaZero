@@ -15,6 +15,7 @@ from cchess_alphazero.lib.model_helper import load_best_model_weight
 logger = getLogger(__name__)
 
 def start(config: Config, human_move_first=True):
+    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
     play = PlayWithHuman(config)
     play.start(human_move_first)
 
