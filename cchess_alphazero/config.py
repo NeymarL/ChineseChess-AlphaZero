@@ -76,7 +76,7 @@ class PlayWithHumanConfig:
         self.simulation_num_per_move = 800
         self.c_puct = 1.5
         self.search_threads = 10
-        self.noise_eps = 0.2
+        self.noise_eps = 0.15
         self.tau_decay_rate = 0.8
         self.dirichlet_alpha = 0.2
 
