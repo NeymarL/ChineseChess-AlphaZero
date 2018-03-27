@@ -79,5 +79,7 @@ def start():
         sl.start(config)
     elif args.cmd == 'ob':
         from cchess_alphazero.play_games import ob_self_play
+        pwhc = PlayWithHumanConfig()
+        pwhc.update_play_config(config.play)
         ob_self_play.start(config)
         
