@@ -74,10 +74,11 @@ class Options:
 class PlayWithHumanConfig:
     def __init__(self):
         self.simulation_num_per_move = 800
-        self.c_puct = 1
+        self.c_puct = 1.5
         self.search_threads = 10
         self.noise_eps = 0
-        self.tau_decay_rate = 0
+        self.tau_decay_rate = 0.8
+        self.dirichlet_alpha = 0.2
 
     def update_play_config(self, pc):
         pc.simulation_num_per_move = self.simulation_num_per_move
@@ -85,5 +86,6 @@ class PlayWithHumanConfig:
         pc.noise_eps = self.noise_eps
         pc.tau_decay_rate = self.tau_decay_rate
         pc.search_threads = self.search_threads
+        pc.dirichlet_alpha = self.dirichlet_alpha
 
 
