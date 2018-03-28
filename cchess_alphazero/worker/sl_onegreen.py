@@ -116,10 +116,12 @@ class SupervisedWorker:
             init = game['init']
             move_list = game['move_list']
             winner = Winner.draw
-            if game['result'] == '红胜':
+            if game['result'] == '红胜' or '胜' in game['title']:
                 winner = Winner.red
-            elif game['result'] == '黑胜':
+            elif game['result'] == '黑胜' or '负' in game['title']:
                 winner = Winner.black
+            else:
+                winner = Winner.draw
             self.load_game(init, move_list, winner, idx)
             idx += 1
         end_time = time()
@@ -145,6 +147,7 @@ class SupervisedWorker:
             except:
                 logger.error(f"idx = {idx}, action = {action}, turns = {turns}, moves = {moves}, winner = {winner}, init = {init}")
                 return
+
             history.append(action)
             policys.append(policy)
 

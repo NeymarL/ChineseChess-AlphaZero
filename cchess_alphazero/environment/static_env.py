@@ -45,6 +45,8 @@ def done(state):
 
 def step(state, action):
     board = state_to_board(state)
+    if board[int(action[1])][int(action[0])] == '.':
+        raise ValueError(f"No chessman in {action}, state = {state}")
     board[int(action[3])][int(action[2])] = board[int(action[1])][int(action[0])]
     board[int(action[1])][int(action[0])] = '.'
     state = board_to_state(board)
