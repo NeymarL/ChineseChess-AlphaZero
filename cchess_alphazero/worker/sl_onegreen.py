@@ -41,18 +41,18 @@ class SupervisedWorker:
         self.buffer = []
         self.games = None
 
-    def start(self):
+    def start(self, skip=0):
         self.model = self.load_model()
         with open(self.config.resource.sl_onegreen, 'r') as f:
             self.games = json.load(f)
-        self.training()
+        self.training(skip)
 
-    def training(self):
+    def training(self, skip=0):
         self.compile_model()
         total_steps = self.config.trainer.start_total_steps
-        logger.info(f"Start training, game count = {len(self.games)}, step = {self.config.trainer.sl_game_step} games")
+        logger.info(f"Start training, game count = {len(self.games)}, step = {self.config.trainer.sl_game_step} games, skip = {skip}")
 
-        for i in range(0, len(self.games), self.config.trainer.sl_game_step):
+        for i in range(skip, len(self.games), self.config.trainer.sl_game_step):
             games = self.games[i:i+self.config.trainer.sl_game_step]
             self.fill_queue(games)
             if len(self.dataset[0]) > self.config.trainer.batch_size:
@@ -111,6 +111,7 @@ class SupervisedWorker:
     def generate_game_data(self, games):
         self.buffer = []
         start_time = time()
+        idx = 0
         for game in games:
             init = game['init']
             move_list = game['move_list']
@@ -119,12 +120,13 @@ class SupervisedWorker:
                 winner = Winner.red
             elif game['result'] == '黑胜':
                 winner = Winner.black
-            self.load_game(init, move_list, winner)
+            self.load_game(init, move_list, winner, idx)
+            idx += 1
         end_time = time()
         logger.debug(f"Loading {len(games)} games, time: {end_time - start_time}s")
         return self.convert_to_trainging_data()
 
-    def load_game(self, init, move_list, winner):
+    def load_game(self, init, move_list, winner, idx):
         turns = 0
         if init == '':
             state = senv.INIT_STATE
@@ -138,6 +140,8 @@ class SupervisedWorker:
             action = senv.parse_onegreen_move(move)
             if turns % 2 == 1:
                 action = flip_move(action)
+            if action == '7081':
+                logger.error(f"idx = {idx}, action = 7081, turns = {turns}, moves = {moves}, winner = {winner}, init = {init}")
             policy = self.build_policy(action, False)
             history.append(action)
             policys.append(policy)
