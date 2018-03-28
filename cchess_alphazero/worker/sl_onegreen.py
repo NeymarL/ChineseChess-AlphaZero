@@ -63,6 +63,7 @@ class SupervisedWorker:
                 a.clear()
                 b.clear()
                 c.clear()
+                logger.debug(f"total steps = {total_steps}")
 
     def train_epoch(self, epochs):
         tc = self.config.trainer
