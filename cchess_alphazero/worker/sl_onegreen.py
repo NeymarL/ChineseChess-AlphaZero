@@ -79,7 +79,7 @@ class SupervisedWorker:
         return steps
 
     def compile_model(self):
-        self.opt = Adam(lr=0.003, momentum=self.config.trainer.momentum)
+        self.opt = Adam(lr=0.003)
         losses = ['categorical_crossentropy', 'mean_squared_error']
         self.model.model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
 
