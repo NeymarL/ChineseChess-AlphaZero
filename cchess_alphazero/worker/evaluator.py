@@ -85,9 +85,12 @@ class EvaluateWorker:
             end_time = time()
 
             if score < 0:
-                score2 += -score
+                score2 += 1
             elif score > 0:
-                score1 += score
+                score1 += 1
+            else:
+                score2 += 0.5
+                score1 += 0.5
 
             logger.debug(f"Process{self.pid} play game {idx} time={(end_time - start_time):.1f} sec, "
                          f"turn={turns / 2}, best model {score1} - {score2} next generation model")
@@ -137,7 +140,7 @@ class EvaluateWorker:
 
             if turns / 2 >= self.config.play.max_game_length:
                 game_over = True
-                value = senv.evaluate(state)
+                value = 0
             else:
                 game_over, value = senv.done(state)
 

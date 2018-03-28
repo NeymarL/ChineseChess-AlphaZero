@@ -58,6 +58,7 @@ class ResourceConfig:
         self.sl_data_dir = os.path.join(self.data_dir, "sl_data")
         self.sl_data_gameinfo = os.path.join(self.sl_data_dir, "gameinfo.csv")
         self.sl_data_move = os.path.join(self.sl_data_dir, "moves.csv")
+        self.sl_onegreen = os.path.join(self.sl_data_dir, "onegreen.json")
 
     def create_directories(self):
         dirs = [self.project_dir, self.data_dir, self.model_dir, self.play_data_dir, self.log_dir,

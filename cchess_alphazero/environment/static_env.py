@@ -244,4 +244,22 @@ def swapcase(a, s2b=False):
 def render(state):
     board = state_to_board(state)
     for i in range(9, -1, -1):
-        logger.info(board[i])
+        print(board[i])
+
+def init(pos):
+    board = [['.' for col in range(BOARD_WIDTH)] for row in range(BOARD_HEIGHT)]
+    pieces = 'rnbakabnrccpppppRNBAKABNRCCPPPPP'
+    position = [pos[i:i+2] for i in range(len(pos)) if i % 2 == 0]
+    for pos, piece in zip(position, pieces):
+        if pos != '99':
+            x, y = int(pos[0]), 9 - int(pos[1])
+            board[y][x] = piece
+    for i in range(9, -1, -1):
+        print(board[i])
+    return board_to_state(board)
+
+def parse_onegreen_move(move):
+    x0, y0 = int(move[0]), 9 - int(move[1])
+    x1, y1 = int(move[2]), 9 - int(move[3])
+    return str(x0) + str(y0) + str(x1) + str(y1)
+    
