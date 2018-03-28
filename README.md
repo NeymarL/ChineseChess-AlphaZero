@@ -137,3 +137,20 @@ options
 
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--gpu '1'`: specify which gpu to use
+
+#### Supervised Learning
+
+```
+python cchess_alphazero/run.py sl
+```
+
+When executed, Training will start. The current SLBestModel will be loaded. Tranined model will be saved every epoch as new SLBestModel.
+
+*About the data*
+I have two data sources, one is downloaded from https://wx.jcloud.com/market/packet/10479 ; the other is crawled from http://game.onegreen.net/chess/Index.html (with option --onegreen).
+
+options
+
+* `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
+* `--gpu '1'`: specify which gpu to use
+* `--onegreen`: if set the flag, `sl_onegreen` worker will start to train data crawled from `game.onegreen.net`.

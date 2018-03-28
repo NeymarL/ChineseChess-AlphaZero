@@ -32,6 +32,7 @@
 │   ├── worker
 │   │   ├── optimize.py     : trainer
 │   │   ├── sl.py           : supervised learning worker
+│   │   ├── sl_onegreen.py  : supervised learning worker which train data crawled from game.onegreen.net
 │   │   ├── self_play.py    : self play worker
 │   │   ├── self_play2.py   : play with a(n) certain model/other AI
 │   │   └── evaluator.py    : evaluate next generation model with current best model
