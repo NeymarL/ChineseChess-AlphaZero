@@ -112,6 +112,7 @@ class SupervisedWorker:
         self.buffer = []
         start_time = time()
         idx = 0
+        cnt = 0
         for game in games:
             init = game['init']
             move_list = game['move_list']
@@ -122,10 +123,12 @@ class SupervisedWorker:
                 winner = Winner.black
             else:
                 winner = Winner.draw
-            self.load_game(init, move_list, winner, idx)
+            v = self.load_game(init, move_list, winner, idx)
+            if v == 1 or v == -1:
+                cnt += 1
             idx += 1
         end_time = time()
-        logger.debug(f"Loading {len(games)} games, time: {end_time - start_time}s")
+        logger.debug(f"Loading {len(games)} games, time: {end_time - start_time}s, end games = {cnt}")
         return self.convert_to_trainging_data()
 
     def load_game(self, init, move_list, winner, idx):
@@ -170,6 +173,7 @@ class SupervisedWorker:
             data.append([history[i], policys[i], value])
             value = -value
         self.buffer += data
+        return value
 
     def build_policy(self, action, flip):
         labels_n = len(ActionLabelsRed)

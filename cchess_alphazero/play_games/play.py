@@ -146,12 +146,12 @@ class PlayWithHuman:
                     return
                 key = self.env.get_state()
                 p, v = self.ai.debug[key]
-                logger.info(f"NN value = {v:.2f}")
+                logger.info(f"NN value = {v:.3f}")
                 logger.info("MCTS results:")
                 for move, action_state in self.ai.search_results.items():
                     if action_state[0] > 20:
                         move_cn = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                        logger.info(f"move: {move_cn}-{move}, visit count: {action_state[0]}, Q_value: {action_state[1]:.2f}, Prior: {action_state[2]:.3f}")
+                        logger.info(f"move: {move_cn}-{move}, visit count: {action_state[0]}, Q_value: {action_state[1]:.3f}, Prior: {action_state[2]:.3f}")
                 x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
                 chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)
                 sprite_dest = select_sprite_from_group(self.chessmans, x1, y1)
