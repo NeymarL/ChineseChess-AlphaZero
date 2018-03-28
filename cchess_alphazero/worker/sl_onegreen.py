@@ -18,6 +18,7 @@ from cchess_alphazero.lib.model_helper import load_sl_best_model_weight, save_as
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.environment.lookup_tables import ActionLabelsRed, flip_policy, flip_move
 from cchess_alphazero.lib.tf_util import set_session_config
+from cchess_alphazero.environment.lookup_tables import Winner
 
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
@@ -111,61 +112,53 @@ class SupervisedWorker:
         start_time = time()
         for game in games:
             init = game['init']
-            self.load_game(red, black, winner, idx)
+            move_list = game['move_list']
+            winner = Winner.draw
+            if game['result'] == '红胜':
+                winner = Winner.red
+            elif game['result'] == '黑胜':
+                winner = Winner.black
+            self.load_game(init, move_list, winner)
         end_time = time()
         logger.debug(f"Loading {len(games)} games, time: {end_time - start_time}s")
         return self.convert_to_trainging_data()
 
-    def load_game(self, red, black, winner):
-        env = CChessEnv(self.config).reset()
-        red_moves = []
-        black_moves = []
-        turns = 1
-        black_max_turn = black['turn'].max()
-        red_max_turn = red['turn'].max()
+    def load_game(self, init, move_list, winner):
+        turns = 0
+        if init == '':
+            state = senv.INIT_STATE
+        else:
+            state = senv.init(init)
+        moves = [move_list[i:i+4] for i in range(len(move_list)) if i % 4 == 0]
+        history = []
+        policys = []
 
-        while turns < black_max_turn or turns < red_max_turn:
-            if turns < red_max_turn:
-                wxf_move = red[red.turn == turns]['move'].item()
-                action = env.board.parse_WXF_move(wxf_move)
-                try:
-                    red_moves.append([env.observation, self.build_policy(action, flip=False)])
-                except Exception as e:
-                    for i in range(10):
-                        logger.debug(f"{env.board.screen[i]}")
-                    logger.debug(f"{turns} {wxf_move} {action}")
-                
-                env.step(action)
-            if turns < black_max_turn:
-                wxf_move = black[black.turn == turns]['move'].item()
-                action = env.board.parse_WXF_move(wxf_move)
-                try:
-                    black_moves.append([env.observation, self.build_policy(action, flip=True)])
-                except Exception as e:
-                    for i in range(10):
-                        logger.debug(f"{env.board.screen[i]}")
-                    logger.debug(f"{turns} {wxf_move} {action}")
-                
-                env.step(action)
+        for move in moves:
+            action = senv.parse_onegreen_move(move)
+            if turns % 2 == 1:
+                action = flip_move(action)
+            policy = self.build_policy(action, False)
+            history.append(action)
+            policys.append(policy)
+
+            state = senv.step(state, action)
             turns += 1
 
-        if winner == 'red':
-            red_win = 1
-        elif winner == 'black':
-            red_win = -1
+        if winner == Winner.red:
+            value = 1
+        elif winner == Winner.black:
+            value = -1
         else:
-            red_win = 0
-
-        for move in red_moves:
-            move += [red_win]
-        for move in black_moves:
-            move += [-red_win]
+            game_over, value = senv.done(state)
+            if not game_over:
+                value = senv.evaluate(state)
+            if turns % 2 == 1:  # balck turn
+                value = -value
 
         data = []
-        for i in range(len(red_moves)):
-            data.append(red_moves[i])
-            if i < len(black_moves):
-                data.append(black_moves[i])
+        for i in range(turns):
+            data.append([history[i], policys[i], value])
+            value = -value
         self.buffer += data
 
     def build_policy(self, action, flip):

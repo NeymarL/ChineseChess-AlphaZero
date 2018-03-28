@@ -18,6 +18,7 @@ def create_parser():
     parser.add_argument("--ai-move-first", help="set human or AI move first", action="store_true")
     parser.add_argument("--cli", help="play with AI with CLI, default with GUI", action="store_true")
     parser.add_argument("--gpu", help="device list", default="0,1")
+    parser.add_argument("--onegreen", help="train sl work with onegreen data", action="store_true")
     return parser
 
 def setup(config: Config, args):
@@ -75,7 +76,10 @@ def start():
         config.eval.update_play_config(config.play)
         evaluator.start(config)
     elif args.cmd == 'sl':
-        from cchess_alphazero.worker import sl
+        if args.onegreen:
+            import cchess_alphazero.worker.sl_onegreen as sl
+        else:
+            from cchess_alphazero.worker import sl
         sl.start(config)
     elif args.cmd == 'ob':
         from cchess_alphazero.play_games import ob_self_play

@@ -143,6 +143,7 @@ def test_static_env():
 
 def test_onegreen():
     import cchess_alphazero.environment.static_env as senv
+    from cchess_alphazero.environment.lookup_tables import flip_move
     init = "9999299949999999249999869999999958999999519999999999999999997699"
     state = senv.init(init)
     print(state)
@@ -150,6 +151,10 @@ def test_onegreen():
     move = senv.parse_onegreen_move('8685')
     print(move)
     state = senv.step(state, move)
+    senv.render(state)
+    move = senv.parse_onegreen_move('7666')
+    print(move)
+    state = senv.step(state, flip_move(move))
     senv.render(state)
 
 if __name__ == "__main__":

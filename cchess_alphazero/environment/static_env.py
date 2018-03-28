@@ -254,8 +254,6 @@ def init(pos):
         if pos != '99':
             x, y = int(pos[0]), 9 - int(pos[1])
             board[y][x] = piece
-    for i in range(9, -1, -1):
-        print(board[i])
     return board_to_state(board)
 
 def parse_onegreen_move(move):
