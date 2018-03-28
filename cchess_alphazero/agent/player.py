@@ -126,10 +126,10 @@ class CChessPlayer:
             self.all_done.acquire(True)
         self.all_done.release()
 
-        policy = self.calc_policy(state, turns)
+        policy, resign = self.calc_policy(state, turns)
 
-        if policy is None:  # resign
-            return None
+        if resign:  # resign
+            return None, list(policy)
         if no_act is not None:
             for act in no_act:
                 policy[self.move_lookup[act]] = 0
@@ -310,10 +310,10 @@ class CChessPlayer:
                 max_q_value = action_state.q
 
         if max_q_value < self.play_config.resign_threshold and self.enable_resign and turns > self.play_config.min_resign_turn:
-            return None
+            return policy, True
 
         policy /= np.sum(policy)
-        return policy
+        return policy, False
 
     def apply_temperature(self, policy, turn) -> np.ndarray:
         if turn < 15 and self.play_config.tau_decay_rate != 0:
