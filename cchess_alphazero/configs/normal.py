@@ -65,7 +65,7 @@ class TrainerConfig:
         self.save_model_steps = 25
         self.load_data_steps = 100
         self.momentum = 0.9
-        self.loss_weights = [1.0, 1.0]
+        self.loss_weights = [1.25, 1.0]
         self.lr_schedules = [
             (0, 0.01),
             (150000, 0.003),
