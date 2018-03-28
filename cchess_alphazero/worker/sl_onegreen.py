@@ -142,6 +142,7 @@ class SupervisedWorker:
                 action = flip_move(action)
             if action == '7081':
                 logger.error(f"idx = {idx}, action = 7081, turns = {turns}, moves = {moves}, winner = {winner}, init = {init}")
+                return
             policy = self.build_policy(action, False)
             history.append(action)
             policys.append(policy)

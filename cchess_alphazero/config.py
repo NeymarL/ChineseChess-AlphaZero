@@ -78,7 +78,7 @@ class PlayWithHumanConfig:
         self.c_puct = 1.5
         self.search_threads = 10
         self.noise_eps = 0.15
-        self.tau_decay_rate = 0.8
+        self.tau_decay_rate = 0
         self.dirichlet_alpha = 0.2
 
     def update_play_config(self, pc):
