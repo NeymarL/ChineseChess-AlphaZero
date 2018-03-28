@@ -26,9 +26,9 @@ import keras.backend as K
 
 logger = getLogger(__name__)
 
-def start(config: Config):
+def start(config: Config, skip):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
-    return SupervisedWorker(config).start()
+    return SupervisedWorker(config).start(skip)
 
 class SupervisedWorker:
     def __init__(self, config:Config):
