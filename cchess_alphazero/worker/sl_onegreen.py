@@ -79,8 +79,8 @@ class SupervisedWorker:
         return steps
 
     def compile_model(self):
-        self.opt = Adam(lr=1e-2)
-        losses = ['categorical_crossentropy', 'mean_squared_error'] # avoid overfit for supervised 
+        self.opt = Adam(lr=0.003, momentum=self.config.trainer.momentum)
+        losses = ['categorical_crossentropy', 'mean_squared_error']
         self.model.model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
 
     def fill_queue(self, games):
@@ -139,11 +139,12 @@ class SupervisedWorker:
         for move in moves:
             action = senv.parse_onegreen_move(move)
             if turns % 2 == 1:
-                action = flip_move(action)
-            if action == '7081':
-                logger.error(f"idx = {idx}, action = 7081, turns = {turns}, moves = {moves}, winner = {winner}, init = {init}")
+                action = flip_move(action)                
+            try:
+                policy = self.build_policy(action, False)
+            except:
+                logger.error(f"idx = {idx}, action = {action}, turns = {turns}, moves = {moves}, winner = {winner}, init = {init}")
                 return
-            policy = self.build_policy(action, False)
             history.append(action)
             policys.append(policy)
 
