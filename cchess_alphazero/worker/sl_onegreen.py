@@ -153,8 +153,11 @@ class SupervisedWorker:
 
             history.append(action)
             policys.append(policy)
-
-            state = senv.step(state, action)
+            try:
+                state = senv.step(state, action)
+            except ValueError as err:
+                logger.error(f"ValueError: {err}")
+                return
             turns += 1
 
         if winner == Winner.red:
