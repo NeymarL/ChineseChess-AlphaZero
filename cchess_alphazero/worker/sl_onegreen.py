@@ -158,6 +158,8 @@ class SupervisedWorker:
             red_win = -1
         else:
             red_win = senv.evaluate(env.get_state())
+            if not env.red_to_move:
+                red_win = -red_win
 
         for move in red_moves:
             move += [red_win]

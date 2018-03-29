@@ -176,10 +176,9 @@ def convert_to_trainging_data(data):
     state_list = []
     policy_list = []
     value_list = []
-    env = CChessEnv()
 
-    for state_fen, policy, value in data:
-        state_planes = env.fen_to_planes(state_fen)
+    for state, policy, value in data:
+        state_planes = senv.state_to_planes(state)
         sl_value = value
 
         state_list.append(state_planes)
