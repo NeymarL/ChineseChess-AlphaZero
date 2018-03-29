@@ -133,51 +133,44 @@ class SupervisedWorker:
 
     def load_game(self, init, move_list, winner, idx, title, url):
         turns = 0
-        if init == '':
-            state = senv.INIT_STATE
-        else:
-            state = senv.init(init)
+        env = CChessEnv(self.config).reset(init)
+        red_moves = []
+        black_moves = []
         moves = [move_list[i:i+4] for i in range(len(move_list)) if i % 4 == 0]
-        history = []
-        policys = []
 
         for move in moves:
             action = senv.parse_onegreen_move(move)
-            if turns % 2 == 1:
-                action = flip_move(action)                
             try:
-                policy = self.build_policy(action, False)
+                if turns % 2 == 0:
+                    red_moves.append([env.observation, self.build_policy(action, flip=False)])
+                else:
+                    black_moves.append([env.observation, self.build_policy(action, flip=True)])
+                env.step(action)
             except:
                 logger.error(f"Invalid Action: idx = {idx}, action = {action}, turns = {turns}, moves = {moves}, "
                              f"winner = {winner}, init = {init}, title: {title}, url: {url}")
                 return
-
-            history.append(action)
-            policys.append(policy)
-            try:
-                state = senv.step(state, action)
-            except ValueError as err:
-                logger.error(f"ValueError: {err}, url: {url}, title: {title}, turns = {turns}, action = {action}")
-                return
             turns += 1
 
         if winner == Winner.red:
-            value = 1
+            red_win = 1
         elif winner == Winner.black:
-            value = -1
+            red_win = -1
         else:
-            game_over, value = senv.done(state)
-            if not game_over:
-                value = senv.evaluate(state)
-            if turns % 2 == 1:  # balck turn
-                value = -value
+            red_win = senv.evaluate(env.get_state())
+
+        for move in red_moves:
+            move += [red_win]
+        for move in black_moves:
+            move += [-red_win]
 
         data = []
-        for i in range(turns):
-            data.append([history[i], policys[i], value])
-            value = -value
+        for i in range(len(red_moves)):
+            data.append(red_moves[i])
+            if i < len(black_moves):
+                data.append(black_moves[i])
         self.buffer += data
-        return value
+        return red_win
 
     def build_policy(self, action, flip):
         labels_n = len(ActionLabelsRed)

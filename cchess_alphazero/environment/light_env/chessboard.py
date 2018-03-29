@@ -30,7 +30,7 @@ class L_Chessboard:
         self._legal_moves = None
         self.turn = RED
         self.winner = None
-        if init is None:
+        if init is None or init == '':
             self.assign_fen(None)
         else:
             self.parse_init(init)
