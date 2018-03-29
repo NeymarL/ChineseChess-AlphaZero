@@ -123,7 +123,7 @@ class SupervisedWorker:
                 winner = Winner.black
             else:
                 winner = Winner.draw
-            v = self.load_game(init, move_list, winner, idx)
+            v = self.load_game(init, move_list, winner, idx, game['title'], game['url'])
             if v == 1 or v == -1:
                 cnt += 1
             idx += 1
@@ -131,7 +131,7 @@ class SupervisedWorker:
         logger.debug(f"Loading {len(games)} games, time: {end_time - start_time}s, end games = {cnt}")
         return self.convert_to_trainging_data()
 
-    def load_game(self, init, move_list, winner, idx):
+    def load_game(self, init, move_list, winner, idx, title, url):
         turns = 0
         if init == '':
             state = senv.INIT_STATE
@@ -148,7 +148,8 @@ class SupervisedWorker:
             try:
                 policy = self.build_policy(action, False)
             except:
-                logger.error(f"idx = {idx}, action = {action}, turns = {turns}, moves = {moves}, winner = {winner}, init = {init}")
+                logger.error(f"Invalid Action: idx = {idx}, action = {action}, turns = {turns}, moves = {moves}, "
+                             f"winner = {winner}, init = {init}, title: {title}, url: {url}")
                 return
 
             history.append(action)
@@ -156,7 +157,7 @@ class SupervisedWorker:
             try:
                 state = senv.step(state, action)
             except ValueError as err:
-                logger.error(f"ValueError: {err}")
+                logger.error(f"ValueError: {err}, url: {url}, title: {title}, turns = {turns}, action = {action}")
                 return
             turns += 1
 

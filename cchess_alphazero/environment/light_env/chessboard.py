@@ -22,15 +22,18 @@ from cchess_alphazero.environment.lookup_tables import Winner
 
 class L_Chessboard:
 
-    def __init__(self):
+    def __init__(self, init=None):
         self.height = 10
         self.width = 9
         self.board = [['.' for col in range(self.width)] for row in range(self.height)]
         self.steps = 0
         self._legal_moves = None
         self.turn = RED
-        self.assign_fen(None)
         self.winner = None
+        if init is None:
+            self.assign_fen(None)
+        else:
+            self.parse_init(init)
 
     def _update(self):
         self._fen = None
@@ -40,6 +43,14 @@ class L_Chessboard:
             self.turn = RED
         else:
             self.turn = BLACK
+
+    def parse_init(self, init):
+        pieces = 'rnbakabnrccpppppRNBAKABNRCCPPPPP'
+        position = [init[i:i+2] for i in range(len(init)) if i % 2 == 0]
+        for pos, piece in zip(position, pieces):
+            if pos != '99':
+                x, y = int(pos[0]), 9 - int(pos[1])
+                self.board[y][x] = piece
 
     def assign_fen(self, fen):
         if fen is None:
@@ -234,7 +245,8 @@ class L_Chessboard:
         return self.winner is not None
 
     def print_to_cl(self):
-        print(self.board)
+        for i in range(9, -1, -1):
+            print(self.board[i])
 
     def move_action_str(self, uci):
         mov = Move(uci)

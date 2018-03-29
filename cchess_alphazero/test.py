@@ -144,12 +144,37 @@ def test_static_env():
 def test_onegreen():
     import cchess_alphazero.environment.static_env as senv
     from cchess_alphazero.environment.lookup_tables import flip_move
-    state = "3ms4/9/5m3/9/2p6/2P6/9/3MkM3/5S3/6p2"
+    init = '9999299949999999249999869999999958999999519999999999999999997699'
+    state = senv.init(init)
+    print(state)
     senv.render(state)
-    # move = senv.parse_onegreen_move('')
-    # print(move)
-    state = senv.step(state, '4839')
+    move = senv.parse_onegreen_move('8685')
+    state = senv.step(state, move)
+    print(state)
     senv.render(state)
+    move = senv.parse_onegreen_move('7666')
+    state = senv.step(state, flip_move(move))
+    print(state)
+    senv.render(state)
+
+def test_onegreen2():
+    from cchess_alphazero.environment.env import CChessEnv
+    import cchess_alphazero.environment.static_env as senv
+    from cchess_alphazero.config import Config
+    c = Config('mini')
+    init = '9999299949999999249999869999999958999999519999999999999999997699'
+    env = CChessEnv(c)
+    env.reset(init)
+    print(env.observation)
+    env.render()
+    move = senv.parse_onegreen_move('8685')
+    env.step(move)
+    print(env.observation)
+    env.render()
+    move = senv.parse_onegreen_move('7666')
+    env.step(move)
+    print(env.observation)
+    env.render()
 
 if __name__ == "__main__":
     test_onegreen()
