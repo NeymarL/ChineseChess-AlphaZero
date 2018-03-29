@@ -36,9 +36,13 @@ class PlayWithHuman:
         self.model = None
         self.pipe = None
         self.ai = None
-        self.winstyle = 0
+        self.winstyle = pygame.RESIZABLE
         self.chessmans = None
         self.human_move_first = True
+        self.height = 800
+        self.width = 720
+        self.chessman_w = 80
+        self.chessman_h = 80
 
     def load_model(self):
         self.model = CChessModel(self.config)
@@ -86,13 +90,19 @@ class PlayWithHuman:
                     self.env.board.print_record()
                     self.ai.close()
                     sys.exit()
+                elif event.type == VIDEORESIZE:
+                    self.chessman_w = int(self.chessman_w * event.w / self.width)
+                    self.chessman_h = int(self.chessman_h * event.h / self.height)
+                    self.width = event.w
+                    self.height = event.h
+
                 elif event.type == MOUSEBUTTONDOWN:
                     if human_first == self.env.red_to_move:
                         pressed_array = pygame.mouse.get_pressed()
                         for index in range(len(pressed_array)):
                             if index == 0 and pressed_array[index]:
                                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                                col_num, row_num = translate_hit_area(mouse_x, mouse_y)
+                                col_num, row_num = translate_hit_area(mouse_x, mouse_y, self.chessman_w, self.chessman_h)
                                 chessman_sprite = select_sprite_from_group(
                                     self.chessmans, col_num, row_num)
                                 if current_chessman is None and chessman_sprite != None:
@@ -105,19 +115,19 @@ class PlayWithHuman:
                                         current_chessman = chessman_sprite
                                         chessman_sprite.is_selected = True
                                     else:
-                                        success = current_chessman.move(col_num, row_num)
+                                        success = current_chessman.move(col_num, row_num, self.chessman_w, self.chessman_h)
+                                        print(current_chessman.rect)
                                         if success:
                                             self.chessmans.remove(chessman_sprite)
                                             chessman_sprite.kill()
                                             current_chessman.is_selected = False
                                             current_chessman = None
                                 elif current_chessman != None and chessman_sprite is None:
-                                    success = current_chessman.move(col_num, row_num)
+                                    success = current_chessman.move(col_num, row_num, self.chessman_w, self.chessman_h)
                                     if success:
                                         current_chessman.is_selected = False
                                         current_chessman = None
-                
-                
+                          
             framerate.tick(20)
             # clear/erase the last drawn sprites
             self.chessmans.clear(screen, background)
@@ -158,7 +168,7 @@ class PlayWithHuman:
                 if sprite_dest:
                     self.chessmans.remove(sprite_dest)
                     sprite_dest.kill()
-                chessman_sprite.move(x1, y1)
+                chessman_sprite.move(x1, y1, self.chessman_w, self.chessman_h)
         
 
 class Chessman_Sprite(pygame.sprite.Sprite):
@@ -173,15 +183,16 @@ class Chessman_Sprite(pygame.sprite.Sprite):
         self.image = self.images[0]
         self.rect = Rect(chessman.col_num * 80, (9 - chessman.row_num) * 80, 80, 80)
 
-    def move(self, col_num, row_num):
+    def move(self, col_num, row_num, w=80, h=80):
         # print self.chessman.name, col_num, row_num
         old_col_num = self.chessman.col_num
         old_row_num = self.chessman.row_num
         is_correct_position = self.chessman.move(col_num, row_num)
         if is_correct_position:
+            self.rect = Rect(old_col_num * w, (9 - old_row_num) * h, w, h)
             self.rect.move_ip((col_num - old_col_num)
-                              * 80, (old_row_num - row_num) * 80)
-            self.rect = self.rect.clamp(SCREENRECT)
+                              * w, (old_row_num - row_num) * h)
+            # self.rect = self.rect.clamp(SCREENRECT)
             self.chessman.chessboard.clear_chessmans_moving_list()
             self.chessman.chessboard.calc_chessmans_moving_list()
             return True
@@ -255,6 +266,6 @@ def select_sprite_from_group(sprite_group, col_num, row_num):
             return sprite
     return None
 
-def translate_hit_area(screen_x, screen_y):
-    return screen_x // 80, 9 - screen_y // 80
+def translate_hit_area(screen_x, screen_y, w=80, h = 80):
+    return screen_x // w, 9 - screen_y // h
 
