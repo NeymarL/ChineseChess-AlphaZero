@@ -33,7 +33,7 @@ class PlayDataConfig:
 
 class PlayConfig:
     def __init__(self):
-        self.max_processes = 10
+        self.max_processes = 8
         self.search_threads = 8
         self.vram_frac = 1.0
         self.simulation_num_per_move = 800
@@ -42,12 +42,12 @@ class PlayConfig:
         self.c_puct = 1.5
         self.noise_eps = 0.15
         self.dirichlet_alpha = 0.2
-        self.tau_decay_rate = 0.8
+        self.tau_decay_rate = 0.7
         self.virtual_loss = 3
         self.resign_threshold = -0.92
         self.min_resign_turn = 40
         self.enable_resign_rate = 0.5
-        self.max_game_length = 80
+        self.max_game_length = 70
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
 

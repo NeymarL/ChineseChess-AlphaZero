@@ -80,10 +80,8 @@ class SelfPlayWorker:
 
         if random() > self.config.play.enable_resign_rate:
             enable_resign = True
-            logger.debug(f"game {idx} enable resign!")
         else:
             enable_resign = False
-            logger.debug(f"game {idx} disable resign!")
 
         self.player = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, enable_resign=enable_resign, debugging=False)
 
