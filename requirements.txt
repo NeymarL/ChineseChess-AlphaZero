@@ -4,3 +4,4 @@ tensorflow-tensorboard==0.1.8
 Keras==2.0.8
 numpy
 pandas
+pygame
