@@ -145,7 +145,7 @@ class OptimizeWorker:
         return model
 
     def save_current_model(self):
-        logger.debug("Save as next generation model")
+        logger.debug("Save as best model")
         # save_as_next_generation_model(self.model)
         save_as_best_model(self.model)
 
