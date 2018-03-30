@@ -35,14 +35,14 @@ def start(config: Config):
     m = Manager()
     cur_pipes = m.list([current_model.get_pipes() for _ in range(config.play.max_processes)])
 
-    play_worker = SelfPlayWorker(config, cur_pipes, 0)
-    play_worker.start()
-    # with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-    #     futures = []
-    #     for i in range(config.play.max_processes):
-    #         play_worker = SelfPlayWorker(config, cur_pipes, i)
-    #         logger.debug("Initialize selfplay worker")
-    #         futures.append(executor.submit(play_worker.start))
+    # play_worker = SelfPlayWorker(config, cur_pipes, 0)
+    # play_worker.start()
+    with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+        futures = []
+        for i in range(config.play.max_processes):
+            play_worker = SelfPlayWorker(config, cur_pipes, i)
+            logger.debug("Initialize selfplay worker")
+            futures.append(executor.submit(play_worker.start))
 
 class SelfPlayWorker:
     def __init__(self, config: Config, pipes=None, pid=None):
@@ -99,13 +99,11 @@ class SelfPlayWorker:
                 for i in range(len(history) - 1):
                     if history[i] == state:
                         no_act.append(history[i + 1])
-                # if no_act != []:
-                #     logger.debug(f"no action = {no_act}, history = {history}")
             start_time = time()
             action, policy = self.player.action(state, turns, no_act)
             end_time = time()
             if action is None:
-                logger.debug(f"{turn % 2} (0 = red; 1 = black) has resigned!")
+                logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
                 break
             # logger.debug(f"Process{self.pid} Playing: {turns % 2}, action: {action}, time: {(end_time - start_time):.1f}s")
             # for move, action_state in self.player.search_results.items():
