@@ -49,6 +49,22 @@ class PlayWithHuman:
         if self.config.opts.new or not load_best_model_weight(self.model):
             self.model.build()
 
+    def init_screen(self):
+        bestdepth = pygame.display.mode_ok([self.width, self.height], self.winstyle, 32)
+        screen = pygame.display.set_mode([self.width, self.height], self.winstyle, bestdepth)
+        pygame.display.set_caption("中国象棋-AlphaZero")
+        # create the background, tile the bgd image
+        bgdtile = load_image('boardchess.gif')
+        bgdtile = pygame.transform.scale(bgdtile, (self.width, self.height))
+        background = pygame.Surface([self.width, self.height])
+        for x in range(0, self.width, bgdtile.get_width()):
+            background.blit(bgdtile, (x, 0))
+        screen.blit(background, (0, 0))
+        pygame.display.flip()
+        self.chessmans = pygame.sprite.Group()
+        creat_sprite_group(self.chessmans, self.env.board.chessmans_hash, self.chessman_w, self.chessman_h)
+        return screen, background
+
     def start(self, human_first=True):
         self.env.reset()
         self.load_model()
@@ -58,24 +74,12 @@ class PlayWithHuman:
         self.human_move_first = human_first
 
         pygame.init()
-        bestdepth = pygame.display.mode_ok(SCREENRECT.size, self.winstyle, 32)
-        screen = pygame.display.set_mode(SCREENRECT.size, self.winstyle, bestdepth)
-        pygame.display.set_caption("中国象棋-AlphaZero")
-        # create the background, tile the bgd image
-        bgdtile = load_image('boardchess.gif')
-        background = pygame.Surface(SCREENRECT.size)
-        for x in range(0, SCREENRECT.width, bgdtile.get_width()):
-            background.blit(bgdtile, (x, 0))
-        screen.blit(background, (0, 0))
-        pygame.display.flip()
-
-        self.chessmans = pygame.sprite.Group()
+        screen, background = self.init_screen()
         framerate = pygame.time.Clock()
 
         labels = ActionLabelsRed
         labels_n = len(ActionLabelsRed)
 
-        creat_sprite_group(self.chessmans, self.env.board.chessmans_hash)
         current_chessman = None
         if human_first:
             self.env.board.calc_chessmans_moving_list()
@@ -95,7 +99,7 @@ class PlayWithHuman:
                     self.chessman_h = int(self.chessman_h * event.h / self.height)
                     self.width = event.w
                     self.height = event.h
-
+                    screen, background = self.init_screen()
                 elif event.type == MOUSEBUTTONDOWN:
                     if human_first == self.env.red_to_move:
                         pressed_array = pygame.mouse.get_pressed()
@@ -116,7 +120,6 @@ class PlayWithHuman:
                                         chessman_sprite.is_selected = True
                                     else:
                                         success = current_chessman.move(col_num, row_num, self.chessman_w, self.chessman_h)
-                                        print(current_chessman.rect)
                                         if success:
                                             self.chessmans.remove(chessman_sprite)
                                             chessman_sprite.kill()
@@ -176,12 +179,12 @@ class Chessman_Sprite(pygame.sprite.Sprite):
     images = []
     is_transparent = False
 
-    def __init__(self, images, chessman):
+    def __init__(self, images, chessman, w=80, h=80):
         pygame.sprite.Sprite.__init__(self)
         self.chessman = chessman
-        self.images = images
+        self.images = [pygame.transform.scale(image, (w, h)) for image in images]
         self.image = self.images[0]
-        self.rect = Rect(chessman.col_num * 80, (9 - chessman.row_num) * 80, 80, 80)
+        self.rect = Rect(chessman.col_num * w, (9 - chessman.row_num) * h, w, h)
 
     def move(self, col_num, row_num, w=80, h=80):
         # print self.chessman.name, col_num, row_num
@@ -225,7 +228,7 @@ def load_images(*files):
         imgs.append(load_image(file))
     return imgs
 
-def creat_sprite_group(sprite_group, chessmans_hash):
+def creat_sprite_group(sprite_group, chessmans_hash, w, h):
     for chess in chessmans_hash.values():
         if chess.is_red:
             if isinstance(chess, Rook):
@@ -257,7 +260,7 @@ def creat_sprite_group(sprite_group, chessmans_hash):
                 images = load_images("black_mandarin.gif", "transparent.gif")
             else:
                 images = load_images("black_pawn.gif", "transparent.gif")
-        chessman_sprite = Chessman_Sprite(images, chess)
+        chessman_sprite = Chessman_Sprite(images, chess, w, h)
         sprite_group.add(chessman_sprite)
 
 def select_sprite_from_group(sprite_group, col_num, row_num):
