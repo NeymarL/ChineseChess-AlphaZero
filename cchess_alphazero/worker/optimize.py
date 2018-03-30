@@ -9,6 +9,7 @@ from logging import getLogger
 from time import sleep
 from random import shuffle
 
+import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.agent.model import CChessModel
 from cchess_alphazero.config import Config
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, read_game_data_from_file
