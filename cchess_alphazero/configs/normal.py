@@ -44,7 +44,7 @@ class PlayConfig:
         self.dirichlet_alpha = 0.2
         self.tau_decay_rate = 0.7
         self.virtual_loss = 3
-        self.resign_threshold = -0.92
+        self.resign_threshold = -0.95
         self.min_resign_turn = 40
         self.enable_resign_rate = 0.5
         self.max_game_length = 70

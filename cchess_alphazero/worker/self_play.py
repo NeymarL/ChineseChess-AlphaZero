@@ -104,6 +104,7 @@ class SelfPlayWorker:
             end_time = time()
             if action is None:
                 logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
+                value = -1
                 break
             # logger.debug(f"Process{self.pid} Playing: {turns % 2}, action: {action}, time: {(end_time - start_time):.1f}s")
             # for move, action_state in self.player.search_results.items():
