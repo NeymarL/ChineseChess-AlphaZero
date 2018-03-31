@@ -173,7 +173,7 @@ class SelfPlayWorker:
         #     logger.error(f"COM ERROR {e}, cmd = {cmd}")
         out, err = p.communicate(cmd)
         lines = out.split('\n')
-        move =  lines[-3].split(' ')[1]
+        move = lines[-3].split(' ')[1]
         return senv.parse_ucci_move(move)
 
     def save_play_data(self, idx, data):

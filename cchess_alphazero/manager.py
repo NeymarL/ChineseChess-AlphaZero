@@ -86,5 +86,5 @@ def start():
         from cchess_alphazero.play_games import ob_self_play
         pwhc = PlayWithHumanConfig()
         pwhc.update_play_config(config.play)
-        ob_self_play.start(config)
+        ob_self_play.start(config, args.ucci, args.ai_move_first)
         

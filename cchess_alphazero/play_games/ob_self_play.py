@@ -16,9 +16,12 @@ from cchess_alphazero.lib.tf_util import set_session_config
 
 logger = getLogger(__name__)
 
-def start(config: Config):
+def start(config: Config, ucci=False, ai_move_first=True):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
-    play = ObSelfPlay(config)
+    if not ucci:
+        play = ObSelfPlay(config)
+    else:
+        play = ObSelfPlayUCCI(config, ai_move_first)
     play.start()
 
 class ObSelfPlay:
@@ -73,3 +76,83 @@ class ObSelfPlay:
         self.ai.close()
         print(f"胜者是 is {self.env.board.winner} !!!")
         self.env.board.print_record()
+
+class ObSelfPlayUCCI:
+    def __init__(self, config: Config, ai_move_first=True):
+        self.config = config
+        self.env = CChessEnv()
+        self.model = None
+        self.pipe = None
+        self.ai = None
+        self.chessmans = None
+        self.ai_move_first = ai_move_first
+
+    def load_model(self):
+        self.model = CChessModel(self.config)
+        if self.config.opts.new or not load_best_model_weight(self.model):
+            self.model.build()
+
+    def start(self):
+        self.env.reset()
+        self.load_model()
+        self.pipe = self.model.get_pipes()
+        self.ai = CChessPlayer(self.config, search_tree=defaultdict(VisitState), pipes=self.pipe,
+                              enable_resign=True, debugging=False)
+
+        labels = ActionLabelsRed
+        labels_n = len(ActionLabelsRed)
+
+        self.env.board.print_to_cl()
+        history = [self.env.get_state()]
+        turns = 0
+
+        while not self.env.board.is_end():
+            if (self.ai_move_first and turns % 2 == 0) or (not self.ai_move_first and turns % 2 == 1):
+                no_act = None
+                state = self.env.get_state()
+                if state in history[:-1]:
+                    no_act = []
+                    for i in range(len(history) - 1):
+                        if history[i] == state:
+                            no_act.append(history[i + 1])
+                action, _ = self.ai.action(state, self.env.num_halfmoves, no_act)
+                if action is None:
+                    print("AlphaZero 投降了!")
+                    break
+                if not self.env.red_to_move:
+                    action = flip_move(action)
+                move = self.env.board.make_single_record(int(action[0]), int(action[1]), int(action[2]), int(action[3]))
+                print(f"AlphaZero 选择移动 {move}")
+            else:
+                state = self.env.get_state()
+                fen = senv.state_to_fen(state, turns)
+                action = self.get_ucci_move(fen)
+                move = self.env.board.make_single_record(int(action[0]), int(action[1]), int(action[2]), int(action[3]))
+                print(f"Eleeye 选择移动 {move}")
+            history.append(action)
+            self.env.step(action)
+            history.append(self.env.get_state())
+            self.env.board.print_to_cl()
+            turns += 1
+            sleep(1)
+
+        self.ai.close()
+        print(f"胜者是 is {self.env.board.winner} !!!")
+        self.env.board.print_record()
+
+    def get_ucci_move(self, fen, time=1000):
+        p = subprocess.Popen(self.config.resource.eleeye_path,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            universal_newlines=True)
+        fen = f'position fen {fen}\n'
+        cmd = 'ucci\n' + fen + f'go time {time}\n' + 'quit\n'
+        # try:
+        #     out, err = p.communicate(cmd)
+        # except Exception as e:
+        #     logger.error(f"COM ERROR {e}, cmd = {cmd}")
+        out, err = p.communicate(cmd)
+        lines = out.split('\n')
+        move = lines[-3].split(' ')[1]
+        return senv.parse_ucci_move(move)
