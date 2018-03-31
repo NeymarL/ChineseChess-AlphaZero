@@ -170,9 +170,12 @@ class SelfPlayWorker:
         cmd = 'ucci\n' + setrandom + setfen + f'go time {time * 1000}\n'
         try:
             out, err = p.communicate(cmd, timeout=time+0.5)
-        except:
+        except TimeoutExpired:
             p.kill()
             out, err = p.communicate()
+        except Exception as e:
+            logger.error(f"{e}, cmd = {cmd}")
+            return self.get_ucci_move(fen, time+1)
         lines = out.split('\n')
         move = lines[-2].split(' ')[1]
         if move == 'depth':
