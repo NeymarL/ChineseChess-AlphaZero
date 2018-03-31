@@ -222,5 +222,5 @@ class SelfPlayWorker:
 
         if flip:
             policy = flip_policy(policy)
-        return policy
+        return list(policy)
 
