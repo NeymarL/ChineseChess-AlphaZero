@@ -30,7 +30,7 @@ def load_model(config, config_path, weight_path, name=None):
     return model
 
 def start(config: Config):
-    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list='0,1')
+    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list='0')
     model1 = load_model(config, config.resource.eval_model1_config_path, config.resource.eval_model1_weight_path, 
                         config.resource.model1_name)
     model2 = load_model(config, config.resource.eval_model2_config_path, config.resource.eval_model2_weight_path, 
