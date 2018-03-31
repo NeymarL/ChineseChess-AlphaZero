@@ -96,7 +96,7 @@ class SelfPlayWorker:
         is_alpha_red = True if idx % 2 == 0 else False
 
         while not game_over:
-            if is_alpha_red and turns % 2 == 0:
+            if (is_alpha_red and turns % 2 == 0) or (not is_alpha_red and turns % 2 == 1):
                 no_act = None
                 if state in history[:-1]:
                     no_act = []
