@@ -176,6 +176,24 @@ def test_onegreen2():
     print(env.observation)
     env.render()
 
+def test_ucci():
+    import cchess_alphazero.environment.static_env as senv
+    from cchess_alphazero.environment.lookup_tables import flip_move
+    state = senv.INIT_STATE
+    state = senv.step(state, '0001')
+    fen = senv.state_to_fen(state, 1)
+    print(fen)
+    senv.render(state)
+    move = 'b7b0'
+    move = senv.parse_ucci_move(move)
+    print(f'Parsed move {move}')
+    move = flip_move(move)
+    print(f'fliped move {move}')
+    state = senv.step(state, move)
+    senv.render(state)
+    fen = senv.state_to_fen(state, 2)
+    print(fen)
+
 if __name__ == "__main__":
-    test_onegreen()
+    test_ucci()
     

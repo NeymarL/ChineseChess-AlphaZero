@@ -35,6 +35,7 @@ class ResourceConfig:
         self.model_best_weight_path = os.path.join(self.model_dir, "model_best_weight.h5")
         self.sl_best_config_path = os.path.join(self.model_dir, "sl_best_config.json")
         self.sl_best_weight_path = os.path.join(self.model_dir, "sl_best_weight.h5")
+        self.eleeye_path = os.path.join(self.model_dir, 'ELEEYE')
 
         self.next_generation_model_dir = os.path.join(self.model_dir, "next_generation")
         self.next_generation_config_path = os.path.join(self.next_generation_model_dir, "next_generation_config.json")

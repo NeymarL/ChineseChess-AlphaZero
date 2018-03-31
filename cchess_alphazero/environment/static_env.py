@@ -129,6 +129,30 @@ def board_to_state(board):
             fen = fen + '/'
     return fen
 
+def state_to_fen(state, turns):
+    fen = ''
+    state = "".join([state_to_board_dict[s] if s.isalpha() else s for s in state])
+    fen = state + f' w - - 0 {turns}'
+    if turns % 2 == 0:  # red turn
+        return fen
+    else:
+        return flip_fen(fen)
+
+def flip_fen(fen):
+    foo = fen.split(' ')
+    rows = foo[0].split('/')
+    def swapcase(a):
+        if a.isalpha():
+            return a.lower() if a.isupper() else a.upper()
+        return a
+    def swapall(aa):
+        return "".join([swapcase(a) for a in aa])
+
+    return "/".join([swapall(reversed(row)) for row in reversed(rows)]) \
+        + " " + ('w' if foo[1] == 'b' else 'b') \
+        + " " + foo[2] \
+        + " " + foo[3] + " " + foo[4] + " " + foo[5]
+
 def fliped_state(state):
     rows = state.split('/')
     def swapcase(a):
@@ -262,4 +286,9 @@ def parse_onegreen_move(move):
     x0, y0 = int(move[0]), 9 - int(move[1])
     x1, y1 = int(move[2]), 9 - int(move[3])
     return str(x0) + str(y0) + str(x1) + str(y1)
+
+def parse_ucci_move(move):
+    x0, x1 = ord(move[0]) - ord('a'), ord(move[2]) - ord('a')
+    move = str(x0) + move[1] + str(x1) + move[3]
+    return move
     
