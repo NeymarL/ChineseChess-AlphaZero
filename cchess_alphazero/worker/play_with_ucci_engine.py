@@ -167,10 +167,11 @@ class SelfPlayWorker:
                             universal_newlines=True)
         fen = f'position fen {fen}\n'
         cmd = 'ucci\n' + fen + f'go time {time}\n' + 'quit\n'
-        try:
-            out, err = p.communicate(cmd)
-        except Exception as e:
-            logger.error(f"COM ERROR {e}, cmd = {cmd}")
+        # try:
+        #     out, err = p.communicate(cmd)
+        # except Exception as e:
+        #     logger.error(f"COM ERROR {e}, cmd = {cmd}")
+        out, err = p.communicate(cmd)
         lines = out.split('\n')
         move =  lines[-3].split(' ')[1]
         return senv.parse_ucci_move(move)
