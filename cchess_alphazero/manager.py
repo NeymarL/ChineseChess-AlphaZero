@@ -20,6 +20,7 @@ def create_parser():
     parser.add_argument("--gpu", help="device list", default="0,1")
     parser.add_argument("--onegreen", help="train sl work with onegreen data", action="store_true")
     parser.add_argument("--skip", help="skip games", default=0, type=int)
+    parser.add_argument("--ucci", help="play with ucci engine instead of self play", action="store_true")
     return parser
 
 def setup(config: Config, args):
@@ -29,8 +30,6 @@ def setup(config: Config, args):
     config.opts.device_list = args.gpu
     config.resource.create_directories()
     if args.cmd == 'self':
-        setup_logger(config.resource.main_log_path)
-    elif args.cmd == 'self2':
         setup_logger(config.resource.main_log_path)
     elif args.cmd == 'opt':
         setup_logger(config.resource.opt_log_path)
@@ -52,13 +51,12 @@ def start():
     logger.info('Config type: %s' % (config_type))
 
     if args.cmd == 'self':
-        from cchess_alphazero.worker import self_play
+        if args.ucci:
+            import cchess_alphazero.worker.play_with_ucci_engine as self_play
+        else:
+            from cchess_alphazero.worker import self_play
         config.opts.light = True    # use lighten environment
         return self_play.start(config)
-    elif args.cmd == 'self2':
-        from cchess_alphazero.worker import self_play2
-        config.opts.light = True    # use lighten environment
-        return self_play2.start(config)
     elif args.cmd == 'opt':
         from cchess_alphazero.worker import optimize
         return optimize.start(config)
