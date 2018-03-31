@@ -179,10 +179,11 @@ class SelfPlayWorker:
             out, err = p.communicate(cmd, timeout=time+0.5)
         except subprocess.TimeoutExpired:
             p.kill()
-            out, err = p.communicate()
-        except Exception as e:
-            logger.error(f"{e}, cmd = {cmd}")
-            return self.get_ucci_move(fen, time+1)
+            try:
+                out, err = p.communicate()
+            except Exception as e:
+                logger.error(f"{e}, cmd = {cmd}")
+                return self.get_ucci_move(fen, time+1)
         lines = out.split('\n')
         move = lines[-2].split(' ')[1]
         if move == 'depth':
