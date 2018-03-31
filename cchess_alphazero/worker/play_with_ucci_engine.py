@@ -114,8 +114,8 @@ class SelfPlayWorker:
                     action = flip_move(action)
                 try:
                     policy = self.build_policy(action, False)
-                except:
-                    logger.error(f"Build policy error, action = {action}, state = {state}, fen = {fen}")
+                except Exception as e:
+                    logger.error(f"Build policy error {e}, action = {action}, state = {state}, fen = {fen}")
                     value = 0
                     break
             history.append(action)
