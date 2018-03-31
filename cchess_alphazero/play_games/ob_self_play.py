@@ -131,6 +131,7 @@ class ObSelfPlayUCCI:
                 fen = senv.state_to_fen(state, turns)
                 print(f"fen = {fen}")
                 action = self.get_ucci_move(fen)
+                print(action)
                 if not self.env.red_to_move:
                     rec_action = flip_move(action)
                 move = self.env.board.make_single_record(int(rec_action[0]), int(rec_action[1]), int(rec_action[2]), int(rec_action[3]))
@@ -157,4 +158,5 @@ class ObSelfPlayUCCI:
         out, err = p.communicate(cmd)
         lines = out.split('\n')
         move = lines[-3].split(' ')[1]
+        print(move)
         return senv.parse_ucci_move(move)
