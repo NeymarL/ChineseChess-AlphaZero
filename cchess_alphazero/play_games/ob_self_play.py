@@ -154,14 +154,13 @@ class ObSelfPlayUCCI:
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
         fen = f'position fen {fen}\n'
-        cmd = 'ucci\n' + fen + f'go time {time * 1000}\n' + 'quit\n'
+        cmd = 'ucci\n' + fen + f'go time {time * 1000}\n'
         try:
             out, err = p.communicate(cmd, timeout=time)
         except:
             p.kill()
             out, err = p.communicate()
         lines = out.split('\n')
-        print(out)
         move = lines[-2].split(' ')[1]
         print(move)
         return senv.parse_ucci_move(move)
