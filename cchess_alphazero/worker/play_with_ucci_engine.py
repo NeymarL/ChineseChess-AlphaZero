@@ -166,14 +166,14 @@ class SelfPlayWorker:
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
         fen = f'position fen {fen}\n'
-        cmd = 'ucci\n' + fen + f'go time {time}\n' + 'quit\n'
-        # try:
-        #     out, err = p.communicate(cmd)
-        # except Exception as e:
-        #     logger.error(f"COM ERROR {e}, cmd = {cmd}")
-        out, err = p.communicate(cmd)
+        cmd = 'ucci\n' + fen + f'go time {time * 1000}\n'
+        try:
+            out, err = p.communicate(cmd, timeout=time)
+        except:
+            p.kill()
+            out, err = p.communicate()
         lines = out.split('\n')
-        move = lines[-3].split(' ')[1]
+        move = lines[-2].split(' ')[1]
         return senv.parse_ucci_move(move)
 
     def save_play_data(self, idx, data):

@@ -159,6 +159,7 @@ class ObSelfPlayUCCI:
         except:
             p.kill()
             out, err = p.communicate()
+        print(out)
         lines = out.split('\n')
         move = lines[-2].split(' ')[1]
         return senv.parse_ucci_move(move)
