@@ -154,7 +154,7 @@ class ObSelfPlayUCCI:
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
         fen = f'position fen {fen}\n'
-        cmd = 'ucci\n' + fen + f'go time {time * 1000}\n'
+        cmd = 'ucci\n' + fen + f'go time {3000}\n'
         try:
             out, err = p.communicate(cmd, timeout=time)
         except:
