@@ -170,7 +170,7 @@ class SelfPlayWorker:
         cmd = 'ucci\n' + setrandom + setfen + f'go time {time * 1000}\n'
         try:
             out, err = p.communicate(cmd, timeout=time+0.5)
-        except TimeoutExpired:
+        except subprocess.TimeoutExpired:
             p.kill()
             out, err = p.communicate()
         except Exception as e:
