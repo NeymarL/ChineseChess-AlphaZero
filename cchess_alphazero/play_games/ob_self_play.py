@@ -154,8 +154,9 @@ class ObSelfPlayUCCI:
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
-        fen = f'position fen {fen}\n'
-        cmd = 'ucci\n' + fen + f'go time {time * 1000}\n'
+        setfen = f'position fen {fen}\n'
+        setrandom = 'setoption randomness small\n'
+        cmd = 'ucci\n' + setrandom + setfen + f'go time {time * 1000}\n'
         try:
             out, err = p.communicate(cmd, timeout=time+0.5)
         except:
