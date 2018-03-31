@@ -129,7 +129,6 @@ class ObSelfPlayUCCI:
             else:
                 state = self.env.get_state()
                 fen = senv.state_to_fen(state, turns)
-                print(f"fen = {fen}")
                 action = self.get_ucci_move(fen)
                 print(action)
                 if not self.env.red_to_move:
@@ -147,14 +146,14 @@ class ObSelfPlayUCCI:
         print(f"胜者是 is {self.env.board.winner} !!!")
         self.env.board.print_record()
 
-    def get_ucci_move(self, fen, time=4):
+    def get_ucci_move(self, fen, time=3):
         p = subprocess.Popen(self.config.resource.eleeye_path,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
         fen = f'position fen {fen}\n'
-        cmd = 'ucci\n' + fen + f'go time {3000}\n'
+        cmd = 'ucci\n' + fen + f'go time {time * 1000}\n'
         try:
             out, err = p.communicate(cmd, timeout=time)
         except:
@@ -162,5 +161,4 @@ class ObSelfPlayUCCI:
             out, err = p.communicate()
         lines = out.split('\n')
         move = lines[-2].split(' ')[1]
-        print(cmd, out, move)
         return senv.parse_ucci_move(move)
