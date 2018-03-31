@@ -155,11 +155,13 @@ class ObSelfPlayUCCI:
         fen = f'position fen {fen}\n'
         cmd = 'ucci\n' + fen + f'go time {time * 1000}\n'
         try:
-            out, err = p.communicate(cmd, timeout=time)
+            out, err = p.communicate(cmd, timeout=time+0.5)
         except:
             p.kill()
             out, err = p.communicate()
         print(out)
         lines = out.split('\n')
         move = lines[-2].split(' ')[1]
+        if move == 'depth':
+            move = lines[-1].split(' ')[6]
         return senv.parse_ucci_move(move)
