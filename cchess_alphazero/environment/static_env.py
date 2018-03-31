@@ -270,7 +270,7 @@ def swapcase(a, s2b=False):
 def render(state):
     board = state_to_board(state)
     for i in range(9, -1, -1):
-        print(board[i])
+        logger.debug(board[i])
 
 def init(pos):
     board = [['.' for col in range(BOARD_WIDTH)] for row in range(BOARD_HEIGHT)]

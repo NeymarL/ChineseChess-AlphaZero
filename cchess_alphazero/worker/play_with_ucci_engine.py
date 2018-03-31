@@ -66,8 +66,15 @@ class SelfPlayWorker:
             start_time = time()
             value, turns, state, search_tree, store = self.start_game(idx, search_tree)
             end_time = time()
+            if value != 1 and value != -1:
+                winner = 'Draw'
+            elif idx % 2 == 0 and value == 1 or idx % 2 == 1 and value == -1:
+                winner = 'AlphaZero'
+            else:
+                winner = 'Eleeye'
+
             logger.debug(f"Process {self.pid}-{self.id} play game {idx} time={(end_time - start_time):.1f} sec, "
-                         f"turn={turns / 2}, winner = {value:.2f} (1 = red, -1 = black, 0 draw)")
+                         f"turn={turns / 2}, value = {value:.2f}, winner is {winner}")
             if turns <= 10:
                 senv.render(state)
             if store:
