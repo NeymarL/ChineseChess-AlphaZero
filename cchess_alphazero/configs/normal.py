@@ -36,7 +36,7 @@ class PlayConfig:
         self.max_processes = 10
         self.search_threads = 8
         self.vram_frac = 1.0
-        self.simulation_num_per_move = 80
+        self.simulation_num_per_move = 800
         self.thinking_loop = 1
         self.logging_thinking = False
         self.c_puct = 1.5

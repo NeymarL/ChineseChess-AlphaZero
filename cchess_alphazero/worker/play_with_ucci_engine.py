@@ -37,14 +37,14 @@ def start(config: Config):
     m = Manager()
     cur_pipes = m.list([current_model.get_pipes() for _ in range(config.play.max_processes)])
 
-    play_worker = SelfPlayWorker(config, cur_pipes, 0)
-    play_worker.start()
-    # with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-    #     futures = []
-    #     for i in range(config.play.max_processes):
-    #         play_worker = SelfPlayWorker(config, cur_pipes, i)
-    #         logger.debug("Initialize selfplay worker")
-    #         futures.append(executor.submit(play_worker.start))
+    # play_worker = SelfPlayWorker(config, cur_pipes, 0)
+    # play_worker.start()
+    with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+        futures = []
+        for i in range(config.play.max_processes):
+            play_worker = SelfPlayWorker(config, cur_pipes, i)
+            logger.debug("Initialize selfplay worker")
+            futures.append(executor.submit(play_worker.start))
 
 class SelfPlayWorker:
     def __init__(self, config: Config, pipes=None, pid=None):
@@ -131,7 +131,7 @@ class SelfPlayWorker:
             else:
                 game_over, value = senv.done(state)
 
-        if turns < 10:
+        if turns < 8:
             logger.debug(f"history = {history}")
 
         self.player.close()
@@ -174,6 +174,8 @@ class SelfPlayWorker:
             out, err = p.communicate()
         lines = out.split('\n')
         move = lines[-2].split(' ')[1]
+        if move == 'depth':
+            move = lines[-1].split(' ')[6]
         return senv.parse_ucci_move(move)
 
     def save_play_data(self, idx, data):
