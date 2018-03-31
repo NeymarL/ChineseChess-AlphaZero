@@ -129,9 +129,12 @@ class ObSelfPlayUCCI:
             else:
                 state = self.env.get_state()
                 fen = senv.state_to_fen(state, turns)
+                print(f"fen = {fen}")
                 action = self.get_ucci_move(fen)
-                # move = self.env.board.make_single_record(int(action[0]), int(action[1]), int(action[2]), int(action[3]))
-                print(f"Eleeye 选择移动 {action}")
+                if not self.env.red_to_move:
+                    rec_action = flip_move(action)
+                move = self.env.board.make_single_record(int(rec_action[0]), int(rec_action[1]), int(rec_action[2]), int(rec_action[3]))
+                print(f"Eleeye 选择移动 {move}")
             history.append(action)
             self.env.step(action)
             history.append(self.env.get_state())
@@ -151,10 +154,6 @@ class ObSelfPlayUCCI:
                             universal_newlines=True)
         fen = f'position fen {fen}\n'
         cmd = 'ucci\n' + fen + f'go time {time}\n' + 'quit\n'
-        # try:
-        #     out, err = p.communicate(cmd)
-        # except Exception as e:
-        #     logger.error(f"COM ERROR {e}, cmd = {cmd}")
         out, err = p.communicate(cmd)
         lines = out.split('\n')
         move = lines[-3].split(' ')[1]
