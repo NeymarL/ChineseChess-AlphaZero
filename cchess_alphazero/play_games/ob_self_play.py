@@ -156,6 +156,8 @@ class ObSelfPlayUCCI:
         fen = f'position fen {fen}\n'
         cmd = 'ucci\n' + fen + f'go time {time}\n' + 'quit\n'
         out, err = p.communicate(cmd)
+        print(cmd)
+        print(out)
         lines = out.split('\n')
         move = lines[-3].split(' ')[1]
         print(move)
