@@ -159,7 +159,7 @@ class SelfPlayWorker:
         self.remove_play_data()
         return v, turns, state, search_tree, store
 
-    def get_ucci_move(self, fen, time=1000):
+    def get_ucci_move(self, fen, time=3):
         p = subprocess.Popen(self.config.resource.eleeye_path,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
@@ -168,7 +168,7 @@ class SelfPlayWorker:
         fen = f'position fen {fen}\n'
         cmd = 'ucci\n' + fen + f'go time {time * 1000}\n'
         try:
-            out, err = p.communicate(cmd, timeout=time)
+            out, err = p.communicate(cmd, timeout=time+0.5)
         except:
             p.kill()
             out, err = p.communicate()
