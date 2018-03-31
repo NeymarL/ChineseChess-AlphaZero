@@ -133,7 +133,7 @@ class SelfPlayWorker:
 
         if turns < 10:
             logger.debug(f"history = {history}")
-        
+
         self.player.close()
         if turns % 2 == 1:  # balck turn
             value = -value
@@ -159,7 +159,7 @@ class SelfPlayWorker:
         self.remove_play_data()
         return v, turns, state, search_tree, store
 
-    def get_ucci_move(self, fen, time=3000):
+    def get_ucci_move(self, fen, time=1000):
         p = subprocess.Popen(self.config.resource.eleeye_path,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
