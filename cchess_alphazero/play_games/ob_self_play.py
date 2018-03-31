@@ -122,16 +122,16 @@ class ObSelfPlayUCCI:
                 if action is None:
                     print("AlphaZero 投降了!")
                     break
-                if not self.env.red_to_move:
-                    action = flip_move(action)
                 move = self.env.board.make_single_record(int(action[0]), int(action[1]), int(action[2]), int(action[3]))
                 print(f"AlphaZero 选择移动 {move}")
+                if not self.env.red_to_move:
+                    action = flip_move(action)
             else:
                 state = self.env.get_state()
                 fen = senv.state_to_fen(state, turns)
                 action = self.get_ucci_move(fen)
-                move = self.env.board.make_single_record(int(action[0]), int(action[1]), int(action[2]), int(action[3]))
-                print(f"Eleeye 选择移动 {move}")
+                # move = self.env.board.make_single_record(int(action[0]), int(action[1]), int(action[2]), int(action[3]))
+                print(f"Eleeye 选择移动 {action}")
             history.append(action)
             self.env.step(action)
             history.append(self.env.get_state())
