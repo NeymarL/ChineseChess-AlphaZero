@@ -131,6 +131,9 @@ class SelfPlayWorker:
             else:
                 game_over, value = senv.done(state)
 
+        if turns < 10:
+            logger.debug(f"history = {history}")
+        
         self.player.close()
         if turns % 2 == 1:  # balck turn
             value = -value
