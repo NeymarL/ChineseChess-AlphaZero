@@ -216,7 +216,7 @@ class Chessboard(object):
                     self.winner = Winner.red
                 else:
                     self.winner = Winner.black
-        else:
+        if self.winner is None:
             legal_moves = self.legal_moves()
             if self.is_red_turn:
                 target = black_king.position
