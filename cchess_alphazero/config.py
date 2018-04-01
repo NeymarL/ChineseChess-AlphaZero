@@ -78,7 +78,7 @@ class Options:
 class PlayWithHumanConfig:
     def __init__(self):
         self.simulation_num_per_move = 800
-        self.c_puct = 1.5
+        self.c_puct = 1
         self.search_threads = 10
         self.noise_eps = 0.15
         self.tau_decay_rate = 0

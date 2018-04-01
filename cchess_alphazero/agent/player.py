@@ -89,14 +89,14 @@ class CChessPlayer:
                     self.pipe.send(t_data)
                 else:
                     self.run_lock.release()
-                    sleep(0.0001)
+                    sleep(0.001)
 
     def receiver(self):
         '''
         receive policy and value from neural network
         '''
         while not self.job_done:
-            if self.pipe.poll(0.0001):
+            if self.pipe.poll(0.001):
                 rets = self.pipe.recv()
             else:
                 continue
@@ -143,7 +143,7 @@ class CChessPlayer:
         """
         while True:
             # logger.debug(f"start MCTS, state = {state}, history = {history}")
-            game_over, v = senv.done(state)
+            game_over, v, _ = senv.done(state)
             if game_over:
                 self.executor.submit(self.update_tree, None, v, history)
                 break
