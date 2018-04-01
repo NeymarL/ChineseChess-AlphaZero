@@ -42,7 +42,7 @@ class PlayConfig:
         self.c_puct = 1.5
         self.noise_eps = 0.15
         self.dirichlet_alpha = 0.2
-        self.tau_decay_rate = 0.9
+        self.tau_decay_rate = 0.7
         self.virtual_loss = 3
         self.resign_threshold = -0.98
         self.min_resign_turn = 40
