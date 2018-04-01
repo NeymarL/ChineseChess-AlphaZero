@@ -117,7 +117,10 @@ class ObSelfPlayUCCI:
                     no_act = []
                     for i in range(len(history) - 1):
                         if history[i] == state:
-                            no_act.append(history[i + 1])
+                            act = history[i + 1]
+                            if not self.env.red_to_move:
+                                act = flip_move(act)
+                            no_act.append(act)
                 action, _ = self.ai.action(state, self.env.num_halfmoves, no_act)
                 if action is None:
                     print("AlphaZero 投降了!")
