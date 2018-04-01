@@ -7,7 +7,9 @@ from cchess_alphazero.config import Config, PlayWithHumanConfig
 
 logger = getLogger(__name__)
 
-CMD_LIST = ['self', 'opt', 'eval', 'play', 'self2', 'eval', 'sl', 'ob']
+CMD_LIST = ['self', 'opt', 'eval', 'play', 'eval', 'sl', 'ob']
+PIECE_STYLE_LIST = ['WOOD', 'POLISH', 'DELICATE']
+BG_STYLE_LIST = ['CANVAS', 'DROPS', 'GREEN', 'QIANHONG', 'SHEET', 'SKELETON', 'WHITE', 'WOOD']
 
 def create_parser():
     parser = argparse.ArgumentParser()
@@ -21,6 +23,8 @@ def create_parser():
     parser.add_argument("--onegreen", help="train sl work with onegreen data", action="store_true")
     parser.add_argument("--skip", help="skip games", default=0, type=int)
     parser.add_argument("--ucci", help="play with ucci engine instead of self play", action="store_true")
+    parser.add_argument("--piece-style", help="choose a style of piece", choices=PIECE_STYLE_LIST, default="WOOD")
+    parser.add_argument("--bg-style", help="choose a style of board", choices=BG_STYLE_LIST, default="WOOD")
     return parser
 
 def setup(config: Config, args):
@@ -49,6 +53,8 @@ def start():
     setup(config, args)
 
     logger.info('Config type: %s' % (config_type))
+    config.opts.piece_style = args.piece_style
+    config.opts.bg_style = args.bg_style
 
     if args.cmd == 'self':
         if args.ucci:

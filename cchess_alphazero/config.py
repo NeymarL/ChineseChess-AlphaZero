@@ -72,10 +72,12 @@ class Options:
     new = False
     light = True
     device_list = '0,1'
+    bg_style = 'CANVAS'
+    piece_style = 'WOOD'
 
 class PlayWithHumanConfig:
     def __init__(self):
-        self.simulation_num_per_move = 800
+        self.simulation_num_per_move = 200
         self.c_puct = 1.5
         self.search_threads = 10
         self.noise_eps = 0.15

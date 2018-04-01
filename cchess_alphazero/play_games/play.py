@@ -23,9 +23,11 @@ from cchess_alphazero.lib.model_helper import load_best_model_weight
 
 logger = getLogger(__name__)
 main_dir = os.path.split(os.path.abspath(__file__))[0]
-SCREENRECT = Rect(0, 0, 720, 800)
+PIECE_STYLE = 'WOOD'
 
 def start(config: Config, human_move_first=True):
+    global PIECE_STYLE
+    PIECE_STYLE = config.opts.piece_style
     play = PlayWithHuman(config)
     play.start(human_move_first)
 
@@ -39,10 +41,10 @@ class PlayWithHuman:
         self.winstyle = pygame.RESIZABLE
         self.chessmans = None
         self.human_move_first = True
-        self.height = 800
-        self.width = 720
-        self.chessman_w = 80
-        self.chessman_h = 80
+        self.height = 577
+        self.width = 521
+        self.chessman_w = 57
+        self.chessman_h = 57
 
     def load_model(self):
         self.model = CChessModel(self.config)
@@ -52,9 +54,9 @@ class PlayWithHuman:
     def init_screen(self):
         bestdepth = pygame.display.mode_ok([self.width, self.height], self.winstyle, 32)
         screen = pygame.display.set_mode([self.width, self.height], self.winstyle, bestdepth)
-        pygame.display.set_caption("中国象棋-AlphaZero")
+        pygame.display.set_caption("中国象棋-AlphaHe")
         # create the background, tile the bgd image
-        bgdtile = load_image('boardchess.gif')
+        bgdtile = load_image(f'{self.config.opts.bg_style}.gif')
         bgdtile = pygame.transform.scale(bgdtile, (self.width, self.height))
         background = pygame.Surface([self.width, self.height])
         for x in range(0, self.width, bgdtile.get_width()):
@@ -203,18 +205,22 @@ class Chessman_Sprite(pygame.sprite.Sprite):
 
     def update(self):
         if self.is_selected:
-            if self.is_transparent:
-                self.image = self.images[1]
-            else:
-                self.image = self.images[0]
-            self.is_transparent = not self.is_transparent
+            self.image = self.images[1]
+            # if self.is_transparent:
+            #     self.image = self.images[1]
+            # else:
+            #     self.image = self.images[0]
+            # self.is_transparent = not self.is_transparent
         else:
             self.image = self.images[0]
 
 
-def load_image(file):
+def load_image(file, sub_dir=None):
     '''loads an image, prepares it for play'''
-    file = os.path.join(main_dir, 'images', file)
+    if sub_dir:
+        file = os.path.join(main_dir, 'images', sub_dir, file)
+    else:
+        file = os.path.join(main_dir, 'images', file)
     try:
         surface = pygame.image.load(file)
     except pygame.error:
@@ -223,43 +229,44 @@ def load_image(file):
     return surface.convert()
 
 def load_images(*files):
+    global PIECE_STYLE
     imgs = []
     for file in files:
-        imgs.append(load_image(file))
+        imgs.append(load_image(file, PIECE_STYLE))
     return imgs
 
 def creat_sprite_group(sprite_group, chessmans_hash, w, h):
     for chess in chessmans_hash.values():
         if chess.is_red:
             if isinstance(chess, Rook):
-                images = load_images("red_rook.gif", "transparent.gif")
+                images = load_images("RR.gif", "RRS.gif")
             elif isinstance(chess, Cannon):
-                images = load_images("red_cannon.gif", "transparent.gif")
+                images = load_images("RC.gif", "RCS.gif")
             elif isinstance(chess, Knight):
-                images = load_images("red_knight.gif", "transparent.gif")
+                images = load_images("RN.gif", "RNS.gif")
             elif isinstance(chess, King):
-                images = load_images("red_king.gif", "transparent.gif")
+                images = load_images("RK.gif", "RKS.gif")
             elif isinstance(chess, Elephant):
-                images = load_images("red_elephant.gif", "transparent.gif")
+                images = load_images("RB.gif", "RBS.gif")
             elif isinstance(chess, Mandarin):
-                images = load_images("red_mandarin.gif", "transparent.gif")
+                images = load_images("RA.gif", "RAS.gif")
             else:
-                images = load_images("red_pawn.gif", "transparent.gif")
+                images = load_images("RP.gif", "RPS.gif")
         else:
             if isinstance(chess, Rook):
-                images = load_images("black_rook.gif", "transparent.gif")
+                images = load_images("BR.gif", "BRS.gif")
             elif isinstance(chess, Cannon):
-                images = load_images("black_cannon.gif", "transparent.gif")
+                images = load_images("BC.gif", "BCS.gif")
             elif isinstance(chess, Knight):
-                images = load_images("black_knight.gif", "transparent.gif")
+                images = load_images("BN.gif", "BNS.gif")
             elif isinstance(chess, King):
-                images = load_images("black_king.gif", "transparent.gif")
+                images = load_images("BK.gif", "BKS.gif")
             elif isinstance(chess, Elephant):
-                images = load_images("black_elephant.gif", "transparent.gif")
+                images = load_images("BB.gif", "BBS.gif")
             elif isinstance(chess, Mandarin):
-                images = load_images("black_mandarin.gif", "transparent.gif")
+                images = load_images("BA.gif", "BAS.gif")
             else:
-                images = load_images("black_pawn.gif", "transparent.gif")
+                images = load_images("BP.gif", "BPS.gif")
         chessman_sprite = Chessman_Sprite(images, chess, w, h)
         sprite_group.add(chessman_sprite)
 

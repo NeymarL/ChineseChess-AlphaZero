@@ -88,6 +88,7 @@ options
 * `--new`: create new BestModel
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--gpu '1'`: specify which gpu to use
+* `--ucci`: whether to play with ucci engine (rather than self play, see `cchess_alphazero/worker/play_with_ucci_engine.py`)
 
 #### Trainer
 
@@ -124,6 +125,9 @@ options
 * `--ai-move-first`: if set this option, AI will move first, otherwise human move first.
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--gpu '1'`: specify which gpu to use
+* `--piece-style`: choose a piece style, default is `WOOD`
+* `--bg-style`: choose a board style, default is `CANVAS`
+* `--cli`: if set this flag, play with AI in a cli environment rather than gui
 
 #### Evaluator
 
@@ -154,4 +158,5 @@ options
 
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--gpu '1'`: specify which gpu to use
-* `--onegreen`: if set the flag, `sl_onegreen` worker will start to train data crawled from `game.onegreen.net`.
+* `--onegreen`: if set the flag, `sl_onegreen` worker will start to train data crawled from `game.onegreen.net`
+
