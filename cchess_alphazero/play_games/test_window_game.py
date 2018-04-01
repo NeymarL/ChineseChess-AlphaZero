@@ -74,34 +74,34 @@ def creat_sprite_group(sprite_group, chessmans_hash):
     for chess in chessmans_hash.values():
         if chess.is_red:
             if isinstance(chess, Rook):
-                images = load_images("RR.gif", "RRS.gif")
+                images = load_images("RR.GIF", "RRS.GIF")
             elif isinstance(chess, Cannon):
-                images = load_images("RC.gif", "RCS.gif")
+                images = load_images("RC.GIF", "RCS.GIF")
             elif isinstance(chess, Knight):
-                images = load_images("RN.gif", "RNS.gif")
+                images = load_images("RN.GIF", "RNS.GIF")
             elif isinstance(chess, King):
-                images = load_images("RK.gif", "RKS.gif")
+                images = load_images("RK.GIF", "RKS.GIF")
             elif isinstance(chess, Elephant):
-                images = load_images("RB.gif", "RBS.gif")
+                images = load_images("RB.GIF", "RBS.GIF")
             elif isinstance(chess, Mandarin):
-                images = load_images("RA.gif", "RAS.gif")
+                images = load_images("RA.GIF", "RAS.GIF")
             else:
-                images = load_images("RP.gif", "RPS.gif")
+                images = load_images("RP.GIF", "RPS.GIF")
         else:
             if isinstance(chess, Rook):
-                images = load_images("BR.gif", "BRS.gif")
+                images = load_images("BR.GIF", "BRS.GIF")
             elif isinstance(chess, Cannon):
-                images = load_images("BC.gif", "BCS.gif")
+                images = load_images("BC.GIF", "BCS.GIF")
             elif isinstance(chess, Knight):
-                images = load_images("BN.gif", "BNS.gif")
+                images = load_images("BN.GIF", "BNS.GIF")
             elif isinstance(chess, King):
-                images = load_images("BK.gif", "BKS.gif")
+                images = load_images("BK.GIF", "BKS.GIF")
             elif isinstance(chess, Elephant):
-                images = load_images("BB.gif", "BBS.gif")
+                images = load_images("BB.GIF", "BBS.GIF")
             elif isinstance(chess, Mandarin):
-                images = load_images("BA.gif", "BAS.gif")
+                images = load_images("BA.GIF", "BAS.GIF")
             else:
-                images = load_images("BP.gif", "BPS.gif")
+                images = load_images("BP.GIF", "BPS.GIF")
         chessman_sprite = Chessman_Sprite(images, chess)
         sprite_group.add(chessman_sprite)
 
@@ -124,7 +124,7 @@ def main(winstyle=0):
     pygame.display.set_caption("中国象棋-AlphaZero")
 
     # create the background, tile the bgd image
-    bgdtile = load_image(f'{BOARD_STYLE}.gif')
+    bgdtile = load_image(f'{BOARD_STYLE}.GIF')
     board_background = pygame.Surface([521, 577])
     board_background.blit(bgdtile, (0, 0))
     widget_background = pygame.Surface([700 - 521, 577])
