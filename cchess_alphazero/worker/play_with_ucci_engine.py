@@ -118,6 +118,10 @@ class SelfPlayWorker:
             else:
                 fen = senv.state_to_fen(state, turns)
                 action = self.get_ucci_move(fen)
+                if action is None:
+                    logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
+                    value = -1
+                    break
                 if turns % 2 == 1:
                     action = flip_move(action)
                 try:
@@ -185,6 +189,8 @@ class SelfPlayWorker:
                 logger.error(f"{e}, cmd = {cmd}")
                 return self.get_ucci_move(fen, time+1)
         lines = out.split('\n')
+        if lines[-2] == 'nobestmove':
+            return None
         move = lines[-2].split(' ')[1]
         if move == 'depth':
             move = lines[-1].split(' ')[6]

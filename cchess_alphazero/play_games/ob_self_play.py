@@ -133,6 +133,9 @@ class ObSelfPlayUCCI:
                 state = self.env.get_state()
                 fen = senv.state_to_fen(state, turns)
                 action = self.get_ucci_move(fen)
+                if action is None:
+                    print("Eleeye 投降了!")
+                    break
                 print(action)
                 if not self.env.red_to_move:
                     rec_action = flip_move(action)
@@ -171,6 +174,8 @@ class ObSelfPlayUCCI:
                 return self.get_ucci_move(fen, time+1)
         print(out)
         lines = out.split('\n')
+        if lines[-2] == 'nobestmove':
+            return None
         move = lines[-2].split(' ')[1]
         if move == 'depth':
             move = lines[-1].split(' ')[6]

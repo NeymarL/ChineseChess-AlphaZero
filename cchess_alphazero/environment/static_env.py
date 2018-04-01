@@ -41,6 +41,14 @@ def done(state):
         if not has_block:
             v = 1
             winner = Winner.red
+    else:
+        legal_moves = get_legal_moves(state, board)
+        for mov in legal_moves:
+            dest = [int(mov[3]), int(mov[2])]
+            if dest == black_k:
+                winner = Winner.red
+                v = 1
+                break
     return (winner is not None, v)
 
 def step(state, action):
@@ -164,8 +172,8 @@ def fliped_state(state):
 
     return "/".join([swapall(reversed(row)) for row in reversed(rows)])
 
-def get_legal_moves(state):
-    board = state_to_board(state)
+def get_legal_moves(state, board=None):
+    board = board if board is not None else state_to_board(state)
     legal_moves = []
     for y in range(BOARD_HEIGHT):
         for x in range(BOARD_WIDTH):
@@ -196,7 +204,7 @@ def get_legal_moves(state):
                         if (u < BOARD_HEIGHT and board[u][x] == 'K'):
                             legal_moves.append(move_to_str(x, y, x, u))
 
-            elif ch == 'r' or ch == 'c': # for connon and root
+            elif ch == 'r' or ch == 'c': # for connon and rook
                 l,r = x_board_from(board,x,y)
                 d,u = y_board_from(board,x,y)
                 for x_ in range(l+1,x):
@@ -207,7 +215,7 @@ def get_legal_moves(state):
                     legal_moves.append(move_to_str(x, y, x, y_))
                 for y_ in range(y+1,u):
                     legal_moves.append(move_to_str(x, y, x, y_))
-                if ch == 'r': # for root
+                if ch == 'r': # for rook
                     if can_move(board, l, y):
                         legal_moves.append(move_to_str(x, y, l, y))
                     if can_move(board, r, y):
