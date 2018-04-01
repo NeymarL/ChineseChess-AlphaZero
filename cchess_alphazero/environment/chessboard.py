@@ -225,9 +225,9 @@ class Chessboard(object):
             for move in legal_moves:
                 if int(move[2]) == target.x and int(move[3]) == target.y:
                     if self.is_red_turn:
-                        winner = Winner.red
+                        self.winner = Winner.red
                     else:
-                        winner = Winner.black
+                        self.winner = Winner.black
                     break
         return self.winner != None
 
