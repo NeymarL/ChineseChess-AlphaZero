@@ -10,7 +10,7 @@ from cchess_alphazero.environment.chessman import *
 from pygame.locals import *
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
-SCREENRECT = Rect(0, 0, 521, 577)
+SCREENRECT = Rect(0, 0, 700, 577)
 PIECE_STYLE = 'POLISH'
 BOARD_STYLE = 'QIANHONG'
 
@@ -125,10 +125,28 @@ def main(winstyle=0):
 
     # create the background, tile the bgd image
     bgdtile = load_image(f'{BOARD_STYLE}.gif')
-    background = pygame.Surface(SCREENRECT.size)
-    for x in range(0, SCREENRECT.width, bgdtile.get_width()):
-        background.blit(bgdtile, (x, 0))
-    screen.blit(background, (0, 0))
+    board_background = pygame.Surface([521, 577])
+    board_background.blit(bgdtile, (0, 0))
+    widget_background = pygame.Surface([700 - 521, 577])
+    white_rect = Rect(0, 0, 700 - 521, 577)
+    widget_background.fill((255, 255, 255), white_rect)
+
+    #create text label
+    font_file = os.path.join(main_dir, 'PingFang.ttc')
+    font = pygame.font.Font(font_file, 16)
+    font_color = (0, 0, 0)
+    font_background = (255, 255, 255)
+    t = font.render("着法记录", True, font_color, font_background)
+    t_rect = t.get_rect()
+    t_rect.centerx = (700 - 521) / 2
+    t_rect.y = 10
+    widget_background.blit(t, t_rect)
+
+    # background = pygame.Surface(SCREENRECT.size)
+    # for x in range(0, SCREENRECT.width, bgdtile.get_width()):
+    #     background.blit(bgdtile, (x, 0))
+    screen.blit(board_background, (0, 0))
+    screen.blit(widget_background, (521, 0))
     pygame.display.flip()
 
     cbd = Chessboard('000')
@@ -177,9 +195,20 @@ def main(winstyle=0):
                                 current_chessman.is_selected = False
                                 current_chessman = None
                                 print(cbd.legal_moves())
+        records = cbd.record.split('\n')
+        font = pygame.font.Font(font_file, 12)
+        i = 0
+        for record in records[-20:]:
+            rec_label = font.render(record, True, font_color, font_background)
+            t_rect = rec_label.get_rect()
+            t_rect.centerx = (700 - 521) / 2
+            t_rect.y = 35 + i * 15
+            widget_background.blit(rec_label, t_rect)
+            i += 1
+        screen.blit(widget_background, (521, 0))
         framerate.tick(20)
         # clear/erase the last drawn sprites
-        chessmans.clear(screen, background)
+        chessmans.clear(screen, board_background)
 
         # update all the sprites
         chessmans.update()

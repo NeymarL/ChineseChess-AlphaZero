@@ -9,6 +9,7 @@ from pygame.locals import *
 from logging import getLogger
 from collections import defaultdict
 from threading import Thread
+from time import sleep
 
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.environment.chessboard import Chessboard
@@ -38,9 +39,10 @@ class PlayWithHuman:
         self.model = None
         self.pipe = None
         self.ai = None
-        self.winstyle = pygame.RESIZABLE
+        self.winstyle = 0
         self.chessmans = None
         self.human_move_first = True
+        self.screen_width = 700
         self.height = 577
         self.width = 521
         self.chessman_w = 57
@@ -55,20 +57,35 @@ class PlayWithHuman:
             self.model.build()
 
     def init_screen(self):
-        bestdepth = pygame.display.mode_ok([self.width, self.height], self.winstyle, 32)
-        screen = pygame.display.set_mode([self.width, self.height], self.winstyle, bestdepth)
+        bestdepth = pygame.display.mode_ok([self.screen_width, self.height], self.winstyle, 32)
+        screen = pygame.display.set_mode([self.screen_width, self.height], self.winstyle, bestdepth)
         pygame.display.set_caption("中国象棋-AlphaHe")
         # create the background, tile the bgd image
         bgdtile = load_image(f'{self.config.opts.bg_style}.gif')
         bgdtile = pygame.transform.scale(bgdtile, (self.width, self.height))
-        background = pygame.Surface([self.width, self.height])
-        for x in range(0, self.width, bgdtile.get_width()):
-            background.blit(bgdtile, (x, 0))
-        screen.blit(background, (0, 0))
+        board_background = pygame.Surface([self.width, self.height])
+        board_background.blit(bgdtile, (0, 0))
+        widget_background = pygame.Surface([self.screen_width - self.width, self.height])
+        white_rect = Rect(0, 0, self.screen_width - self.width, self.height)
+        widget_background.fill((255, 255, 255), white_rect)
+
+        #create text label
+        font_file = self.config.resource.font_path
+        font = pygame.font.Font(font_file, 16)
+        font_color = (0, 0, 0)
+        font_background = (255, 255, 255)
+        t = font.render("着法记录", True, font_color, font_background)
+        t_rect = t.get_rect()
+        t_rect.centerx = (700 - 521) / 2
+        t_rect.y = 10
+        widget_background.blit(t, t_rect)
+
+        screen.blit(board_background, (0, 0))
+        screen.blit(widget_background, (self.width, 0))
         pygame.display.flip()
         self.chessmans = pygame.sprite.Group()
         creat_sprite_group(self.chessmans, self.env.board.chessmans_hash, self.chessman_w, self.chessman_h)
-        return screen, background
+        return screen, board_background, widget_background
 
     def start(self, human_first=True):
         self.env.reset()
@@ -79,7 +96,7 @@ class PlayWithHuman:
         self.human_move_first = human_first
 
         pygame.init()
-        screen, background = self.init_screen()
+        screen, board_background, widget_background = self.init_screen()
         framerate = pygame.time.Clock()
 
         labels = ActionLabelsRed
@@ -104,7 +121,7 @@ class PlayWithHuman:
                     self.chessman_h = int(self.chessman_h * event.h / self.height)
                     self.width = event.w
                     self.height = event.h
-                    screen, background = self.init_screen()
+                    screen, board_background, widget_background = self.init_screen()
                 elif event.type == MOUSEBUTTONDOWN:
                     if human_first == self.env.red_to_move:
                         pressed_array = pygame.mouse.get_pressed()
@@ -135,10 +152,23 @@ class PlayWithHuman:
                                     if success:
                                         current_chessman.is_selected = False
                                         current_chessman = None
+
+            records = self.env.board.record.split('\n')
+            font_file = self.config.resource.font_path
+            font = pygame.font.Font(font_file, 12)
+            i = 0
+            for record in records[-10:]:
+                rec_label = font.render(record, True, (0, 0, 0), (255, 255, 255))
+                t_rect = rec_label.get_rect()
+                t_rect.centerx = (self.screen_width - self.width) / 2
+                t_rect.y = 35 + i * 15
+                widget_background.blit(rec_label, t_rect)
+                i += 1
+            screen.blit(widget_background, (self.width, 0))
                           
             framerate.tick(20)
             # clear/erase the last drawn sprites
-            self.chessmans.clear(screen, background)
+            self.chessmans.clear(screen, board_background)
 
             # update all the sprites
             self.chessmans.update()
@@ -148,6 +178,7 @@ class PlayWithHuman:
         self.ai.close()
         logger.info(f"Winner is {self.env.board.winner} !!!")
         self.env.board.print_record()
+        sleep(3)
 
     def ai_move(self):
         ai_move_first = not self.human_move_first

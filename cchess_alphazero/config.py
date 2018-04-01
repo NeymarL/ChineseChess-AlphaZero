@@ -61,6 +61,8 @@ class ResourceConfig:
         self.sl_data_move = os.path.join(self.sl_data_dir, "moves.csv")
         self.sl_onegreen = os.path.join(self.sl_data_dir, "onegreen.json")
 
+        self.font_path = os.path.join(self.project_dir, 'cchess_alphazero', 'play_games', 'PingFang.ttc')
+
     def create_directories(self):
         dirs = [self.project_dir, self.data_dir, self.model_dir, self.play_data_dir, self.log_dir,
                 self.play_record_dir, self.next_generation_model_dir, self.sl_data_dir]
@@ -77,7 +79,7 @@ class Options:
 
 class PlayWithHumanConfig:
     def __init__(self):
-        self.simulation_num_per_move = 800
+        self.simulation_num_per_move = 100
         self.c_puct = 1
         self.search_threads = 10
         self.noise_eps = 0.15
