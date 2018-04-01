@@ -301,16 +301,24 @@ class CChessPlayer:
         node = self.tree[state]
         policy = np.zeros(self.labels_n)
         max_q_value = -100
+        debug_result = {}
 
         for mov, action_state in node.a.items():
             policy[self.move_lookup[mov]] = action_state.n
             if self.debugging:
-                self.search_results[mov] = (action_state.n, action_state.q, action_state.p)
+                debug_result[mov] = (action_state.n, action_state.q, action_state.p)
             if action_state.q > max_q_value:
                 max_q_value = action_state.q
 
         if max_q_value < self.play_config.resign_threshold and self.enable_resign and turns > self.play_config.min_resign_turn:
             return policy, True
+
+        if self.debugging:
+            temp = sorted(range(len(policy)), key=lambda k: policy[k], reverse=True)
+            for i in range(5):
+                index = temp[i]
+                mov = ActionLabelsRed[index]
+                self.search_results[mov] = debug_result[mov]
 
         policy /= np.sum(policy)
         return policy, False

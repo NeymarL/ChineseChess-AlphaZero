@@ -3,6 +3,7 @@ import pygame
 import random
 import os.path
 import time
+import copy
 import numpy as np
 
 from pygame.locals import *
@@ -42,11 +43,15 @@ class PlayWithHuman:
         self.winstyle = 0
         self.chessmans = None
         self.human_move_first = True
-        self.screen_width = 700
+        self.screen_width = 720
         self.height = 577
         self.width = 521
         self.chessman_w = 57
         self.chessman_h = 57
+        self.disp_record_num = 15
+        self.rec_labels = [None] * self.disp_record_num
+        self.nn_value = 0
+        self.mcts_moves = {}
         if self.config.opts.bg_style == 'WOOD':
             self.chessman_w += 1
             self.chessman_h += 1
@@ -76,7 +81,7 @@ class PlayWithHuman:
         font_background = (255, 255, 255)
         t = font.render("着法记录", True, font_color, font_background)
         t_rect = t.get_rect()
-        t_rect.centerx = (700 - 521) / 2
+        t_rect.centerx = (self.screen_width - self.width) / 2
         t_rect.y = 10
         widget_background.blit(t, t_rect)
 
@@ -153,19 +158,7 @@ class PlayWithHuman:
                                         current_chessman.is_selected = False
                                         current_chessman = None
 
-            records = self.env.board.record.split('\n')
-            font_file = self.config.resource.font_path
-            font = pygame.font.Font(font_file, 12)
-            i = 0
-            for record in records[-10:]:
-                rec_label = font.render(record, True, (0, 0, 0), (255, 255, 255))
-                t_rect = rec_label.get_rect()
-                t_rect.centerx = (self.screen_width - self.width) / 2
-                t_rect.y = 35 + i * 15
-                widget_background.blit(rec_label, t_rect)
-                i += 1
-            screen.blit(widget_background, (self.width, 0))
-                          
+            self.draw_widget(screen, widget_background)
             framerate.tick(20)
             # clear/erase the last drawn sprites
             self.chessmans.clear(screen, board_background)
@@ -196,11 +189,13 @@ class PlayWithHuman:
                 key = self.env.get_state()
                 p, v = self.ai.debug[key]
                 logger.info(f"NN value = {v:.3f}")
+                self.nn_value = v
                 logger.info("MCTS results:")
+                self.mcts_moves = {}
                 for move, action_state in self.ai.search_results.items():
-                    if action_state[0] > 20:
-                        move_cn = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                        logger.info(f"move: {move_cn}-{move}, visit count: {action_state[0]}, Q_value: {action_state[1]:.3f}, Prior: {action_state[2]:.3f}")
+                    move_cn = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+                    logger.info(f"move: {move_cn}-{move}, visit count: {action_state[0]}, Q_value: {action_state[1]:.3f}, Prior: {action_state[2]:.3f}")
+                    self.mcts_moves[move_cn] = action_state
                 x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
                 chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)
                 sprite_dest = select_sprite_from_group(self.chessmans, x1, y1)
@@ -208,6 +203,62 @@ class PlayWithHuman:
                     self.chessmans.remove(sprite_dest)
                     sprite_dest.kill()
                 chessman_sprite.move(x1, y1, self.chessman_w, self.chessman_h)
+
+    def draw_widget(self, screen, widget_background):
+        white_rect = Rect(0, 0, self.screen_width - self.width, self.height)
+        widget_background.fill((255, 255, 255), white_rect)
+        pygame.draw.line(widget_background, (255, 0, 0), (10, 285), (self.screen_width - self.width - 10, 285))
+        screen.blit(widget_background, (self.width, 0))
+        self.draw_records(screen, widget_background)
+        self.draw_evaluation(screen, widget_background) 
+
+    def draw_records(self, screen, widget_background):
+        text = '着法记录'
+        self.draw_label(screen, widget_background, text, 10, 16)
+        records = self.env.board.record.split('\n')
+        font_file = self.config.resource.font_path
+        font = pygame.font.Font(font_file, 12)
+        i = 0
+        for record in records[-self.disp_record_num:]:
+            self.rec_labels[i] = font.render(record, True, (0, 0, 0), (255, 255, 255))
+            t_rect = self.rec_labels[i].get_rect()
+            t_rect.centerx = (self.screen_width - self.width) / 2
+            t_rect.y = 35 + i * 15
+            t_rect.width = self.screen_width - self.width
+            widget_background.blit(self.rec_labels[i], t_rect)
+            i += 1
+        screen.blit(widget_background, (self.width, 0))
+
+    def draw_evaluation(self, screen, widget_background):
+        title_label = 'AlphaHe信息'
+        self.draw_label(screen, widget_background, title_label, 300, 16)
+        info_label = f'MCTS搜索次数：{self.config.play.simulation_num_per_move}'
+        self.draw_label(screen, widget_background, info_label, 335, 14)
+        eval_label = f"当前局势评估: {self.nn_value:.3f}"
+        self.draw_label(screen, widget_background, eval_label, 360, 14)
+        label = f"MCTS搜索结果:"
+        self.draw_label(screen, widget_background, label, 395, 14, 10)
+        label = f"着法 访问计数 动作价值 先验概率"
+        self.draw_label(screen, widget_background, label, 415, 12)
+        i = 0
+        tmp = copy.deepcopy(self.mcts_moves)
+        for mov, action_state in tmp.items():
+            label = f"{mov}   {action_state[0]}       {action_state[1]:.2f}      {action_state[2]:.3f}"
+            self.draw_label(screen, widget_background, label, 435 + i * 20, 12, 10)
+            i += 1
+
+    def draw_label(self, screen, widget_background, text, y, font_size, x=None):
+        font_file = self.config.resource.font_path
+        font = pygame.font.Font(font_file, font_size)
+        label = font.render(text, True, (0, 0, 0), (255, 255, 255))
+        t_rect = label.get_rect()
+        t_rect.y = y
+        if x != None:
+            t_rect.x = x
+        else:
+            t_rect.centerx = (self.screen_width - self.width) / 2
+        widget_background.blit(label, t_rect)
+        screen.blit(widget_background, (self.width, 0))
         
 
 class Chessman_Sprite(pygame.sprite.Sprite):
