@@ -10,12 +10,17 @@ from cchess_alphazero.environment.chessman import *
 from pygame.locals import *
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
-SCREENRECT = Rect(0, 0, 720, 800)
+SCREENRECT = Rect(0, 0, 521, 577)
+PIECE_STYLE = 'POLISH'
+BOARD_STYLE = 'QIANHONG'
 
 
-def load_image(file):
+def load_image(file, sub_dir=None):
     '''loads an image, prepares it for play'''
-    file = os.path.join(main_dir, 'images', file)
+    if sub_dir:
+        file = os.path.join(main_dir, 'images', sub_dir, file)
+    else:
+        file = os.path.join(main_dir, 'images', file)
     try:
         surface = pygame.image.load(file)
     except pygame.error:
@@ -26,8 +31,9 @@ def load_image(file):
 
 def load_images(*files):
     imgs = []
+    style = PIECE_STYLE
     for file in files:
-        imgs.append(load_image(file))
+        imgs.append(load_image(file, style))
     return imgs
 
 
@@ -41,7 +47,7 @@ class Chessman_Sprite(pygame.sprite.Sprite):
         self.chessman = chessman
         self.images = images
         self.image = self.images[0]
-        self.rect = Rect(chessman.col_num * 80, (9 - chessman.row_num) * 80, 80, 80)
+        self.rect = Rect(chessman.col_num * 57, (9 - chessman.row_num) * 57, 57, 57)
 
     def move(self, col_num, row_num):
         # print self.chessman.name, col_num, row_num
@@ -50,7 +56,7 @@ class Chessman_Sprite(pygame.sprite.Sprite):
         is_correct_position = self.chessman.move(col_num, row_num)
         if is_correct_position:
             self.rect.move_ip((col_num - old_col_num)
-                              * 80, (old_row_num - row_num) * 80)
+                              * 57, (old_row_num - row_num) * 57)
             self.rect = self.rect.clamp(SCREENRECT)
             self.chessman.chessboard.clear_chessmans_moving_list()
             self.chessman.chessboard.calc_chessmans_moving_list()
@@ -59,11 +65,7 @@ class Chessman_Sprite(pygame.sprite.Sprite):
 
     def update(self):
         if self.is_selected:
-            if self.is_transparent:
-                self.image = self.images[1]
-            else:
-                self.image = self.images[0]
-            self.is_transparent = not self.is_transparent
+            self.image = self.images[1]
         else:
             self.image = self.images[0]
 
@@ -72,34 +74,34 @@ def creat_sprite_group(sprite_group, chessmans_hash):
     for chess in chessmans_hash.values():
         if chess.is_red:
             if isinstance(chess, Rook):
-                images = load_images("red_rook.gif", "transparent.gif")
+                images = load_images("RR.gif", "RRS.gif")
             elif isinstance(chess, Cannon):
-                images = load_images("red_cannon.gif", "transparent.gif")
+                images = load_images("RC.gif", "RCS.gif")
             elif isinstance(chess, Knight):
-                images = load_images("red_knight.gif", "transparent.gif")
+                images = load_images("RN.gif", "RNS.gif")
             elif isinstance(chess, King):
-                images = load_images("red_king.gif", "transparent.gif")
+                images = load_images("RK.gif", "RKS.gif")
             elif isinstance(chess, Elephant):
-                images = load_images("red_elephant.gif", "transparent.gif")
+                images = load_images("RB.gif", "RBS.gif")
             elif isinstance(chess, Mandarin):
-                images = load_images("red_mandarin.gif", "transparent.gif")
+                images = load_images("RA.gif", "RAS.gif")
             else:
-                images = load_images("red_pawn.gif", "transparent.gif")
+                images = load_images("RP.gif", "RPS.gif")
         else:
             if isinstance(chess, Rook):
-                images = load_images("black_rook.gif", "transparent.gif")
+                images = load_images("BR.gif", "BRS.gif")
             elif isinstance(chess, Cannon):
-                images = load_images("black_cannon.gif", "transparent.gif")
+                images = load_images("BC.gif", "BCS.gif")
             elif isinstance(chess, Knight):
-                images = load_images("black_knight.gif", "transparent.gif")
+                images = load_images("BN.gif", "BNS.gif")
             elif isinstance(chess, King):
-                images = load_images("black_king.gif", "transparent.gif")
+                images = load_images("BK.gif", "BKS.gif")
             elif isinstance(chess, Elephant):
-                images = load_images("black_elephant.gif", "transparent.gif")
+                images = load_images("BB.gif", "BBS.gif")
             elif isinstance(chess, Mandarin):
-                images = load_images("black_mandarin.gif", "transparent.gif")
+                images = load_images("BA.gif", "BAS.gif")
             else:
-                images = load_images("black_pawn.gif", "transparent.gif")
+                images = load_images("BP.gif", "BPS.gif")
         chessman_sprite = Chessman_Sprite(images, chess)
         sprite_group.add(chessman_sprite)
 
@@ -111,7 +113,7 @@ def select_sprite_from_group(sprite_group, col_num, row_num):
 
 
 def translate_hit_area(screen_x, screen_y):
-    return screen_x // 80, 9 - screen_y // 80
+    return screen_x // 57, 9 - screen_y // 57
 
 
 def main(winstyle=0):
@@ -122,7 +124,7 @@ def main(winstyle=0):
     pygame.display.set_caption("中国象棋-AlphaZero")
 
     # create the background, tile the bgd image
-    bgdtile = load_image('boardchess.gif')
+    bgdtile = load_image(f'{BOARD_STYLE}.gif')
     background = pygame.Surface(SCREENRECT.size)
     for x in range(0, SCREENRECT.width, bgdtile.get_width()):
         background.blit(bgdtile, (x, 0))

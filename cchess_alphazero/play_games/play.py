@@ -43,8 +43,11 @@ class PlayWithHuman:
         self.human_move_first = True
         self.height = 577
         self.width = 521
-        self.chessman_w = 58
-        self.chessman_h = 58
+        self.chessman_w = 57
+        self.chessman_h = 57
+        if self.config.opts.bg_style == 'WOOD':
+            self.chessman_w += 1
+            self.chessman_h += 1
 
     def load_model(self):
         self.model = CChessModel(self.config)
@@ -206,11 +209,6 @@ class Chessman_Sprite(pygame.sprite.Sprite):
     def update(self):
         if self.is_selected:
             self.image = self.images[1]
-            # if self.is_transparent:
-            #     self.image = self.images[1]
-            # else:
-            #     self.image = self.images[0]
-            # self.is_transparent = not self.is_transparent
         else:
             self.image = self.images[0]
 
