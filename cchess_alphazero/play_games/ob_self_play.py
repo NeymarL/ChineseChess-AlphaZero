@@ -111,7 +111,7 @@ class ObSelfPlayUCCI:
         game_over = False
         final_move = None
 
-        while not game_over:
+        while not self.env.board.is_end():
             if (self.ai_move_first and turns % 2 == 0) or (not self.ai_move_first and turns % 2 == 1):
                 no_act = None
                 state = self.env.get_state()
@@ -152,8 +152,8 @@ class ObSelfPlayUCCI:
             self.env.board.print_to_cl()
             turns += 1
             sleep(1)
-            game_over, final_move = self.env.board.is_end_final_move()
-            print(game_over, final_move)
+            # game_over, final_move = self.env.board.is_end_final_move()
+            # print(game_over, final_move)
 
         if final_move:
             move = self.env.board.make_single_record(int(final_move[0]), int(final_move[1]), int(final_move[2]), int(final_move[3]))
