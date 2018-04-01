@@ -164,7 +164,11 @@ class ObSelfPlayUCCI:
             out, err = p.communicate(cmd, timeout=time+0.5)
         except:
             p.kill()
-            out, err = p.communicate()
+            try:
+                out, err = p.communicate()
+            except Exception as e:
+                logger.error(f"{e}, cmd = {cmd}")
+                return self.get_ucci_move(fen, time+1)
         print(out)
         lines = out.split('\n')
         move = lines[-2].split(' ')[1]
