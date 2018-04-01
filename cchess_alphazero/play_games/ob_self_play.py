@@ -131,6 +131,7 @@ class ObSelfPlayUCCI:
                     action = flip_move(action)
             else:
                 state = self.env.get_state()
+                print(state)
                 fen = senv.state_to_fen(state, turns)
                 action = self.get_ucci_move(fen)
                 if action is None:
