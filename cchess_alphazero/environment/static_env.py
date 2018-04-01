@@ -43,8 +43,6 @@ def done(state):
             winner = Winner.red
     if winner is None:
         legal_moves = get_legal_moves(state, board)
-        print(black_k)
-        print(legal_moves)
         for mov in legal_moves:
             dest = [int(mov[3]), int(mov[2])]
             if dest == black_k:
