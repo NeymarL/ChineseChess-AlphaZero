@@ -26,7 +26,9 @@
 │   │   └── tf_util.py      : setup tf session
 │   ├── play_games          : play with human
 │   │   ├── images          : game materials
-│   │   ├── play.py         : AI vs human
+│   │   ├── play.py         : AI vs human with gui
+│   │   ├── play_cli.py         : AI vs human with cli
+│   │   ├── ob_self_play.py     : observe AI vs AI with cli
 │   │   ├── test_cli_game.py    : human vs human with cli
 │   │   └── test_window_game.py : human vs human with gui
 │   ├── worker
@@ -34,7 +36,7 @@
 │   │   ├── sl.py           : supervised learning worker
 │   │   ├── sl_onegreen.py  : supervised learning worker which train data crawled from game.onegreen.net
 │   │   ├── self_play.py    : self play worker
-│   │   ├── self_play2.py   : play with a(n) certain model/other AI
+│   │   ├── play_with_ucci_engine.py   : play with an ucci engine rather than self play
 │   │   └── evaluator.py    : evaluate next generation model with current best model
 │   ├── config.py           : setup configuration
 │   ├── manager.py          : manage to start which worker

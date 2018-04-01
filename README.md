@@ -101,7 +101,7 @@ When executed, Training will start. The current BestModel will be loaded. Traine
 options
 
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
-* `--total-step`: specify total step(mini-batch) numbers. The total step affects learning rate of training.
+* `--total-step TOTAL_STEP`: specify total step(mini-batch) numbers. The total step affects learning rate of training.
 * `--gpu '1'`: specify which gpu to use
 
 **View training log in Tensorboard**
@@ -125,8 +125,8 @@ options
 * `--ai-move-first`: if set this option, AI will move first, otherwise human move first.
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--gpu '1'`: specify which gpu to use
-* `--piece-style`: choose a piece style, default is `WOOD`
-* `--bg-style`: choose a board style, default is `CANVAS`
+* `--piece-style WOOD`: choose a piece style, default is `WOOD`
+* `--bg-style CANVAS`: choose a board style, default is `CANVAS`
 * `--cli`: if set this flag, play with AI in a cli environment rather than gui
 
 #### Evaluator
@@ -159,4 +159,4 @@ options
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--gpu '1'`: specify which gpu to use
 * `--onegreen`: if set the flag, `sl_onegreen` worker will start to train data crawled from `game.onegreen.net`
-
+* `--skip SKIP`: if set this flag, games whoses index is less than `SKIP` would not be used to train (only valid when `onegreen` flag is set)
