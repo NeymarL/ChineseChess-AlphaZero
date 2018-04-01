@@ -89,14 +89,14 @@ class CChessPlayer:
                     self.pipe.send(t_data)
                 else:
                     self.run_lock.release()
-                    sleep(0.00001)
+                    sleep(0.0001)
 
     def receiver(self):
         '''
         receive policy and value from neural network
         '''
         while not self.job_done:
-            if self.pipe.poll(0.00001):
+            if self.pipe.poll(0.0001):
                 rets = self.pipe.recv()
             else:
                 continue
