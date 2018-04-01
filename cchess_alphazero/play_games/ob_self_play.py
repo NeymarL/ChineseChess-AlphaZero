@@ -153,6 +153,7 @@ class ObSelfPlayUCCI:
             turns += 1
             sleep(1)
             game_over, final_move = self.env.board.is_end_final_move()
+            print(game_over, final_move)
 
         if final_move:
             move = self.env.board.make_single_record(int(final_move[0]), int(final_move[1]), int(final_move[2]), int(final_move[3]))
