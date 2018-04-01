@@ -41,6 +41,7 @@ def done(state):
         if not has_block:
             v = 1
             winner = Winner.red
+    final_move = None
     if winner is None:
         legal_moves = get_legal_moves(state, board)
         for mov in legal_moves:
@@ -48,8 +49,9 @@ def done(state):
             if dest == black_k:
                 winner = Winner.red
                 v = 1
+                final_move = mov
                 break
-    return (winner is not None, v)
+    return (winner is not None, v, final_move)
 
 def step(state, action):
     board = state_to_board(state)

@@ -15,7 +15,7 @@ from cchess_alphazero.agent.player import CChessPlayer, VisitState
 from cchess_alphazero.agent.api import CChessModelAPI
 from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
-from cchess_alphazero.environment.lookup_tables import Winner
+from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_policy, flip_move
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, write_game_data_to_file
 from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model
 from cchess_alphazero.lib.tf_util import set_session_config
@@ -91,6 +91,7 @@ class SelfPlayWorker:
         value = 0
         turns = 0       # even == red; odd == black
         game_over = False
+        final_move = None
 
         while not game_over:
             no_act = None
@@ -121,7 +122,14 @@ class SelfPlayWorker:
                 game_over = True
                 value = senv.evaluate(state)
             else:
-                game_over, value = senv.done(state)
+                game_over, value, final_move = senv.done(state)
+
+        if final_move:
+            policy = self.build_policy(final_move, False)
+            history.append(final_move)
+            policys.append(policy)
+            state = senv.step(state, final_move)
+            history.append(state)
 
         self.player.close()
         if turns % 2 == 1:  # balck turn
@@ -170,4 +178,15 @@ class SelfPlayWorker:
                 os.remove(files[i])
         except:
             pass
+
+    def build_policy(self, action, flip):
+        labels_n = len(ActionLabelsRed)
+        move_lookup = {move: i for move, i in zip(ActionLabelsRed, range(labels_n))}
+        policy = np.zeros(labels_n)
+
+        policy[move_lookup[action]] = 1
+
+        if flip:
+            policy = flip_policy(policy)
+        return list(policy)
 

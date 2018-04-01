@@ -101,6 +101,7 @@ class SelfPlayWorker:
         turns = 0       # even == red; odd == black
         game_over = False
         is_alpha_red = True if idx % 2 == 0 else False
+        final_move = None
 
         while not game_over:
             if (is_alpha_red and turns % 2 == 0) or (not is_alpha_red and turns % 2 == 1):
@@ -140,10 +141,14 @@ class SelfPlayWorker:
                 game_over = True
                 value = senv.evaluate(state)
             else:
-                game_over, value = senv.done(state)
+                game_over, value, final_move = senv.done(state)
 
-        if turns < 8:
-            logger.debug(f"history = {history}")
+        if final_move:
+            policy = self.build_policy(final_move, False)
+            history.append(final_move)
+            policys.append(policy)
+            state = senv.step(state, final_move)
+            history.append(state)
 
         self.player.close()
         if turns % 2 == 1:  # balck turn

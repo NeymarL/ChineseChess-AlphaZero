@@ -43,8 +43,8 @@ class PlayWithHuman:
         self.human_move_first = True
         self.height = 577
         self.width = 521
-        self.chessman_w = 57
-        self.chessman_h = 57
+        self.chessman_w = 58
+        self.chessman_h = 58
 
     def load_model(self):
         self.model = CChessModel(self.config)
