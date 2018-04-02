@@ -3,7 +3,7 @@ import subprocess
 import numpy as np
 from collections import defaultdict
 from logging import getLogger
-from time import sleep
+from time import sleep, time
 
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.environment.chessboard import Chessboard
@@ -113,6 +113,7 @@ class ObSelfPlayUCCI:
 
         while not game_over:
             if (self.ai_move_first and turns % 2 == 0) or (not self.ai_move_first and turns % 2 == 1):
+                start_time = time()
                 no_act = None
                 state = self.env.get_state()
                 if state in history[:-1]:
@@ -124,11 +125,12 @@ class ObSelfPlayUCCI:
                                 act = flip_move(act)
                             no_act.append(act)
                 action, _ = self.ai.action(state, self.env.num_halfmoves, no_act)
+                end_time = time()
                 if action is None:
                     print("AlphaZero 投降了!")
                     break
                 move = self.env.board.make_single_record(int(action[0]), int(action[1]), int(action[2]), int(action[3]))
-                print(f"AlphaZero 选择移动 {move}")
+                print(f"AlphaZero 选择移动 {move}, 消耗时间 {(end_time - start_time):.2f}s")
                 if not self.env.red_to_move:
                     action = flip_move(action)
             else:
