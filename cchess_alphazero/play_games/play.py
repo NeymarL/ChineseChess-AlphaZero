@@ -249,7 +249,7 @@ class PlayWithHuman:
             label = f"{action_state[0]}"
             self.draw_label(screen, widget_background, label, 435 + i * 20, 12, 70)
             label = f"{action_state[1]:.2f}"
-            self.draw_label(screen, widget_background, label, 435 + i * 20, 12, 95)
+            self.draw_label(screen, widget_background, label, 435 + i * 20, 12, 100)
             label = f"{action_state[2]:.3f}"
             self.draw_label(screen, widget_background, label, 435 + i * 20, 12, 150)
             i += 1

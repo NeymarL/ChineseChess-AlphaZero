@@ -35,11 +35,18 @@ For the sake of faster training (since I don't have 5000 TPUs), another two work
 
 ### GUI
 
-Requirement: PyGame
+Requirement: pygame
 
 ```bash
 python cchess_alphazero/run.py play
 ```
+
+**Screenshots**
+
+![board](screenshots/board.png)
+
+You can choose different board/piece styles and sides, see [play with human](#Play with human).
+
 
 ## How to use
 
