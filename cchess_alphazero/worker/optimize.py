@@ -168,7 +168,11 @@ class OptimizeWorker:
 
 
 def load_data_from_file(filename):
-    data = read_game_data_from_file(filename)
+    try:
+        data = read_game_data_from_file(filename)
+    except Exception as e:
+        logger.error(f"Error when loading data {e}")
+        return None
     if data is None:
         return None
     return convert_to_trainging_data(data)
