@@ -81,7 +81,7 @@ class PlayWithHuman:
         font_background = (255, 255, 255)
         t = font.render("着法记录", True, font_color, font_background)
         t_rect = t.get_rect()
-        t_rect.centerx = (self.screen_width - self.width) / 2
+        t_rect.x = 10
         t_rect.y = 10
         widget_background.blit(t, t_rect)
 
@@ -214,7 +214,7 @@ class PlayWithHuman:
 
     def draw_records(self, screen, widget_background):
         text = '着法记录'
-        self.draw_label(screen, widget_background, text, 10, 16)
+        self.draw_label(screen, widget_background, text, 10, 16, 10)
         records = self.env.board.record.split('\n')
         font_file = self.config.resource.font_path
         font = pygame.font.Font(font_file, 12)
@@ -222,8 +222,9 @@ class PlayWithHuman:
         for record in records[-self.disp_record_num:]:
             self.rec_labels[i] = font.render(record, True, (0, 0, 0), (255, 255, 255))
             t_rect = self.rec_labels[i].get_rect()
-            t_rect.centerx = (self.screen_width - self.width) / 2
+            # t_rect.centerx = (self.screen_width - self.width) / 2
             t_rect.y = 35 + i * 15
+            t_rect.x = 10
             t_rect.width = self.screen_width - self.width
             widget_background.blit(self.rec_labels[i], t_rect)
             i += 1
@@ -231,20 +232,26 @@ class PlayWithHuman:
 
     def draw_evaluation(self, screen, widget_background):
         title_label = 'AlphaHe信息'
-        self.draw_label(screen, widget_background, title_label, 300, 16)
+        self.draw_label(screen, widget_background, title_label, 300, 16, 10)
         info_label = f'MCTS搜索次数：{self.config.play.simulation_num_per_move}'
-        self.draw_label(screen, widget_background, info_label, 335, 14)
+        self.draw_label(screen, widget_background, info_label, 335, 14, 10)
         eval_label = f"当前局势评估: {self.nn_value:.3f}"
-        self.draw_label(screen, widget_background, eval_label, 360, 14)
+        self.draw_label(screen, widget_background, eval_label, 360, 14, 10)
         label = f"MCTS搜索结果:"
         self.draw_label(screen, widget_background, label, 395, 14, 10)
         label = f"着法 访问计数 动作价值 先验概率"
-        self.draw_label(screen, widget_background, label, 415, 12)
+        self.draw_label(screen, widget_background, label, 415, 12, 10)
         i = 0
         tmp = copy.deepcopy(self.mcts_moves)
         for mov, action_state in tmp.items():
-            label = f"{mov}   {action_state[0]}       {action_state[1]:.2f}      {action_state[2]:.3f}"
+            label = f"{mov}"
             self.draw_label(screen, widget_background, label, 435 + i * 20, 12, 10)
+            label = f"{action_state[0]}"
+            self.draw_label(screen, widget_background, label, 435 + i * 20, 12, 70)
+            label = f"{action_state[1]:.2f}"
+            self.draw_label(screen, widget_background, label, 435 + i * 20, 12, 95)
+            label = f"{action_state[2]:.3f}"
+            self.draw_label(screen, widget_background, label, 435 + i * 20, 12, 150)
             i += 1
 
     def draw_label(self, screen, widget_background, text, y, font_size, x=None):
