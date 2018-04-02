@@ -103,8 +103,9 @@ class CChessPlayer:
             k = 0
             with self.q_lock:
                 for ret in rets:
-                    # logger.debug(f"NN ret, update tree")
+                    # logger.debug(f"NN ret, update tree buffer_history = {self.buffer_history}")
                     self.executor.submit(self.update_tree, ret[0], ret[1], self.buffer_history[k])
+                    # self.update_tree(ret[0], ret[1], self.buffer_history[k])
                     k = k + 1
                 self.buffer_planes = self.buffer_planes[k:]
                 self.buffer_history = self.buffer_history[k:]
@@ -120,10 +121,17 @@ class CChessPlayer:
 
         # MCTS search
         if self.num_task > 0:
-            # logger.debug(f"num_task = {self.num_task}")
-            for i in range(self.num_task):
-                self.executor.submit(self.MCTS_search, state, [state], True)
-            self.all_done.acquire(True)
+            # logger.debug(f"all_task = {self.num_task}")
+            all_tasks = self.num_task
+            batch = all_tasks // self.config.play.search_threads
+            if all_tasks % self.config.play.search_threads != 0:
+                batch += 1
+            for iter in range(batch):
+                self.num_task = min(self.config.play.search_threads, all_tasks - self.config.play.search_threads * iter)
+                # logger.debug(f"iter = {iter}, num_task = {self.num_task}")
+                for i in range(self.num_task):
+                    self.executor.submit(self.MCTS_search, state, [state], True)
+                self.all_done.acquire(True)
         self.all_done.release()
 
         policy, resign = self.calc_policy(state, turns)
@@ -154,7 +162,7 @@ class CChessPlayer:
                     self.tree[state].sum_n = 1
                     self.tree[state].legal_moves = senv.get_legal_moves(state)
                     self.tree[state].waiting = True
-                    # logger.debug(f"expand_and_evaluate {state}, sum_n = {self.tree[state].sum_n}")
+                    # logger.debug(f"expand_and_evaluate {state}, sum_n = {self.tree[state].sum_n}, history = {history}")
                     self.expand_and_evaluate(state, history)
                     break
 
@@ -232,8 +240,8 @@ class CChessPlayer:
                 p_ = (1 - e) * p_ + e * np.random.dirichlet([dir_alpha])[0]
             # Q + U
             score = action_state.q + c_puct * p_ * xx_ / (1 + action_state.n)
-            # if score > 0.1:
-            #   logger.debug(f"U+Q = {score:.2f}, move = {mov}")
+            # if score > 0.1 and is_root_node:
+            #     logger.debug(f"U+Q = {score:.2f}, move = {mov}, q = {action_state.q:.2f}")
             if action_state.q > (1 - 1e-7):
                 best_action = mov
                 break
@@ -243,7 +251,8 @@ class CChessPlayer:
 
         if best_action == None:
             logger.error(f"Best action is None, legal_moves = {legal_moves}, best_score = {best_score}")
-        # logger.debug(f"selected action = {best_action}, with U + Q = {best_score}")
+        # if is_root_node:
+        #     logger.debug(f"selected action = {best_action}, with U + Q = {best_score}")
         return best_action
 
     def expand_and_evaluate(self, state, history):
@@ -254,10 +263,12 @@ class CChessPlayer:
         with self.q_lock:
             self.buffer_planes.append(state_planes)
             self.buffer_history.append(history)
+            # logger.debug(f"EAE append buffer_history history = {history}")
 
     def update_tree(self, p, v, history):
         state = history.pop()
         z = v
+
         if p is not None:
             with self.node_lock[state]:
                 # logger.debug(f"return from NN state = {state}, v = {v}")
@@ -273,7 +284,7 @@ class CChessPlayer:
                 # z = node.w * 1.0 / node.sum_n
 
         virtual_loss = self.config.play.virtual_loss
-        # logger.debug(f"backup from {state}, v = {v}")
+        # logger.debug(f"backup from {state}, v = {v}, history = {history}")
         while len(history) > 0:
             action = history.pop()
             state = history.pop()
@@ -290,7 +301,7 @@ class CChessPlayer:
 
         with self.t_lock:
             self.num_task -= 1
-            # logger.debug(f"num task = {self.num_task}")
+            # logger.debug(f"finish 1, remain num task = {self.num_task}")
             if self.num_task <= 0:
                 self.all_done.release()
 
