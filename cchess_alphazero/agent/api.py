@@ -41,13 +41,14 @@ class CChessModelAPI:
                 continue
             data, result_pipes, data_len = [], [], []
             for pipe in ready:
-                try:
-                    tmp = pipe.recv()
-                    data.extend(tmp)
-                    data_len.append(len(tmp))
-                    result_pipes.append(pipe)
-                except EOFError as e:
-                    pipe.close()
+                while pipe.poll():
+                    try:
+                        tmp = pipe.recv()
+                        data.extend(tmp)
+                        data_len.append(len(tmp))
+                        result_pipes.append(pipe)
+                    except EOFError as e:
+                        pipe.close()
             data = np.asarray(data, dtype=np.float32)
             with self.agent_model.graph.as_default():
                 policy_ary, value_ary = self.agent_model.model.predict_on_batch(data)
