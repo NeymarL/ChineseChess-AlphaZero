@@ -48,6 +48,7 @@ class CChessModelAPI:
                         data_len.append(len(tmp))
                         result_pipes.append(pipe)
                     except EOFError as e:
+                        logger.error(f"EOF error: {e}")
                         pipe.close()
             data = np.asarray(data, dtype=np.float32)
             with self.agent_model.graph.as_default():
