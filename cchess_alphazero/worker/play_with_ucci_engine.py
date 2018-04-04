@@ -182,7 +182,7 @@ class SelfPlayWorker:
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
         setfen = f'position fen {fen}\n'
-        setrandom = 'setoption randomness small\n'
+        setrandom = 'setoption randomness medium\n'
         cmd = 'ucci\n' + setrandom + setfen + f'go time {time * 1000}\n'
         try:
             out, err = p.communicate(cmd, timeout=time+0.5)
