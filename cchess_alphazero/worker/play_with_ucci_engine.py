@@ -76,7 +76,7 @@ class SelfPlayWorker:
 
             logger.debug(f"Process {self.pid}-{self.id} play game {idx} time={(end_time - start_time):.1f} sec, "
                          f"turn={turns / 2}, value = {value:.2f}, winner is {winner}")
-            if turns <= 10:
+            if turns <= 10 and store:
                 senv.render(state)
             if store:
                 idx += 1
@@ -156,8 +156,8 @@ class SelfPlayWorker:
             value = -value
 
         v = value
-        if v == 0:
-            if random() > 0.5:
+        if v == 0 or turns <= 10:
+            if random() > 0.7:
                 store = True
             else:
                 store = False
