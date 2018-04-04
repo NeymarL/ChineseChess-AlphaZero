@@ -42,7 +42,7 @@ class PlayConfig:
         self.c_puct = 1.5
         self.noise_eps = 0.15
         self.dirichlet_alpha = 0.2
-        self.tau_decay_rate = 0.7
+        self.tau_decay_rate = 0.9
         self.virtual_loss = 3
         self.resign_threshold = -0.98
         self.min_resign_turn = 40
@@ -65,7 +65,7 @@ class TrainerConfig:
         self.save_model_steps = 25
         self.load_data_steps = 100
         self.momentum = 0.9
-        self.loss_weights = [1.25, 1.0]
+        self.loss_weights = [1, 1.0]
         self.lr_schedules = [
             (0, 0.01),
             (150000, 0.003),

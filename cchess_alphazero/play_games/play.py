@@ -175,17 +175,26 @@ class PlayWithHuman:
 
     def ai_move(self):
         ai_move_first = not self.human_move_first
+        history = [self.env.get_state()]
+        no_act = None
         while not self.env.done:
             if ai_move_first == self.env.red_to_move:
                 labels = ActionLabelsRed
                 labels_n = len(ActionLabelsRed)
                 self.ai.search_results = {}
-                action, policy = self.ai.action(self.env.get_state(), self.env.num_halfmoves)
-                if not self.env.red_to_move:
-                    action = flip_move(action)
+                state = self.env.get_state()
+                if state in history[:-1]:
+                    no_act = []
+                    for i in range(len(history) - 1):
+                        if history[i] == state:
+                            no_act.append(history[i + 1])
+                action, policy = self.ai.action(state, self.env.num_halfmoves, no_act)
                 if action is None:
                     logger.info("AI has resigned!")
                     return
+                history.append(action)
+                if not self.env.red_to_move:
+                    action = flip_move(action)
                 key = self.env.get_state()
                 p, v = self.ai.debug[key]
                 logger.info(f"NN value = {v:.3f}")
@@ -203,6 +212,7 @@ class PlayWithHuman:
                     self.chessmans.remove(sprite_dest)
                     sprite_dest.kill()
                 chessman_sprite.move(x1, y1, self.chessman_w, self.chessman_h)
+                history.append(self.env.get_state())
 
     def draw_widget(self, screen, widget_background):
         white_rect = Rect(0, 0, self.screen_width - self.width, self.height)
