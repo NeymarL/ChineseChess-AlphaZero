@@ -56,6 +56,7 @@ class SelfPlayWorker:
         self.pid = os.getpid()
 
     def start(self):
+        self.pid = os.getpid()
         logger.debug(f"Selfplay#Start Process index = {self.id}, pid = {self.pid}")
 
         idx = 1
@@ -182,7 +183,7 @@ class SelfPlayWorker:
                             stderr=subprocess.PIPE,
                             universal_newlines=True)
         setfen = f'position fen {fen}\n'
-        setrandom = 'setoption randomness medium\n'
+        setrandom = f'setoption randomness {self.config.opts.random}\n'
         cmd = 'ucci\n' + setrandom + setfen + f'go time {time * 1000}\n'
         try:
             out, err = p.communicate(cmd, timeout=time+0.5)

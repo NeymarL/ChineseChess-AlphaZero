@@ -167,7 +167,7 @@ class CChessPlayer:
                     break
 
                 if state in history[:-1]: # loop -> loss
-                    # logger.debug(f"loop -> loss, state = {state}, history = {history[:-1]}")
+                    logger.debug(f"loop -> loss, state = {state}, history = {history[:-1]}")
                     self.executor.submit(self.update_tree, None, 0, history)
                     break
 

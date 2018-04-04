@@ -10,6 +10,7 @@ logger = getLogger(__name__)
 CMD_LIST = ['self', 'opt', 'eval', 'play', 'eval', 'sl', 'ob']
 PIECE_STYLE_LIST = ['WOOD', 'POLISH', 'DELICATE']
 BG_STYLE_LIST = ['CANVAS', 'DROPS', 'GREEN', 'QIANHONG', 'SHEET', 'SKELETON', 'WHITE', 'WOOD']
+RANDOM_LIST = ['none', 'small', 'medium', 'large']
 
 def create_parser():
     parser = argparse.ArgumentParser()
@@ -25,6 +26,7 @@ def create_parser():
     parser.add_argument("--ucci", help="play with ucci engine instead of self play", action="store_true")
     parser.add_argument("--piece-style", help="choose a style of piece", choices=PIECE_STYLE_LIST, default="WOOD")
     parser.add_argument("--bg-style", help="choose a style of board", choices=BG_STYLE_LIST, default="WOOD")
+    parser.add_argument("--random", help="choose a style of randomness", choices=RANDOM_LIST, default="none")
     return parser
 
 def setup(config: Config, args):

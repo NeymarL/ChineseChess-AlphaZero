@@ -76,6 +76,7 @@ class Options:
     device_list = '0,1'
     bg_style = 'CANVAS'
     piece_style = 'WOOD'
+    random = 'none'
 
 class PlayWithHumanConfig:
     def __init__(self):
