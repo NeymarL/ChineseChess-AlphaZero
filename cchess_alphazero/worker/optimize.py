@@ -1,5 +1,6 @@
 import os
 import time
+import subprocess
 import numpy as np
 
 from collections import deque
@@ -8,6 +9,7 @@ from datetime import datetime
 from logging import getLogger
 from time import sleep
 from random import shuffle
+from threading import Thread
 
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.agent.model import CChessModel
@@ -51,8 +53,9 @@ class OptimizeWorker:
 
         while True:
             files = get_game_data_filenames(self.config.resource)
+            offset = self.config.trainer.min_games_to_begin_learn // self.config.play_data.nb_game_in_file
             if (len(files) * self.config.play_data.nb_game_in_file < self.config.trainer.min_games_to_begin_learn \
-              or ((last_file is not None) and files.index(last_file) + 40 > len(files))):
+              or ((last_file is not None) and files.index(last_file) + offset > len(files))):
                 if last_file is not None:
                     logger.info('Waiting for enough data 600s, ' + str((len(files) - files.index(last_file)) * self.config.play_data.nb_game_in_file) \
                             +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
@@ -62,11 +65,9 @@ class OptimizeWorker:
                 time.sleep(600)
                 continue
             else:
-                # if self.try_reload_model():
-                #     self.compile_model()
                 bef_files = files
-                if last_file is not None and len(files) > 40:
-                    files = files[-40:]
+                if last_file is not None and len(files) > offset:
+                    files = files[-offset:]
                 last_file = files[-1]
                 self.filenames = deque(files)
                 logger.debug(f"Start training {len(self.filenames)} files")
@@ -149,6 +150,10 @@ class OptimizeWorker:
         logger.debug("Save as best model")
         # save_as_next_generation_model(self.model)
         save_as_best_model(self.model)
+        if self.config.internet.distributed:
+            send_worker = Thread(target=self.send_model, name="send_worker")
+            send_worker.daemon = True
+            send_worker.start()
 
     def decide_learning_rate(self, total_steps):
         ret = None
@@ -166,6 +171,15 @@ class OptimizeWorker:
             return True
         return False
 
+    def send_model(self):
+        remote_server = 'root@115.159.183.150'
+        remote_path = '/var/www/alphazero.52coding.com.cn/data/model'
+        cmd = f'scp {self.config.resource.model_best_weight_path} {remote_server}:{remote_path}'
+        ret = subprocess.run(cmd, shell=True)
+        if ret.returncode == 0:
+            logger.info("Send model success!")
+        else:
+            logger.error(f"Send model failed! {ret.stderr}")
 
 def load_data_from_file(filename):
     try:

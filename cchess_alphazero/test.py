@@ -202,6 +202,26 @@ def test_done():
         print(board[i])
     print(senv.done(state))
 
+def test_upload():
+    from cchess_alphazero.lib.web_helper import upload_file
+    from cchess_alphazero.config import Config
+    c = Config('mini')
+    url = 'http://alphazero.52coding.com.cn/api/upload_game_file'
+    path = '/Users/liuhe/Documents/Graduation Project/ChineseChess-AlphaZero/data/play_data/play_20180312-224726_868426.json'
+    filename = 'play_20180312-224726_868426.json'
+    data = {'digest': 'data'}
+    res = upload_file(url, path, filename=filename, data=data)
+    print(res)
+
+def test_download():
+    from cchess_alphazero.lib.web_helper import download_file
+    from cchess_alphazero.config import Config
+    c = Config('mini')
+    url = 'http://alphazero.52coding.com.cn/model_best_weight.h5'
+    path = '/Users/liuhe/Downloads/model_best_weight.h5'
+    res = download_file(url, path)
+    print(res)
+
 if __name__ == "__main__":
-    test_gui_play()
+    test_download()
     

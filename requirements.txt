@@ -5,3 +5,4 @@ Keras==2.0.8
 numpy
 pandas
 pygame
+requests

@@ -29,41 +29,45 @@ logger = getLogger(__name__)
 def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
     m = Manager()
-    while True:
-        model_bt = load_model(config, config.resource.model_best_config_path, config.resource.model_best_weight_path)
-        modelbt_pipes = m.list([model_bt.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
+    model_bt = load_model(config, config.resource.model_best_config_path, config.resource.model_best_weight_path)
+    modelbt_pipes = m.list([model_bt.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
+    model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)
+    while not model_ng:
+        logger.info(f"Next generation model is None, wait for 300s")
+        sleep(300)
         model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)
-        while not model_ng:
-            logger.info(f"Next generation model is None, wait for 300s")
-            sleep(300)
-            model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)
-        logger.info(f"Next generation model has loaded!")
-        modelng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
+    logger.info(f"Next generation model has loaded!")
+    modelng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
 
-        # play_worker = EvaluateWorker(config, model1_pipes, model2_pipes)
-        # play_worker.start()
-        with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-            futures = []
-            for i in range(config.play.max_processes):
-                eval_worker = EvaluateWorker(config, modelbt_pipes, modelng_pipes, pid=i)
-                futures.append(executor.submit(eval_worker.start))
-        
-        wait(futures)
-        model_bt.close_pipes()
-        model_ng.close_pipes()
-        # compute whether to update best model
-        # and remove next generation model
-        score = 0
-        for future in futures:
-            score += future.result()
-        game_num = config.eval.game_num * config.play.max_processes
-        logger.info(f"Evaluate over, next generation win {score}/{game_num}")
-        if score * 1.0 / game_num >= config.eval.next_generation_replace_rate:
-            logger.info("Best model will be replaced by next generation model")
-            replace_best_model(config)
+    # play_worker = EvaluateWorker(config, model1_pipes, model2_pipes)
+    # play_worker.start()
+    with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+        futures = []
+        for i in range(config.play.max_processes):
+            eval_worker = EvaluateWorker(config, modelbt_pipes, modelng_pipes, pid=i)
+            futures.append(executor.submit(eval_worker.start))
+    
+    wait(futures)
+    model_bt.close_pipes()
+    model_ng.close_pipes()
+
+    results = []
+    for future in futures:
+        results += future.result()
+    for res in results:
+        if res[1] == -1:
+            res[1] = 0
+        elif res[1] != 1:
+            res[1] = 0.5
+        if res[0] % 2 == 0:
+            # red = player1
+            elo, _ = compute_elo(r1, r2, res[1])
         else:
-            logger.info("Next generation fail to defeat best model and will be removed")
-            remove_ng_model(config)
+            # black = player1
+            _, elo = compute_elo(r2, r1, res[1])
+        r1 = elo
+    logger.info(f"Evaluation finished, player1's elo = {r1}")
+
 
 class EvaluateWorker:
     def __init__(self, config: Config, pipes1=None, pipes2=None, pid=None):
@@ -78,6 +82,7 @@ class EvaluateWorker:
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
         score1 = 0
         score2 = 0
+        results = []
 
         for idx in range(self.config.eval.game_num):
             start_time = time()
@@ -91,10 +96,11 @@ class EvaluateWorker:
             else:
                 score2 += 0.5
                 score1 += 0.5
+            results.append((idx, score))
 
             logger.debug(f"Process{self.pid} play game {idx} time={(end_time - start_time):.1f} sec, "
-                         f"turn={turns / 2}, best model {score1} - {score2} next generation model")
-        return score2  # return next generation model's score
+                         f"turn={turns / 2}, model1 {score1} - {score2} model2")
+        return results
 
     def start_game(self, idx):
         pipe1 = self.pipes_bt.pop()
@@ -174,4 +180,6 @@ def load_model(config, config_path, weight_path, name=None):
     if not load_model_weight(model, config_path, weight_path, name):
         return None
     return model
+
+
 

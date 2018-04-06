@@ -27,6 +27,7 @@ def create_parser():
     parser.add_argument("--piece-style", help="choose a style of piece", choices=PIECE_STYLE_LIST, default="WOOD")
     parser.add_argument("--bg-style", help="choose a style of board", choices=BG_STYLE_LIST, default="WOOD")
     parser.add_argument("--random", help="choose a style of randomness", choices=RANDOM_LIST, default="none")
+    parser.add_argument("--distributed", help="whether upload/download file from remote server", action="store_true")
     return parser
 
 def setup(config: Config, args):
@@ -57,6 +58,7 @@ def start():
     logger.info('Config type: %s' % (config_type))
     config.opts.piece_style = args.piece_style
     config.opts.bg_style = args.bg_style
+    config.internet.distributed = args.distributed
 
     if args.cmd == 'self':
         if args.ucci:

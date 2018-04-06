@@ -1,4 +1,5 @@
 import os
+import getpass
 
 def _project_dir():
     d = os.path.dirname
@@ -12,11 +13,14 @@ class Config:
     def __init__(self, config_type="mini"):
         self.opts = Options()
         self.resource = ResourceConfig()
+        self.internet = InternetConfig()
 
         if config_type == "mini":
             import configs.mini as c
         elif config_type == "normal":
             import configs.normal as c
+        elif config_type == 'distribute':
+            import configs.distribute as c
         else:
             raise RuntimeError('unknown config_type: %s' % (config_type))
         self.model = c.ModelConfig()
@@ -80,9 +84,9 @@ class Options:
 
 class PlayWithHumanConfig:
     def __init__(self):
-        self.simulation_num_per_move = 800
+        self.simulation_num_per_move = 400
         self.c_puct = 1
-        self.search_threads = 40
+        self.search_threads = 10
         self.noise_eps = 0.15
         self.tau_decay_rate = 0
         self.dirichlet_alpha = 0.2
@@ -94,5 +98,14 @@ class PlayWithHumanConfig:
         pc.tau_decay_rate = self.tau_decay_rate
         pc.search_threads = self.search_threads
         pc.dirichlet_alpha = self.dirichlet_alpha
+
+class InternetConfig:
+    def __init__(self):
+        self.distributed = False
+        self.username = getpass.getuser()
+        self.base_url = 'http://alphazero.52coding.com.cn'
+        self.upload_url = f'{self.base_url}/api/upload_game_file'
+        self.download_url = f'{self.base_url}/model_best_weight.h5'
+        self.get_latest_digest = f'{self.base_url}/api/get_latest_digest'
 
 

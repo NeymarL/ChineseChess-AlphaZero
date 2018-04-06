@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from time import sleep
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor
@@ -8,6 +9,7 @@ from multiprocessing import Manager
 from time import time, sleep
 from collections import defaultdict
 from random import random
+from threading import Thread
 
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.agent.model import CChessModel
@@ -17,14 +19,15 @@ from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_policy, flip_move
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, write_game_data_to_file
-from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model
+from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model, load_best_model_weight_from_internet
 from cchess_alphazero.lib.tf_util import set_session_config
+from cchess_alphazero.lib.web_helper import upload_file
 
 logger = getLogger(__name__)
 
 def load_model(config):
     model = CChessModel(config)
-    if config.opts.new or not load_best_model_weight(model):
+    if config.internet.distributed or config.opts.new or not load_best_model_weight(model):
         model.build()
         save_as_best_model(model)
     return model
@@ -34,15 +37,14 @@ def start(config: Config):
     current_model = load_model(config)
     m = Manager()
     cur_pipes = m.list([current_model.get_pipes() for _ in range(config.play.max_processes)])
-
-    # play_worker = SelfPlayWorker(config, cur_pipes, 0)
-    # play_worker.start()
-    with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-        futures = []
-        for i in range(config.play.max_processes):
-            play_worker = SelfPlayWorker(config, cur_pipes, i)
-            logger.debug("Initialize selfplay worker")
-            futures.append(executor.submit(play_worker.start))
+    play_worker = SelfPlayWorker(config, cur_pipes, 0)
+    play_worker.start()
+    # with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+    #     futures = []
+    #     for i in range(config.play.max_processes):
+    #         play_worker = SelfPlayWorker(config, cur_pipes, i)
+    #         logger.debug("Initialize selfplay worker")
+    #         futures.append(executor.submit(play_worker.start))
 
 class SelfPlayWorker:
     def __init__(self, config: Config, pipes=None, pid=None):
@@ -164,10 +166,24 @@ class SelfPlayWorker:
 
         rc = self.config.resource
         game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
-        path = os.path.join(rc.play_data_dir, rc.play_data_filename_tmpl % game_id)
+        filename = rc.play_data_filename_tmpl % game_id
+        path = os.path.join(rc.play_data_dir, filename)
         logger.info(f"Process {self.pid} save play data to {path}")
         write_game_data_to_file(path, self.buffer)
+        if self.config.internet.distributed:
+            upload_worker = Thread(target=self.upload_play_data, args=(path, filename), name="upload_worker")
+            upload_worker.daemon = True
+            upload_worker.start()
         self.buffer = []
+
+    def upload_play_data(self, path, filename):
+        digest = CChessModel.fetch_digest(self.config.resource.model_best_weight_path)
+        data = {'digest': digest, 'username': self.config.internet.username}
+        response = upload_file(self.config.internet.upload_url, path, filename, data, rm=False)
+        if response is not None and response['status'] == 0:
+            logger.info(f"Upload play data {filename} finished.")
+        else:
+            logger.error(f'Upload play data {filename} failed. {response.msg if response is not None else None}')
 
     def remove_play_data(self):
         files = get_game_data_filenames(self.config.resource)

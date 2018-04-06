@@ -10,6 +10,16 @@ def load_best_model_weight(model):
     """
     return model.load(model.config.resource.model_best_config_path, model.config.resource.model_best_weight_path)
 
+def load_best_model_weight_from_internet(model):
+    """
+    :param cchess_alphazero.agent.model.CChessModel model:
+    :return:
+    """
+    from cchess_alphazero.lib.web_helper import download_file
+    logger.info(f"download model from remote server")
+    download_file(model.config.internet.download_url, model.config.resource.model_best_weight_path)
+    return model.load(model.config.resource.model_best_config_path, model.config.resource.model_best_weight_path)
+
 
 def save_as_best_model(model):
     """
@@ -26,16 +36,13 @@ def need_to_reload_best_model_weight(model):
     :param cchess_alphazero.agent.model.CChessModel model:
     :return:
     """
-    if model.config.model.distributed:
-        return load_best_model_weight(model)
-    else:
-        logger.debug("start reload the best model if changed")
-        digest = model.fetch_digest(model.config.resource.model_best_weight_path)
-        if digest != model.digest:
-            return True
+    logger.debug("start reload the best model if changed")
+    digest = model.fetch_digest(model.config.resource.model_best_weight_path)
+    if digest != model.digest:
+        return True
 
-        logger.debug("the best model is not changed")
-        return False
+    logger.debug("the best model is not changed")
+    return False
 
 def load_model_weight(model, config_path, weight_path, name=None):
     if name is not None:

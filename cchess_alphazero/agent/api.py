@@ -5,6 +5,7 @@ import numpy as np
 
 from cchess_alphazero.config import Config
 from cchess_alphazero.lib.model_helper import load_best_model_weight, need_to_reload_best_model_weight
+from cchess_alphazero.lib.web_helper import http_request, download_file
 from time import time
 from logging import getLogger
 
@@ -31,6 +32,7 @@ class CChessModelAPI:
         return you
 
     def predict_batch_worker(self):
+        self.try_reload_model_from_internet()
         last_model_check_time = time()
         while not self.done:
             if last_model_check_time + 600 < time():
@@ -66,12 +68,35 @@ class CChessModelAPI:
 
     def try_reload_model(self):
         try:
-            logger.debug("check model")
-            if self.need_reload and need_to_reload_best_model_weight(self.agent_model):
-                with self.agent_model.graph.as_default():
-                    load_best_model_weight(self.agent_model)
+            if self.config.internet.distributed:
+                # reload_worker = Thread(target=self.try_reload_model_from_internet, name="reload_worker")
+                # reload_worker.daemon = True
+                # reload_worker.start()
+                self.try_reload_model_from_internet()
+            else:
+                if self.need_reload and need_to_reload_best_model_weight(self.agent_model):
+                    with self.agent_model.graph.as_default():
+                        load_best_model_weight(self.agent_model)
         except Exception as e:
             logger.error(e)
+
+    def try_reload_model_from_internet(self):
+        response = http_request(self.config.internet.get_latest_digest)
+        if response is None:
+            logger.error(f"Could not fetch remote digest!")
+            return
+        digest = response['data']['digest']
+
+        if digest != self.agent_model.fetch_digest(self.config.resource.model_best_weight_path):
+            logger.info("the best model is changed, start download remote model")
+            if download_file(self.config.internet.download_url, self.config.resource.model_best_weight_path):
+                logger.info(f"Download remote model finished!")
+                with self.agent_model.graph.as_default():
+                    load_best_model_weight(self.agent_model)
+            else:
+                logger.error(f"Download remote model failed!")
+        else:
+            logger.info(f'the best model is not changed')
 
     def close(self):
         self.done = True

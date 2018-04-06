@@ -329,7 +329,8 @@ class CChessPlayer:
             for i in range(5):
                 index = temp[i]
                 mov = ActionLabelsRed[index]
-                self.search_results[mov] = debug_result[mov]
+                if mov in debug_result:
+                    self.search_results[mov] = debug_result[mov]
 
         policy /= np.sum(policy)
         return policy, False
