@@ -12,6 +12,16 @@ This project is based on these main resources:
 
 **Note**: This repo is still under contruction. There is also a slower implementation of MCTS player (previous version), see branch [old](https://github.com/NeymarL/ChineseChess-AlphaZero/tree/old).
 
+## Contributing
+
+In order to build a strong chinese chess AI following the same type of techniques as AlphaZero, we need to do this with a distributed project, as it requires a huge amount of computations.
+
+If you want to join us to build the best chinese chess AI in the world:
+
+* For instructions, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki/Getting-Started)
+* For live status, see http://alphazero.52coding.com.cn/
+
+
 ## Environment
 
 * Python 3.6.3

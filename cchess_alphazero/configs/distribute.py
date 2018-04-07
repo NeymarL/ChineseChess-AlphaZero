@@ -25,7 +25,7 @@ class EvaluateConfig:
 class PlayDataConfig:
     def __init__(self):
         self.sl_nb_game_in_file = 250
-        self.nb_game_in_file = 5     # do not change this parameter
+        self.nb_game_in_file = 5     # WARNING: DO NOT CHANGE THIS PARAMETER
         self.max_file_num = 1000
         self.nb_game_save_record = 1 # not supported in distributed mode
 
@@ -33,7 +33,7 @@ class PlayDataConfig:
 class PlayConfig:
     def __init__(self):
         self.max_processes = 10     # tune this to your cpu cores
-        self.search_threads = 20    # increase this will be faster but weaker
+        self.search_threads = 20    # increase this will be faster but with weaker performance
         self.vram_frac = 1.0
         self.simulation_num_per_move = 800
         self.thinking_loop = 1
@@ -74,6 +74,9 @@ class TrainerConfig:
 
 class ModelConfig:
     def __init__(self):
+        '''
+        WARNING: DO NOT CHANGE THESE PARAMETERS
+        '''
         self.cnn_filter_num = 256
         self.cnn_first_filter_size = 5
         self.cnn_filter_size = 3
