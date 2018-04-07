@@ -55,7 +55,7 @@ python cchess_alphazero/run.py play
 
 ![board](screenshots/board.png)
 
-You can choose different board/piece styles and sides, see [play with human](#Play with human).
+You can choose different board/piece styles and sides, see [play with human](#play-with-human).
 
 
 ## How to use
