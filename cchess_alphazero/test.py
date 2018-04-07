@@ -222,6 +222,17 @@ def test_download():
     res = download_file(url, path)
     print(res)
 
+def test_request():
+    from cchess_alphazero.lib.web_helper import http_request
+    from cchess_alphazero.config import Config
+    c = Config('mini')
+    url = 'http://alphazero.52coding.com.cn/api/add_model'
+    digest = 'd6fce85e040a63966fa7651d4a08a7cdba2ef0e5975fc16a6d178c96345547b3'
+    elo = 0
+    data = {'digest': digest, 'elo': elo}
+    res = http_request(url, post=True, data=data)
+    print(res)
+
 if __name__ == "__main__":
-    test_download()
+    test_request()
     

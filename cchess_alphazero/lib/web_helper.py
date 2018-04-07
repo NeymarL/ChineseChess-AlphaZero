@@ -22,10 +22,13 @@ def upload_file(url, path, filename=None, data=None, rm=False):
         os.remove(path)
     return r.json() if success else None
 
-def http_request(url):
+def http_request(url, post=False, data=None):
     success = False
     try:
-        r = requests.get(url)
+        if post:
+            r = requests.post(url, data=data)
+        else:
+            r = requests.get(url)
         if r.status_code != 200:
             logger.error(f"Error occurs when request {url}: {r.text}")
         else:
@@ -53,3 +56,5 @@ def download_file(url, save_path):
         for chunk in r.iter_content(chunk_size=128):
             fd.write(chunk)
     return True
+
+

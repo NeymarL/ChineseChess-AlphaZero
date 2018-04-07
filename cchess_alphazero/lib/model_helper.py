@@ -50,7 +50,9 @@ def load_model_weight(model, config_path, weight_path, name=None):
     return model.load(config_path, weight_path)
 
 def save_as_next_generation_model(model):
-    return model.save(model.config.resource.next_generation_config_path, model.config.resource.next_generation_weight_path)
+    filename = model.digest + '.h5'
+    weight_path = os.path.join(model.config.resource.next_generation_model_dir, filename)
+    return model.save(model.config.resource.next_generation_config_path, weight_path)
 
 
 def load_sl_best_model_weight(model):

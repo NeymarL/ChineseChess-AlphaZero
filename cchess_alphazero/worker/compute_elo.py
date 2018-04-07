@@ -29,6 +29,7 @@ logger = getLogger(__name__)
 def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
     m = Manager()
+    model_list = {}
     model_bt = load_model(config, config.resource.model_best_config_path, config.resource.model_best_weight_path)
     modelbt_pipes = m.list([model_bt.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
     model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)

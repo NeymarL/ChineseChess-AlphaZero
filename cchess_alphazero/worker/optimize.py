@@ -40,6 +40,7 @@ class OptimizeWorker:
         self.executor = ProcessPoolExecutor(max_workers=config.trainer.cleaning_processes)
         self.filenames = []
         self.opt = None
+        self.count = 0
 
     def start(self):
         self.model = self.load_model()
@@ -57,12 +58,12 @@ class OptimizeWorker:
             if (len(files) * self.config.play_data.nb_game_in_file < self.config.trainer.min_games_to_begin_learn \
               or ((last_file is not None) and files.index(last_file) + offset > len(files))):
                 if last_file is not None:
-                    logger.info('Waiting for enough data 600s, ' + str((len(files) - files.index(last_file)) * self.config.play_data.nb_game_in_file) \
+                    logger.info('Waiting for enough data 300s, ' + str((len(files) - files.index(last_file)) * self.config.play_data.nb_game_in_file) \
                             +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
                 else:
-                    logger.info('Waiting for enough data 600s, ' + str(len(files) * self.config.play_data.nb_game_in_file) \
+                    logger.info('Waiting for enough data 300s, ' + str(len(files) * self.config.play_data.nb_game_in_file) \
                             +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
-                time.sleep(600)
+                time.sleep(300)
                 continue
             else:
                 bef_files = files
@@ -94,6 +95,7 @@ class OptimizeWorker:
                              validation_split=0.02,
                              callbacks=[tensorboard_cb])
         steps = (state_ary.shape[0] // tc.batch_size) * epochs
+        self.count += 1
         return steps
 
     def compile_model(self):
@@ -147,9 +149,11 @@ class OptimizeWorker:
         return model
 
     def save_current_model(self):
-        logger.debug("Save as best model")
-        # save_as_next_generation_model(self.model)
+        logger.info("Save as best model")
         save_as_best_model(self.model)
+        if self.count % 10 == 0:
+            logger.info("Save as next generation model")
+            save_as_next_generation_model(self.model)
         if self.config.internet.distributed:
             send_worker = Thread(target=self.send_model, name="send_worker")
             send_worker.daemon = True
@@ -172,14 +176,18 @@ class OptimizeWorker:
         return False
 
     def send_model(self):
-        remote_server = 'root@115.159.183.150'
-        remote_path = '/var/www/alphazero.52coding.com.cn/data/model'
-        cmd = f'scp {self.config.resource.model_best_weight_path} {remote_server}:{remote_path}'
-        ret = subprocess.run(cmd, shell=True)
-        if ret.returncode == 0:
-            logger.info("Send model success!")
-        else:
-            logger.error(f"Send model failed! {ret.stderr}")
+        success = False
+        for i in range(3):
+            remote_server = 'root@115.159.183.150'
+            remote_path = '/var/www/alphazero.52coding.com.cn/data/model'
+            cmd = f'scp {self.config.resource.model_best_weight_path} {remote_server}:{remote_path}'
+            ret = subprocess.run(cmd, shell=True)
+            if ret.returncode == 0:
+                success = True
+                logger.info("Send model success!")
+                break
+            else:
+                logger.error(f"Send model failed! {ret.stderr}")
 
 def load_data_from_file(filename):
     try:
