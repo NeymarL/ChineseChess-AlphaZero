@@ -57,11 +57,7 @@ You can choose different board/piece styles and sides, see [play with human](#Pl
 pip install -r requirements.txt
 ```
 
-If you want to use GPU,
-
-```bash
-pip install tensorflow-gpu
-```
+If you want to use CPU only, replace `tensorflow-gpu` with `tensorflow` in `requirements.txt`.
 
 Make sure Keras is using Tensorflow and you have Python 3.6.3+.
 
@@ -96,6 +92,7 @@ options
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--gpu '1'`: specify which gpu to use
 * `--ucci`: whether to play with ucci engine (rather than self play, see `cchess_alphazero/worker/play_with_ucci_engine.py`)
+* `--distributed`: run self play in distributed mode which means it will upload the play data to the remote server and download latest model from it
 
 #### Trainer
 
