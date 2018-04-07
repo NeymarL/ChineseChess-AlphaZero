@@ -143,6 +143,8 @@ options
 * `--bg-style CANVAS`: choose a board style, default is `CANVAS`
 * `--cli`: if set this flag, play with AI in a cli environment rather than gui
 
+**Note**: Before you start, you need to download/find a font file (`.ttc`) and rename it to `PingFang.ttc`, then put it into `cchess_alphazero/play_games`. I have removed the font file from this repo because it's too big, but you can download it from [here](http://alphazero.52coding.com.cn/PingFang.ttc).
+
 #### Evaluator
 
 ```
