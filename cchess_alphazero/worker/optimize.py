@@ -83,6 +83,7 @@ class OptimizeWorker:
                     b.clear()
                     c.clear()
                     self.update_learning_rate(total_steps)
+                    self.remove_play_data()
 
     def train_epoch(self, epochs):
         tc = self.config.trainer
@@ -188,6 +189,16 @@ class OptimizeWorker:
                 break
             else:
                 logger.error(f"Send model failed! {ret.stderr}")
+
+    def remove_play_data(self):
+        files = get_game_data_filenames(self.config.resource)
+        if len(files) < self.config.play_data.max_file_num:
+            return
+        try:
+            for i in range(len(files) - self.config.play_data.max_file_num):
+                os.remove(files[i])
+        except:
+            pass
 
 def load_data_from_file(filename):
     try:
