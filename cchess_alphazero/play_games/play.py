@@ -22,6 +22,7 @@ from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_move
 from cchess_alphazero.lib.model_helper import load_best_model_weight
+from cchess_alphazero.lib.tf_util import set_session_config
 
 logger = getLogger(__name__)
 main_dir = os.path.split(os.path.abspath(__file__))[0]
@@ -29,6 +30,7 @@ PIECE_STYLE = 'WOOD'
 
 def start(config: Config, human_move_first=True):
     global PIECE_STYLE
+    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
     PIECE_STYLE = config.opts.piece_style
     play = PlayWithHuman(config)
     play.start(human_move_first)
@@ -122,11 +124,7 @@ class PlayWithHuman:
                     self.ai.close()
                     sys.exit()
                 elif event.type == VIDEORESIZE:
-                    self.chessman_w = int(self.chessman_w * event.w / self.width)
-                    self.chessman_h = int(self.chessman_h * event.h / self.height)
-                    self.width = event.w
-                    self.height = event.h
-                    screen, board_background, widget_background = self.init_screen()
+                    pass
                 elif event.type == MOUSEBUTTONDOWN:
                     if human_first == self.env.red_to_move:
                         pressed_array = pygame.mouse.get_pressed()
