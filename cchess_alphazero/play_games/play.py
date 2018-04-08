@@ -11,6 +11,7 @@ from logging import getLogger
 from collections import defaultdict
 from threading import Thread
 from time import sleep
+from datetime import datetime
 
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.environment.chessboard import Chessboard
@@ -122,6 +123,9 @@ class PlayWithHuman:
                 if event.type == pygame.QUIT:
                     self.env.board.print_record()
                     self.ai.close()
+                    game_id = datetime.now().strftime("%Y%m%d-%H%M%S")
+                    path = os.path.join(self.config.resource.play_record_dir, self.config.resource.play_record_filename_tmpl % game_id)
+                    self.env.board.save_record(path)
                     sys.exit()
                 elif event.type == VIDEORESIZE:
                     pass
@@ -169,6 +173,9 @@ class PlayWithHuman:
         self.ai.close()
         logger.info(f"Winner is {self.env.board.winner} !!!")
         self.env.board.print_record()
+        game_id = datetime.now().strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(self.config.resource.play_record_dir, self.config.resource.play_record_filename_tmpl % game_id)
+        self.env.board.save_record(path)
         sleep(3)
 
     def ai_move(self):
