@@ -20,7 +20,7 @@ class Config:
         elif config_type == "normal":
             import configs.normal as c
         elif config_type == 'distribute':
-            import configs.distribute as c
+            import cchess_alphazero.configs.distribute as c
         else:
             raise RuntimeError('unknown config_type: %s' % (config_type))
         self.model = c.ModelConfig()
@@ -84,12 +84,12 @@ class Options:
 
 class PlayWithHumanConfig:
     def __init__(self):
-        self.simulation_num_per_move = 400
+        self.simulation_num_per_move = 800
         self.c_puct = 1
         self.search_threads = 10
         self.noise_eps = 0
         self.tau_decay_rate = 0
-        self.dirichlet_alpha = 0
+        self.dirichlet_alpha = 0.2
 
     def update_play_config(self, pc):
         pc.simulation_num_per_move = self.simulation_num_per_move

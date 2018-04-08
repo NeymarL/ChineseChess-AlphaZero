@@ -6,7 +6,7 @@ class EvaluateConfig:
         self.thinking_loop = 1
         self.c_puct = 1 # lower  = prefer mean action value
         self.tau_decay_rate = 0
-        self.noise_eps = 0.2
+        self.noise_eps = 0
         self.max_game_length = 200
         self.max_processes = 10
         self.search_threads = 20
@@ -41,7 +41,7 @@ class PlayConfig:
         self.c_puct = 1.5
         self.noise_eps = 0.15
         self.dirichlet_alpha = 0.2
-        self.tau_decay_rate = 0.9
+        self.tau_decay_rate = 0.98
         self.virtual_loss = 3
         self.resign_threshold = -0.98
         self.min_resign_turn = 40
