@@ -31,7 +31,6 @@ PIECE_STYLE = 'WOOD'
 
 def start(config: Config, human_move_first=True):
     global PIECE_STYLE
-    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
     PIECE_STYLE = config.opts.piece_style
     play = PlayWithHuman(config)
     play.start(human_move_first)
