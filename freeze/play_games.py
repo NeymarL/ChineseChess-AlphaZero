@@ -39,6 +39,6 @@ if __name__ == "__main__":
     simulation_num = input('请输入AI搜索次数（必须为整数）：')
     ai_move_first = input('AI执红？(Y/N)')
     ai_move_first = True if ai_move_first == 'Y' or ai_move_first == 'y' else False
-    config.play.simulation_num_per_move = simulation_num
+    config.play.simulation_num_per_move = int(simulation_num)
     play.start(config, not ai_move_first)
     input('按任意键退出...')
