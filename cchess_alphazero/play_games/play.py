@@ -188,6 +188,8 @@ class PlayWithHuman:
                     for i in range(len(history) - 1):
                         if history[i] == state:
                             no_act.append(history[i + 1])
+                    if no_act != []:
+                        logger.debug(f"no_act = {no_act}")
                 action, policy = self.ai.action(state, self.env.num_halfmoves, no_act)
                 if action is None:
                     logger.info("AI has resigned!")
