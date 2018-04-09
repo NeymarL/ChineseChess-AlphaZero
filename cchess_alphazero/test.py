@@ -207,9 +207,9 @@ def test_upload():
     from cchess_alphazero.config import Config
     c = Config('mini')
     url = 'http://alphazero.52coding.com.cn/api/upload_game_file'
-    path = '/Users/liuhe/Documents/Graduation Project/ChineseChess-AlphaZero/data/play_data/play_20180312-224726_868426.json'
-    filename = 'play_20180312-224726_868426.json'
-    data = {'digest': 'data'}
+    path = '/Users/liuhe/Documents/Graduation Project/ChineseChess-AlphaZero/data/play_data/test.json'
+    filename = 'test.json'
+    data = {'digest': 'test', 'username': 'test'}
     res = upload_file(url, path, filename=filename, data=data)
     print(res)
 
@@ -234,5 +234,5 @@ def test_request():
     print(res)
 
 if __name__ == "__main__":
-    test_request()
+    test_upload()
     
