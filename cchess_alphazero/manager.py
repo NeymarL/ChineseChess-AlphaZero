@@ -85,7 +85,7 @@ def start():
         logger.info(f"AI move first : {args.ai_move_first}")
         play.start(config, not args.ai_move_first)
     elif args.cmd == 'eval':
-        if args.elo = False:
+        if args.elo == False:
             from cchess_alphazero.worker import evaluator
         else:
             import cchess_alphazero.worker.compute_elo as evaluator
