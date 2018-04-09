@@ -12,6 +12,7 @@ from collections import defaultdict
 from multiprocessing import Lock
 from random import random
 import numpy as np
+import subprocess
 
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.agent.model import CChessModel
@@ -28,46 +29,60 @@ logger = getLogger(__name__)
 
 def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
+    base_model = {'digest': 'd6fce85e040a63966fa7651d4a08a7cdba2ef0e5975fc16a6d178c96345547b3', 'elo': 0}
     m = Manager()
-    model_list = {}
-    model_bt = load_model(config, config.resource.model_best_config_path, config.resource.model_best_weight_path)
-    modelbt_pipes = m.list([model_bt.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
-    model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)
-    while not model_ng:
-        logger.info(f"Next generation model is None, wait for 300s")
-        sleep(300)
-        model_ng = load_model(config, config.resource.next_generation_config_path, config.resource.next_generation_weight_path)
-    logger.info(f"Next generation model has loaded!")
-    modelng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
-
-    # play_worker = EvaluateWorker(config, model1_pipes, model2_pipes)
-    # play_worker.start()
-    with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-        futures = []
-        for i in range(config.play.max_processes):
-            eval_worker = EvaluateWorker(config, modelbt_pipes, modelng_pipes, pid=i)
-            futures.append(executor.submit(eval_worker.start))
+    base_weight_path = os.path.join(config.resource.next_generation_model_dir, base_model['digest'] + '.h5')
+    model_base = load_model(config, config.resource.model_best_config_path, base_weight_path)
+    modelbt_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
     
-    wait(futures)
-    model_bt.close_pipes()
-    model_ng.close_pipes()
+    while True:
+        while not check_ng_model(config, exculds=[base_model['digest'] + '.h5']):
+            logger.info(f"Next generation model is None, wait for 300s")
+            sleep(300)
 
-    results = []
-    for future in futures:
-        results += future.result()
-    for res in results:
-        if res[1] == -1:
-            res[1] = 0
-        elif res[1] != 1:
-            res[1] = 0.5
-        if res[0] % 2 == 0:
-            # red = player1
-            elo, _ = compute_elo(r1, r2, res[1])
-        else:
-            # black = player1
-            _, elo = compute_elo(r2, r1, res[1])
-        r1 = elo
-    logger.info(f"Evaluation finished, player1's elo = {r1}")
+        logger.info(f"Loading next generation model!")
+        digest = check_ng_model(config, exculds=[base_model['digest'] + '.h5'])
+        ng_weight_path = os.path.join(config.resource.next_generation_model_dir, digest + '.h5')
+        model_ng = load_model(config, config.resource.next_generation_config_path, ng_weight_path)
+        modelng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
+
+        # play_worker = EvaluateWorker(config, model1_pipes, model2_pipes)
+        # play_worker.start()
+        with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+            futures = []
+            for i in range(config.play.max_processes):
+                eval_worker = EvaluateWorker(config, modelbt_pipes, modelng_pipes, pid=i)
+                futures.append(executor.submit(eval_worker.start))
+        
+        wait(futures)
+        model_base.close_pipes()
+        model_ng.close_pipes()
+
+        results = []
+        for future in futures:
+            results += future.result()
+        base_elo = base_model['elo']
+        ng_elo = base_elo
+        for res in results:
+            if res[1] == -1: # loss
+                res[1] = 0
+            elif res[1] != 1: # draw
+                res[1] = 0.5
+            if res[0] % 2 == 0:
+                # red = base
+                _, ng_elo = compute_elo(base_elo, ng_elo, res[1])
+            else:
+                # black = base
+                ng_elo, _ = compute_elo(ng_elo, base_elo, 1 - res[1])
+        logger.info(f"Evaluation finished, Next Generation's elo = {ng_elo}, base = {base_elo}")
+        # send ng model to server
+        send_model(ng_weight_path)
+        os.remove(base_weight_path)
+        base_weight_path = ng_weight_path
+        base_model['disgest'] = digest
+        base_model['elo'] = ng_elo
+        model_base = model_ng
+        modelbt_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
 
 
 class EvaluateWorker:
@@ -157,7 +172,7 @@ class EvaluateWorker:
         if turns % 2 == 1:  # black turn
             value = -value
 
-        if idx % 2 == 1:
+        if idx % 2 == 1:   # return player1' value
             value = -value
 
         self.pipes_bt.append(pipe1)
@@ -182,5 +197,24 @@ def load_model(config, config_path, weight_path, name=None):
         return None
     return model
 
+def check_ng_model(config, exculds=[]):
+    weights = [name for name in os.listdir(config.resource.next_generation_model_dir)
+            if name.endswith('.h5')]
+    for weight in weights:
+        if weight not in exculds:
+            return weight
+    return None
 
-
+def send_model(path):
+    success = False
+    for i in range(3):
+        remote_server = 'root@115.159.183.150'
+        remote_path = '/var/www/alphazero.52coding.com.cn/data/model'
+        cmd = f'scp {path} {remote_server}:{remote_path}'
+        ret = subprocess.run(cmd, shell=True)
+        if ret.returncode == 0:
+            success = True
+            logger.info("Send model success!")
+            break
+        else:
+            logger.error(f"Send model failed! {ret.stderr}, {cmd}")

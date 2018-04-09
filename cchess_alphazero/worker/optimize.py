@@ -152,7 +152,8 @@ class OptimizeWorker:
     def save_current_model(self):
         logger.info("Save as best model")
         save_as_best_model(self.model)
-        if self.count % 10 == 0:
+        # -------------- debug --------------
+        if self.count % 1 == 0:
             logger.info("Save as next generation model")
             save_as_next_generation_model(self.model)
         if self.config.internet.distributed:
@@ -188,7 +189,7 @@ class OptimizeWorker:
                 logger.info("Send model success!")
                 break
             else:
-                logger.error(f"Send model failed! {ret.stderr}")
+                logger.error(f"Send model failed! {ret.stderr}, cmd = {cmd}")
 
     def remove_play_data(self):
         files = get_game_data_filenames(self.config.resource)

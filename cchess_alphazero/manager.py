@@ -29,6 +29,7 @@ def create_parser():
     parser.add_argument("--bg-style", help="choose a style of board", choices=BG_STYLE_LIST, default="WOOD")
     parser.add_argument("--random", help="choose a style of randomness", choices=RANDOM_LIST, default="none")
     parser.add_argument("--distributed", help="whether upload/download file from remote server", action="store_true")
+    parser.add_argument("--elo", help="whether to compute elo score", action="store_true")
     return parser
 
 def setup(config: Config, args):
@@ -84,7 +85,10 @@ def start():
         logger.info(f"AI move first : {args.ai_move_first}")
         play.start(config, not args.ai_move_first)
     elif args.cmd == 'eval':
-        from cchess_alphazero.worker import evaluator
+        if args.elo = False:
+            from cchess_alphazero.worker import evaluator
+        else:
+            import cchess_alphazero.worker.compute_elo as evaluator
         config.eval.update_play_config(config.play)
         evaluator.start(config)
     elif args.cmd == 'sl':
