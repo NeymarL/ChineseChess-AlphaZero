@@ -43,6 +43,7 @@ def start(config: Config):
 
         logger.info(f"Loading next generation model!")
         digest = check_ng_model(config, exculds=[base_model['digest'] + '.h5'])
+        logger.debug(f"digest = {digest}")
         ng_weight_path = os.path.join(config.resource.next_generation_model_dir, digest)
         model_ng = load_model(config, config.resource.next_generation_config_path, ng_weight_path)
         modelng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
