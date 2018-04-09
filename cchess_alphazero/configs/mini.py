@@ -26,21 +26,21 @@ class EvaluateConfig:
 class PlayDataConfig:
     def __init__(self):
         self.sl_nb_game_in_file = 250
-        self.nb_game_in_file = 2
+        self.nb_game_in_file = 1
         self.max_file_num = 10
         self.nb_game_save_record = 1
 
 
 class PlayConfig:
     def __init__(self):
-        self.max_processes = 2
+        self.max_processes = 1
         self.search_threads = 4
         self.vram_frac = 1.0
         self.simulation_num_per_move = 20 # just for debug
         self.c_puct = 1.5
         self.noise_eps = 0.25
         self.dirichlet_alpha = 0.2
-        self.tau_decay_rate = 0.9
+        self.tau_decay_rate = 0.98
         self.virtual_loss = 3
         self.max_game_length = 100
         self.share_mtcs_info_in_self_play = False
@@ -51,7 +51,7 @@ class PlayConfig:
 
 class TrainerConfig:
     def __init__(self):
-        self.min_games_to_begin_learn = 10
+        self.min_games_to_begin_learn = 1
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 1
         self.vram_frac = 1.0

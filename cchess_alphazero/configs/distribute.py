@@ -25,7 +25,7 @@ class EvaluateConfig:
 class PlayDataConfig:
     def __init__(self):
         self.sl_nb_game_in_file = 250
-        self.nb_game_in_file = 5     # WARNING: DO NOT CHANGE THIS PARAMETER
+        self.nb_game_in_file = 1     # WARNING: DO NOT CHANGE THIS PARAMETER
         self.max_file_num = 1000
         self.nb_game_save_record = 1 # not supported in distributed mode
 

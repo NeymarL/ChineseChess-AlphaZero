@@ -55,6 +55,7 @@ class SelfPlayWorker:
         self.buffer = []
         need_to_renew_model = True
         job_done.acquire(True)
+        logger.info(f"自我博弈开始，请耐心等待....")
 
         with ProcessPoolExecutor(max_workers=self.config.play.max_processes) as executor:
             game_idx = 0
@@ -74,8 +75,8 @@ class SelfPlayWorker:
 
                 turns = rst[0]
                 value = rst[1]
-                logger.debug(f"play game {game_idx} time={(end_time - start_time):.1f} sec, "
-                         f"turn={turns / 2}, winner = {value:.2f} (1 = red, -1 = black, 0 draw)")
+                logger.debug(f"对局完成：对局ID {game_idx} 耗时{(end_time - start_time):.1f} 秒, "
+                         f"{turns / 2}回合, 胜者 = {value:.2f} (1 = 红, -1 = 黑, 0 = 和)")
                 self.buffer += data
 
                 if (game_idx % self.config.play_data.nb_game_in_file) == 0:
@@ -101,7 +102,7 @@ class SelfPlayWorker:
         game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
         filename = rc.play_data_filename_tmpl % game_id
         path = os.path.join(rc.play_data_dir, filename)
-        logger.info("save play data to %s" % (path))
+        logger.info("保存博弈数据到 %s" % (path))
         write_game_data_to_file(path, self.buffer)
         if self.config.internet.distributed:
             upload_worker = Thread(target=self.upload_play_data, args=(path, filename))
@@ -123,9 +124,9 @@ class SelfPlayWorker:
         data = {'digest': digest, 'username': self.config.internet.username}
         response = upload_file(self.config.internet.upload_url, path, filename, data, rm=False)
         if response is not None and response['status'] == 0:
-            logger.info(f"Upload play data {filename} finished.")
+            logger.info(f"上传博弈数据 {filename} 成功.")
         else:
-            logger.error(f'Upload play data {filename} failed. {response.msg if response is not None else None}')
+            logger.error(f'上传博弈数据 {filename} 失败. {response.msg if response is not None else None}')
 
 def recall_fn(future):
     global thr_free
@@ -151,7 +152,7 @@ def self_play_buffer(config, cur) -> (tuple, list):
 
     state = senv.INIT_STATE
     history = [state]
-    policys = [] 
+    # policys = [] 
     value = 0
     turns = 0
     game_over = False
@@ -168,11 +169,11 @@ def self_play_buffer(config, cur) -> (tuple, list):
         action, policy = player.action(state, turns, no_act)
         end_time = time()
         if action is None:
-            logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
+            print(f"{turns % 2} (0 = 红; 1 = 黑) 投降了!")
             value = -1
             break
-        # logger.debug(f"Playing: {turns % 2}, action: {action}, time: {(end_time - start_time):.1f}s")
-        policys.append(policy)
+        print(f"博弈中: {'红方走棋' if turns % 2 == 0 else '黑方走棋'}, 着法: {action}, 用时: {(end_time - start_time):.1f}s")
+        # policys.append(policy)
         history.append(action)
         state = senv.step(state, action)
         turns += 1
@@ -185,9 +186,9 @@ def self_play_buffer(config, cur) -> (tuple, list):
             game_over, value, final_move = senv.done(state)
 
     if final_move:
-        policy = build_policy(final_move, False)
+        # policy = build_policy(final_move, False)
         history.append(final_move)
-        policys.append(policy)
+        # policys.append(policy)
         state = senv.step(state, final_move)
         history.append(state)
 
@@ -197,10 +198,10 @@ def self_play_buffer(config, cur) -> (tuple, list):
         value = -value
     
     v = value
-    data = []
+    data = [history[0]]
     for i in range(turns):
         k = i * 2
-        data.append([history[k], policys[i], value])
+        data.append([history[k + 1], value])
         value = -value
 
     cur.append(pipe)

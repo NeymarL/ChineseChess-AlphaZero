@@ -18,6 +18,7 @@ from cchess_alphazero.lib.data_helper import get_game_data_filenames, read_game_
 from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model
 from cchess_alphazero.lib.model_helper import need_to_reload_best_model_weight, save_as_next_generation_model, save_as_best_model
 from cchess_alphazero.environment.env import CChessEnv
+from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_policy, flip_move
 from cchess_alphazero.lib.tf_util import set_session_config
 
 from keras.optimizers import SGD
@@ -209,7 +210,23 @@ def load_data_from_file(filename):
         return None
     if data is None:
         return None
-    return convert_to_trainging_data(data)
+    return expanding_data(data)
+
+def expanding_data(data):
+    state = data[0]
+    real_data = []
+    action = None
+    policy = None
+    value = None
+    for item in data[1:]:
+        action = item[0]
+        value = item[1]
+        policy = build_policy(action, flip=False)
+        real_data.append([state, policy, value])
+        state = senv.step(state, action)
+        
+    return convert_to_trainging_data(real_data)
+
 
 def convert_to_trainging_data(data):
     state_list = []
@@ -227,4 +244,17 @@ def convert_to_trainging_data(data):
     return np.asarray(state_list, dtype=np.float32), \
            np.asarray(policy_list, dtype=np.float32), \
            np.asarray(value_list, dtype=np.float32)
+
+def build_policy(action, flip):
+    labels_n = len(ActionLabelsRed)
+    move_lookup = {move: i for move, i in zip(ActionLabelsRed, range(labels_n))}
+    policy = np.zeros(labels_n)
+
+    policy[move_lookup[action]] = 1
+
+    if flip:
+        policy = flip_policy(policy)
+    return list(policy)
+
+
 

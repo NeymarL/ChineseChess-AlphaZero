@@ -81,20 +81,18 @@ class CChessModelAPI:
     def try_reload_model_from_internet(self):
         response = http_request(self.config.internet.get_latest_digest)
         if response is None:
-            logger.error(f"Could not fetch remote digest!")
+            logger.error(f"无法连接到远程服务器！请检查网络连接，并重新打开客户端")
             return
         digest = response['data']['digest']
 
         if digest != self.agent_model.fetch_digest(self.config.resource.model_best_weight_path):
-            logger.info("the best model is changed, start download remote model")
+            logger.info(f"正在下载最新权重，请稍后...")
             if download_file(self.config.internet.download_url, self.config.resource.model_best_weight_path):
-                logger.info(f"Download remote model finished!")
+                logger.info(f"权重下载完毕！开始训练...")
                 with self.agent_model.graph.as_default():
                     load_best_model_weight(self.agent_model)
             else:
-                logger.error(f"Download remote model failed!")
-        else:
-            logger.info(f'the best model is not changed')
+                logger.error(f"权重下载失败！请检查网络连接，并重新打开客户端")
 
     def close(self):
         self.done = True

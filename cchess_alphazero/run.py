@@ -8,7 +8,7 @@ if _PATH_ not in sys.path:
     sys.path.append(_PATH_)
 
 if __name__ == "__main__":
-    # mp.set_start_method('spawn')
+    mp.set_start_method('spawn')
     sys.setrecursionlimit(10000)
     from cchess_alphazero import manager
     manager.start()

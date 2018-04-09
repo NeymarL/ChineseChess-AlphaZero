@@ -89,7 +89,7 @@ class SelfPlayWorker:
 
         state = senv.INIT_STATE
         history = [state]
-        policys = [] 
+        # policys = [] 
         value = 0
         turns = 0       # even == red; odd == black
         game_over = False
@@ -115,21 +115,21 @@ class SelfPlayWorker:
             #         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]:.2f}, Prior: {action_state[2]:.3f}")
             # self.player.search_results = {}
             history.append(action)
-            policys.append(policy)
+            # policys.append(policy)
             state = senv.step(state, action)
             turns += 1
             history.append(state)
 
             if turns / 2 >= self.config.play.max_game_length:
                 game_over = True
-                value = senv.evaluate(state)
+                value = 0
             else:
                 game_over, value, final_move = senv.done(state)
 
         if final_move:
-            policy = self.build_policy(final_move, False)
+            # policy = self.build_policy(final_move, False)
             history.append(final_move)
-            policys.append(policy)
+            # policys.append(policy)
             state = senv.step(state, final_move)
             history.append(state)
 
@@ -147,10 +147,10 @@ class SelfPlayWorker:
             store = True
 
         if store:
-            data = []
+            data = [history[0]]
             for i in range(turns):
                 k = i * 2
-                data.append([history[k], policys[i], value])
+                data.append([history[k + 1], value])
                 value = -value
             self.save_play_data(idx, data)
 
