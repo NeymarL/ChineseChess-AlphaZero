@@ -1,7 +1,7 @@
 class EvaluateConfig:
     def __init__(self):
         self.vram_frac = 1.0
-        self.game_num = 6
+        self.game_num = 10
         self.simulation_num_per_move = 800
         self.thinking_loop = 1
         self.c_puct = 1 # lower  = prefer mean action value

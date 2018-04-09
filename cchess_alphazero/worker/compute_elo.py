@@ -24,6 +24,7 @@ from cchess_alphazero.environment.lookup_tables import Winner, flip_move, Action
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, write_game_data_to_file
 from cchess_alphazero.lib.model_helper import load_model_weight
 from cchess_alphazero.lib.tf_util import set_session_config
+from cchess_alphazero.lib.web_helper import http_request
 
 logger = getLogger(__name__)
 
@@ -76,7 +77,10 @@ def start(config: Config):
                 ng_elo, _ = compute_elo(ng_elo, base_elo, 1 - res[1])
         logger.info(f"Evaluation finished, Next Generation's elo = {ng_elo}, base = {base_elo}")
         # send ng model to server
+        logger.debug(f"Sending model to server")
         send_model(ng_weight_path)
+        data = {'digest': digest, 'elo': ng_elo}
+        http_request(config.internet.add_model_url, post=True, data=data)
         os.remove(base_weight_path)
         base_weight_path = ng_weight_path
         base_model['disgest'] = digest

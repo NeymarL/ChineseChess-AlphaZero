@@ -107,5 +107,6 @@ class InternetConfig:
         self.upload_url = f'{self.base_url}/api/upload_game_file'
         self.download_url = f'{self.base_url}/model_best_weight.h5'
         self.get_latest_digest = f'{self.base_url}/api/get_latest_digest'
+        self.add_model_url = f'{self.base_url}/api/add_model'
 
 
