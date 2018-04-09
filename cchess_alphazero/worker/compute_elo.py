@@ -43,8 +43,7 @@ def start(config: Config):
 
         logger.info(f"Loading next generation model!")
         digest = check_ng_model(config, exculds=[base_model['digest'] + '.h5'])
-        ng_weight_path = os.path.join(config.resource.next_generation_model_dir, digest + '.h5')
-        logger.debug(f"ng_weight_path = {ng_weight_path}")
+        ng_weight_path = os.path.join(config.resource.next_generation_model_dir, digest)
         model_ng = load_model(config, config.resource.next_generation_config_path, ng_weight_path)
         modelng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
 
@@ -80,11 +79,11 @@ def start(config: Config):
         # send ng model to server
         logger.debug(f"Sending model to server")
         send_model(ng_weight_path)
-        data = {'digest': digest, 'elo': ng_elo}
+        data = {'digest': digest[:-3], 'elo': ng_elo}
         http_request(config.internet.add_model_url, post=True, data=data)
         os.remove(base_weight_path)
         base_weight_path = ng_weight_path
-        base_model['disgest'] = digest
+        base_model['disgest'] = digest[:-3]
         base_model['elo'] = ng_elo
         model_base = model_ng
         modelbt_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
