@@ -22,6 +22,7 @@ def setup_parameters(config):
     config.play.search_threads = search_threads
 
 if __name__ == "__main__":
+    mp.set_start_method('spawn')
     sys.setrecursionlimit(10000)
     config_type = 'distribute'
     config = Config(config_type=config_type)
