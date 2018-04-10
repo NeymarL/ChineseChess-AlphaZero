@@ -25,7 +25,7 @@ if __name__ == "__main__":
     sys.setrecursionlimit(10000)
     config_type = 'distribute'
     config = Config(config_type=config_type)
-    config.device_list = '0'
+    config.opts.device_list = '0'
     config.resource.create_directories()
     setup_logger(config.resource.main_log_path)
     config.internet.distributed = True
