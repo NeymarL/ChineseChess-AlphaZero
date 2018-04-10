@@ -11,7 +11,13 @@ INIT_STATE = 'rkemsmekr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR'
 BOARD_HEIGHT = 10
 BOARD_WIDTH = 9
 
-def done(state):
+def done(state, turns=-1):
+    if 's' not in state:
+        return (True, 1, None)
+    if 'S' not in state:
+        return (True, -1, None)
+    if turns > 0 and turns < 10:
+        return (False, 0, None)
     board = state_to_board(state)
     red_k, black_k = [0, 0], [0, 0]
     winner = None

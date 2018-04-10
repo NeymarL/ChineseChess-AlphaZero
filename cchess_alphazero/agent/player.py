@@ -130,7 +130,7 @@ class CChessPlayer:
                 self.num_task = min(self.config.play.search_threads, all_tasks - self.config.play.search_threads * iter)
                 # logger.debug(f"iter = {iter}, num_task = {self.num_task}")
                 for i in range(self.num_task):
-                    self.executor.submit(self.MCTS_search, state, [state], True)
+                    self.executor.submit(self.MCTS_search, state, [state], True, turns)
                 self.all_done.acquire(True)
         self.all_done.release()
 
@@ -145,13 +145,13 @@ class CChessPlayer:
         my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(policy, turns)))
         return self.labels[my_action], list(policy)
 
-    def MCTS_search(self, state, history=[], is_root_node=False) -> float:
+    def MCTS_search(self, state, history=[], is_root_node=False, turns=-1) -> float:
         """
         Monte Carlo Tree Search
         """
         while True:
             # logger.debug(f"start MCTS, state = {state}, history = {history}")
-            game_over, v, _ = senv.done(state)
+            game_over, v, _ = senv.done(state, turns)
             if game_over:
                 self.executor.submit(self.update_tree, None, v, history)
                 break
