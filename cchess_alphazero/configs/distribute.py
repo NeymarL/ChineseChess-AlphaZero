@@ -32,7 +32,7 @@ class PlayDataConfig:
 
 class PlayConfig:
     def __init__(self):
-        self.max_processes = 10     # tune this to your cpu cores
+        self.max_processes = 5     # tune this to your cpu cores
         self.search_threads = 20    # increase this will be faster but with weaker performance
         self.vram_frac = 1.0
         self.simulation_num_per_move = 800
