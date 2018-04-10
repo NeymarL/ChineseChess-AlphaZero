@@ -31,7 +31,7 @@ logger = getLogger(__name__)
 
 def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
-    base_model = {'digest': 'd6fce85e040a63966fa7651d4a08a7cdba2ef0e5975fc16a6d178c96345547b3', 'elo': 0}
+    base_model = {'digest': 'fd830e6c451864cb2b266354e30145a8e100dc1134691a7e934a5d7361c79ffa', 'elo': 64}
     m = Manager()
     base_weight_path = os.path.join(config.resource.next_generation_model_dir, base_model['digest'] + '.h5')
     model_base = load_model(config, config.resource.model_best_config_path, base_weight_path)
@@ -88,6 +88,7 @@ def start(config: Config):
         base_weight_path = ng_weight_path
         base_model['disgest'] = digest[:-3]
         base_model['elo'] = ng_elo
+        logger.debug(f"base_model = {base_model}")
         model_base = model_ng
         modelbt_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
 
