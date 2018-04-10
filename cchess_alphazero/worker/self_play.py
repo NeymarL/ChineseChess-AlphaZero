@@ -73,6 +73,7 @@ class SelfPlayWorker:
                 senv.render(state)
             if store:
                 idx += 1
+            sleep(random())
 
     def start_game(self, idx, search_tree):
         pipes = self.cur_pipes.pop()

@@ -118,7 +118,7 @@ class EvaluateWorker:
             else:
                 score2 += 0.5
                 score1 += 0.5
-            results.append((idx, score))
+            results.append([idx, score])
 
             logger.debug(f"Process{self.pid} play game {idx} time={(end_time - start_time):.1f} sec, "
                          f"turn={turns / 2}, model1 {score1} - {score2} model2")
