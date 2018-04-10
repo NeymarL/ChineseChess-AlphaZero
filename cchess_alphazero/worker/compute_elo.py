@@ -122,6 +122,7 @@ class EvaluateWorker:
 
             logger.debug(f"Process{self.pid} play game {idx} time={(end_time - start_time):.1f} sec, "
                          f"turn={turns / 2}, model1 {score1} - {score2} model2")
+            sleep(random())
         return results
 
     def start_game(self, idx):
