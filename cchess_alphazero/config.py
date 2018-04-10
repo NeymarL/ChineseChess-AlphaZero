@@ -107,7 +107,7 @@ class InternetConfig:
         self.base_url = 'http://alphazero.52coding.com.cn'
         self.upload_url = f'{self.base_url}/api/upload_game_file'
         # self.download_url = f'{self.base_url}/model_best_weight.h5'
-        self.download_url = 'https://transfer.sh/iPyR2/model_best_weight.h5'
+        self.download_url = 'http://alphazero-1251776088.cossh.myqcloud.com/model/model_best_weight.h5'
         self.get_latest_digest = f'{self.base_url}/api/get_latest_digest'
         self.add_model_url = f'{self.base_url}/api/add_model'
 
