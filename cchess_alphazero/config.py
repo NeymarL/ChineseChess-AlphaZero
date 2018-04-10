@@ -81,6 +81,7 @@ class Options:
     bg_style = 'CANVAS'
     piece_style = 'WOOD'
     random = 'none'
+    log_move = False
 
 class PlayWithHumanConfig:
     def __init__(self):
