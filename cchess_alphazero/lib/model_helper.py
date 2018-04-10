@@ -1,4 +1,5 @@
 import os
+import shutil
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -53,7 +54,7 @@ def load_model_weight(model, config_path, weight_path, name=None):
 def save_as_next_generation_model(model):
     filename = model.digest + '.h5'
     weight_path = os.path.join(model.config.resource.next_generation_model_dir, filename)
-    return model.save(model.config.resource.next_generation_config_path, weight_path)
+    shutil.copy(model.config.resource.model_best_weight_path, weight_path)
 
 
 def load_sl_best_model_weight(model):

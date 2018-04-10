@@ -158,7 +158,7 @@ class EvaluateWorker:
             end_time = time()
             # logger.debug(f"pid = {self.pid}, idx = {idx}, action = {action}, turns = {turns}, time = {(end_time-start_time):.1f}")
             if action is None:
-                logger.debug(f"{turn % 2} (0 = red; 1 = black) has resigned!")
+                logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
                 value = -1
                 break
             
