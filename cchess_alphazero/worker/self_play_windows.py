@@ -172,7 +172,7 @@ def self_play_buffer(config, cur) -> (tuple, list):
             print(f"{turns % 2} (0 = 红; 1 = 黑) 投降了!")
             value = -1
             break
-        print(f"博弈中: {'红方走棋' if turns % 2 == 0 else '黑方走棋'}, 着法: {action}, 用时: {(end_time - start_time):.1f}s")
+        print(f"博弈中: 回合{turns / 2 + 1} {'红方走棋' if turns % 2 == 0 else '黑方走棋'}, 着法: {action}, 用时: {(end_time - start_time):.1f}s")
         # policys.append(policy)
         history.append(action)
         state = senv.step(state, action)

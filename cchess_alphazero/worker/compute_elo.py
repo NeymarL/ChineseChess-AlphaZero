@@ -55,6 +55,7 @@ def start(config: Config):
             for i in range(config.play.max_processes):
                 eval_worker = EvaluateWorker(config, modelbt_pipes, modelng_pipes, pid=i)
                 futures.append(executor.submit(eval_worker.start))
+                sleep(1)
         
         wait(futures)
         model_base.close_pipes()
