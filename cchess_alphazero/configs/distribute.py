@@ -1,14 +1,14 @@
 class EvaluateConfig:
     def __init__(self):
         self.vram_frac = 1.0
-        self.game_num = 10
+        self.game_num = 20
         self.simulation_num_per_move = 800
         self.thinking_loop = 1
         self.c_puct = 1 # lower  = prefer mean action value
         self.tau_decay_rate = 0
         self.noise_eps = 0
         self.max_game_length = 100
-        self.max_processes = 10
+        self.max_processes = 5
         self.search_threads = 20
 
     def update_play_config(self, pc):
