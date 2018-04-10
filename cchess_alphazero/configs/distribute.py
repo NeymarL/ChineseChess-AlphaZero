@@ -1,7 +1,7 @@
 class EvaluateConfig:
     def __init__(self):
         self.vram_frac = 1.0
-        self.game_num = 20
+        self.game_num = 10
         self.simulation_num_per_move = 800
         self.thinking_loop = 1
         self.c_puct = 1 # lower  = prefer mean action value
@@ -26,7 +26,7 @@ class PlayDataConfig:
     def __init__(self):
         self.sl_nb_game_in_file = 250
         self.nb_game_in_file = 1     # WARNING: DO NOT CHANGE THIS PARAMETER
-        self.max_file_num = 1000
+        self.max_file_num = 2000
         self.nb_game_save_record = 1 # not supported in distributed mode
 
 
