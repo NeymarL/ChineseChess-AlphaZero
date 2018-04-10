@@ -43,6 +43,7 @@ def start(config: Config):
         futures = []
         for i in range(config.play.max_processes):
             play_worker = SelfPlayWorker(config, cur_pipes, i)
+            sleep(1)
             logger.debug("Initialize selfplay worker")
             futures.append(executor.submit(play_worker.start))
 
