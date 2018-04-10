@@ -25,6 +25,7 @@ from cchess_alphazero.lib.data_helper import get_game_data_filenames, write_game
 from cchess_alphazero.lib.model_helper import load_model_weight
 from cchess_alphazero.lib.tf_util import set_session_config
 from cchess_alphazero.lib.web_helper import http_request
+from cchess_alphazero.lib.elo_helper import compute_elo
 
 logger = getLogger(__name__)
 
