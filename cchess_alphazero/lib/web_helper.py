@@ -1,6 +1,8 @@
 import requests
 import os
 from logging import getLogger
+from urllib.request import urlopen
+from tqdm import tqdm
 
 logger = getLogger(__name__)
 
@@ -38,23 +40,25 @@ def http_request(url, post=False, data=None):
     return r.json() if success else None
 
 def download_file(url, save_path):
-    success = False
-    for i in range(3):
-        try:
-            r = requests.get(url, stream=True)
-            if r.status_code != 200:
-                logger.error(f"Error occurs when download from {url}: {r.text}")
-            else:
-                success = True
-                break
-        except Exception as e:
-            logger.error(f"Error occurs when download from {url}: {e}")
-    
-    if not success:
-        return False
-    with open(save_path, 'wb') as fd:
-        for chunk in r.iter_content(chunk_size=128):
-            fd.write(chunk)
+    os.remove(save_path)
+    file_size = int(urlopen(url).info().get('Content-Length', -1))
+    if os.path.exists(save_path):
+        first_byte = os.path.getsize(save_path)
+    else:
+        first_byte = 0
+    if first_byte >= file_size:
+        return file_size
+    header = {"Range": "bytes=%s-%s" % (first_byte, file_size)}
+    pbar = tqdm(
+        total=file_size, initial=first_byte,
+        unit='B', unit_scale=True, desc=url.split('/')[-1])
+    req = requests.get(url, headers=header, stream=True)
+    with(open(save_path, 'ab')) as f:
+        for chunk in req.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+                pbar.update(1024)
+    pbar.close()
     return True
 
 

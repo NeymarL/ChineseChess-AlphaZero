@@ -6,3 +6,4 @@ numpy
 pandas
 pygame
 requests
+tqdm
