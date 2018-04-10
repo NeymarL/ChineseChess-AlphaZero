@@ -16,8 +16,8 @@ def done(state, turns=-1):
         return (True, 1, None)
     if 'S' not in state:
         return (True, -1, None)
-    if turns > 0 and turns < 20:
-        return (False, 0, None)
+    # if turns > 0 and turns < 20:
+    #     return (False, 0, None)
     board = state_to_board(state)
     red_k, black_k = [0, 0], [0, 0]
     winner = None
