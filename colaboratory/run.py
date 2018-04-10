@@ -15,7 +15,7 @@ from cchess_alphazero.worker import self_play
 
 def setup_parameters(config):
     num_cores = mp.cpu_count()
-    max_processes = num_cores // 2 if num_cores < 20 else 10
+    max_processes = 2
     search_threads = 20
     print(f"max_processes = {max_processes}, search_threads = {search_threads}")
     config.play.max_processes = max_processes

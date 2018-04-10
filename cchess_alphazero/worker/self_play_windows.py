@@ -33,6 +33,7 @@ data = None
 futures =[]
 
 def start(config: Config):
+    set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
     return SelfPlayWorker(config).start()
 
 class SelfPlayWorker:
