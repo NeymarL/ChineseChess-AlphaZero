@@ -142,8 +142,8 @@ class SelfPlayWorker:
             value = -value
 
         v = value
-        if v == 0:
-            if random() > 0:
+        if turns < 10:
+            if random() > 0.7:
                 store = True
             else:
                 store = False
