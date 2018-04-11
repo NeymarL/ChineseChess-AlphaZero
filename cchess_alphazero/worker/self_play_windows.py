@@ -158,6 +158,7 @@ def self_play_buffer(config, cur) -> (tuple, list):
     turns = 0
     game_over = False
     final_move = None
+    no_eat_count = 0
 
     while not game_over:
         no_act = None
@@ -176,13 +177,15 @@ def self_play_buffer(config, cur) -> (tuple, list):
         print(f"博弈中: 回合{turns / 2 + 1} {'红方走棋' if turns % 2 == 0 else '黑方走棋'}, 着法: {action}, 用时: {(end_time - start_time):.1f}s")
         # policys.append(policy)
         history.append(action)
-        state = senv.step(state, action)
+        tate, no_eat = senv.new_step(state, action)
         turns += 1
+        if no_eat:
+            no_eat_count += 1
         history.append(state)
 
-        if turns / 2 >= config.play.max_game_length:
+        if no_eat_count >= 120:
             game_over = True
-            value = senv.evaluate(state)
+            value = 0
         else:
             game_over, value, final_move = senv.done(state)
 
