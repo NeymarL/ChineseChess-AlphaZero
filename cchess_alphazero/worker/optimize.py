@@ -226,6 +226,7 @@ def expanding_data(data):
             policy = build_policy(action, flip=False)
         except Exception as e:
             logger.error(f"Expand data error {e}, item = {item}, data = {data}, state = {state}")
+            return None
         real_data.append([state, policy, value])
         state = senv.step(state, action)
         
