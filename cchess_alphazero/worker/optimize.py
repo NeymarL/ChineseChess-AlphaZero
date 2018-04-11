@@ -71,6 +71,7 @@ class OptimizeWorker:
                 if last_file is not None and len(files) > offset:
                     files = files[-offset:]
                 last_file = files[-1]
+                logger.info(f"Last file = {last_file}")
                 self.filenames = deque(files)
                 logger.debug(f"Start training {len(self.filenames)} files")
                 shuffle(self.filenames)
