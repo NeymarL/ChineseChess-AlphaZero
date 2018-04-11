@@ -153,6 +153,7 @@ class EvaluateWorker:
         value = 0       # best model's value
         turns = 0       # even == red; odd == black
         game_over = False
+        no_eat_count = 0
 
         while not game_over:
             start_time = time()
@@ -167,10 +168,12 @@ class EvaluateWorker:
                 value = -1
                 break
             
-            state = senv.step(state, action)
+            state, no_eat = senv.new_step(state, action)
             turns += 1
+            if no_eat:
+                no_eat_count += 1
 
-            if turns / 2 >= self.config.play.max_game_length:
+            if no_eat_count >= 120:
                 game_over = True
                 value = 0
             else:
