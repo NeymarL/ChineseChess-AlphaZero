@@ -45,7 +45,7 @@ class PlayConfig:
         self.virtual_loss = 3
         self.resign_threshold = -0.98
         self.min_resign_turn = 40
-        self.enable_resign_rate = 0.5
+        self.enable_resign_rate = 0
         self.max_game_length = 100
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
