@@ -31,7 +31,7 @@ logger = getLogger(__name__)
 
 def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
-    base_model = {'digest': 'a04a619d26338e3b4b90cc55cf551e166d5cd08ddbb262dbcab2fe950d038172', 'elo': 222}
+    base_model = {'digest': '460dd40b0f2cc098878fe0e553868c4cae16ea17b86af0451c9cb731b0b54f91', 'elo': 236}
     m = Manager()
     base_weight_path = os.path.join(config.resource.next_generation_model_dir, base_model['digest'] + '.h5')
     model_base = load_model(config, config.resource.model_best_config_path, base_weight_path)
@@ -150,6 +150,7 @@ class EvaluateWorker:
             logger.debug(f"best model is black, ng is red")
 
         state = senv.INIT_STATE
+        history = [state]
         value = 0       # best model's value
         turns = 0       # even == red; odd == black
         game_over = False
@@ -157,21 +158,28 @@ class EvaluateWorker:
 
         while not game_over:
             start_time = time()
+            no_act = None
+            if state in history[:-1]:
+                no_act = []
+                for i in range(len(history) - 1):
+                    if history[i] == state:
+                        no_act.append(history[i + 1])
             if turns % 2 == 0:
-                action, _ = red.action(state, turns)
+                action, _ = red.action(state, turns, no_act=no_act)
             else:
-                action, _ = black.action(state, turns)
+                action, _ = black.action(state, turns, no_act=no_act)
             end_time = time()
             # logger.debug(f"pid = {self.pid}, idx = {idx}, action = {action}, turns = {turns}, time = {(end_time-start_time):.1f}")
             if action is None:
                 logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
                 value = -1
                 break
-            
+            history.append(action)
             state, no_eat = senv.new_step(state, action)
             turns += 1
             if no_eat:
                 no_eat_count += 1
+            history.append(state)
 
             if no_eat_count >= 120:
                 game_over = True
