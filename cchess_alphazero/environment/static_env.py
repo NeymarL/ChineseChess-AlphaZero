@@ -166,6 +166,12 @@ def state_to_fen(state, turns):
     else:
         return flip_fen(fen)
 
+def fen_to_state(fen):
+    foo = fen.split(' ')
+    position = foo[0]
+    state = "".join([replace_dict[s] if s.isalpha() else s for s in position])
+    return state
+
 def flip_fen(fen):
     foo = fen.split(' ')
     rows = foo[0].split('/')
@@ -318,5 +324,10 @@ def parse_onegreen_move(move):
 def parse_ucci_move(move):
     x0, x1 = ord(move[0]) - ord('a'), ord(move[2]) - ord('a')
     move = str(x0) + move[1] + str(x1) + move[3]
+    return move
+
+def to_uci_move(action):
+    x0, x1 = chr(ord('a') + int(action[0])), chr(ord('a') + int(action[2]))
+    move = x0 + action[1] + x1 + action[3]
     return move
     

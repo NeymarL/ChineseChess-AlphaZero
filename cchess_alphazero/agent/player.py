@@ -2,6 +2,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from logging import getLogger
 from threading import Lock, Condition
+import concurrent.futures.thread
 
 import numpy as np
 import cchess_alphazero.environment.static_env as senv
@@ -69,10 +70,30 @@ class CChessPlayer:
         self.executor.submit(self.receiver)
         self.executor.submit(self.sender)
 
-    def close(self):
+    def close(self, wait=True):
         self.job_done = True
         if self.executor is not None:
-            self.executor.shutdown()
+            self.executor.shutdown(wait=wait)
+
+    def close_and_return_action(self, state, turns, no_act=None):
+        self.job_done = True
+        if self.executor is not None:
+            self.executor.shutdown(wait=False)
+            # self.executor = None
+            self.executor._threads.clear()
+            concurrent.futures.thread._threads_queues.clear()
+        policy, resign = self.calc_policy(state, turns)
+        if resign:  # resign
+            return None
+        if no_act is not None:
+            for act in no_act:
+                policy[self.move_lookup[act]] = 0
+        my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(policy, turns)))
+        if state in self.debug:
+            _, value = self.debug[state]
+        else:
+            value = 0
+        return self.labels[my_action], value
 
     def sender(self):
         '''
@@ -111,26 +132,30 @@ class CChessPlayer:
                 self.buffer_history = self.buffer_history[k:]
             self.run_lock.release()
 
-    def action(self, state, turns, no_act=None) -> str:
+    def action(self, state, turns, no_act=None, depth=None, infinite=False) -> str:
         self.all_done.acquire(True)
         self.root_state = state
         done = 0
         if state in self.tree:
             done = self.tree[state].sum_n
         self.num_task = self.play_config.simulation_num_per_move - done
+        if depth:
+            self.num_task = depth - done if depth > done else 0
+        if infinite:
+            self.num_task = 100000
 
         # MCTS search
         if self.num_task > 0:
-            # logger.debug(f"all_task = {self.num_task}")
             all_tasks = self.num_task
             batch = all_tasks // self.config.play.search_threads
             if all_tasks % self.config.play.search_threads != 0:
                 batch += 1
+            # logger.debug(f"all_task = {self.num_task}, batch = {batch}")
             for iter in range(batch):
                 self.num_task = min(self.config.play.search_threads, all_tasks - self.config.play.search_threads * iter)
                 # logger.debug(f"iter = {iter}, num_task = {self.num_task}")
                 for i in range(self.num_task):
-                    self.executor.submit(self.MCTS_search, state, [state], True, turns)
+                    self.executor.submit(self.MCTS_search, state, [state], True)
                 self.all_done.acquire(True)
         self.all_done.release()
 
@@ -145,13 +170,13 @@ class CChessPlayer:
         my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(policy, turns)))
         return self.labels[my_action], list(policy)
 
-    def MCTS_search(self, state, history=[], is_root_node=False, turns=-1) -> float:
+    def MCTS_search(self, state, history=[], is_root_node=False) -> float:
         """
         Monte Carlo Tree Search
         """
         while True:
             # logger.debug(f"start MCTS, state = {state}, history = {history}")
-            game_over, v, _ = senv.done(state, turns)
+            game_over, v, _ = senv.done(state)
             if game_over:
                 self.executor.submit(self.update_tree, None, v, history)
                 break

@@ -122,7 +122,7 @@ class PlayWithHuman:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.env.board.print_record()
-                    self.ai.close()
+                    self.ai.close(wait=False)
                     game_id = datetime.now().strftime("%Y%m%d-%H%M%S")
                     path = os.path.join(self.config.resource.play_record_dir, self.config.resource.play_record_filename_tmpl % game_id)
                     self.env.board.save_record(path)
@@ -178,7 +178,7 @@ class PlayWithHuman:
             self.chessmans.draw(screen)
             pygame.display.update()
 
-        self.ai.close()
+        self.ai.close(wait=False)
         logger.info(f"Winner is {self.env.board.winner} !!!")
         self.env.board.print_record()
         game_id = datetime.now().strftime("%Y%m%d-%H%M%S")

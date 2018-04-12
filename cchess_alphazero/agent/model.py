@@ -122,4 +122,5 @@ class CChessModel:
     def close_pipes(self):
         if self.api is not None:
             self.api.close()
+            self.api = None
 
