@@ -143,11 +143,9 @@ class EvaluateWorker:
         if idx % 2 == 0:
             red = self.player1
             black = self.player2
-            logger.debug(f"best model is red, ng is black")
         else:
             red = self.player2
             black = self.player1
-            logger.debug(f"best model is black, ng is red")
 
         state = senv.INIT_STATE
         history = [state]
