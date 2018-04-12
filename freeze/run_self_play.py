@@ -14,6 +14,8 @@ from cchess_alphazero.config import Config, PlayWithHumanConfig
 import cchess_alphazero.worker.self_play_windows as self_play
 
 def setup_parameters(config):
+    username = input(f"请输入用户名：")
+    config.internet.username = username
     num_cores = mp.cpu_count()
     max_processes = num_cores // 2 if num_cores < 20 else 10
     search_threads = 10 if num_cores < 10 else (num_cores // 10) * 10
@@ -22,6 +24,7 @@ def setup_parameters(config):
     print(f"max_processes = {max_processes}, search_threads = {search_threads}")
     config.play.max_processes = max_processes
     config.play.search_threads = search_threads
+
 
 if __name__ == "__main__":
     mp.freeze_support()
