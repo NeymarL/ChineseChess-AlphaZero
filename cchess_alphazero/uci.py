@@ -157,7 +157,7 @@ class UCI:
             # senv.render(self.state)
     
     def cmd_fen(self):
-        self.args.insert(0, 'position')
+        self.args.insert(0, 'fen')
         self.cmd_position()
 
 
