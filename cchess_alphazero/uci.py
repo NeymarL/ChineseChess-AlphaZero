@@ -251,6 +251,7 @@ class UCI:
         self.end_time = time()
         score = int(value * 1000)
         print(f"info time {int((self.end_time - self.start_time) * 1000)} score {score}")
+        logger.debug(f"info time {int((self.end_time - self.start_time) * 1000)} score {score}")
         # get ponder
         state = senv.step(self.state, action)
         ponder = None
@@ -270,6 +271,7 @@ class UCI:
             ponder = senv.to_uci_move(ponder)
             output += f" ponder {ponder}"
         print(output)
+        logger.debug(output)
 
 
 if __name__ == "__main__":
