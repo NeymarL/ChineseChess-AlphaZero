@@ -177,7 +177,7 @@ def self_play_buffer(config, cur) -> (tuple, list):
         print(f"博弈中: 回合{turns / 2 + 1} {'红方走棋' if turns % 2 == 0 else '黑方走棋'}, 着法: {action}, 用时: {(end_time - start_time):.1f}s")
         # policys.append(policy)
         history.append(action)
-        tate, no_eat = senv.new_step(state, action)
+        state, no_eat = senv.new_step(state, action)
         turns += 1
         if no_eat:
             no_eat_count += 1
