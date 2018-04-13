@@ -93,6 +93,8 @@ class CChessModelAPI:
                     load_best_model_weight(self.agent_model)
             else:
                 logger.error(f"权重下载失败！请检查网络连接，并重新打开客户端")
+        else:
+            logger.info(f"检查完毕，权重未更新")
 
     def close(self):
         self.done = True
