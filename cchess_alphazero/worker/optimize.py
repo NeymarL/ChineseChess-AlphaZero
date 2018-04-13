@@ -155,7 +155,7 @@ class OptimizeWorker:
         logger.info("Save as best model")
         save_as_best_model(self.model)
         # -------------- debug --------------
-        if self.count % 1 == 0:
+        if self.count % 2 == 0:
             logger.info("Save as next generation model")
             save_as_next_generation_model(self.model)
         if self.config.internet.distributed:
