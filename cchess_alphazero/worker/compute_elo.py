@@ -31,7 +31,7 @@ logger = getLogger(__name__)
 
 def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
-    base_model = {'digest': 'fee17b28a245de716ff6b132e2db55d178f573ec76b53e0193353c1e0f89ab96', 'elo': 283}
+    base_model = {'digest': 'c0506cde5582f425acf5c0ba6ad8a359f789ec85a64d50ab9a01c57916706ecb', 'elo': 344}
     m = Manager()
     base_weight_path = os.path.join(config.resource.next_generation_model_dir, base_model['digest'] + '.h5')
     model_base = load_model(config, config.resource.model_best_config_path, base_weight_path)
