@@ -35,7 +35,7 @@ from cchess_alphazero.lib.tf_util import set_session_config
 
 logger = getLogger(__name__)
 
-CMD_LIST = ['uci', 'setoption', 'isrealy', 'position', 'go', 'stop', 'ponderhit', 'quit']
+CMD_LIST = ['uci', 'setoption', 'isrealy', 'position', 'go', 'stop', 'ponderhit', 'quit', 'fen', 'ucci']
 
 class UCI:
     def __init__(self, config: Config):
@@ -77,6 +77,17 @@ class UCI:
         self.is_red_turn = True
         print('id name AlphaZero')
         print('uciok')
+
+    def cmd_ucci(self):
+        self.load_model()
+        self.is_ready = True
+        self.turns = 0
+        self.remain_time = None
+        self.state = senv.INIT_STATE
+        self.history = [self.state]
+        self.is_red_turn = True
+        print('id name AlphaZero')
+        print('ucciok')
 
     def cmd_setoption(self):
         '''
@@ -144,6 +155,11 @@ class UCI:
                 self.history.append(self.state)
             logger.debug(f"state = {self.state}")
             # senv.render(self.state)
+    
+    def cmd_fen(self):
+        self.args.insert(0, 'position')
+        self.cmd_position()
+
 
     def cmd_go(self):
         '''
@@ -178,7 +194,7 @@ class UCI:
             if self.args[i] == 'depth':
                 depth = int(self.args[i + 1])
                 infinite = False
-            if self.args[i] == 'movetime':
+            if self.args[i] == 'movetime' or self.args[i] == 'time':
                 self.remain_time = int(self.args[i + 1]) / 1000
             if self.args[i] == 'infinite':
                 infinite = True
