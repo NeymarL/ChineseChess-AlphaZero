@@ -44,6 +44,7 @@ class OptimizeWorker:
         self.filenames = []
         self.opt = None
         self.count = 0
+        self.eva = False
 
     def start(self):
         self.model = self.load_model()
@@ -158,11 +159,11 @@ class OptimizeWorker:
         save_as_best_model(self.model)
         # -------------- debug --------------
         if self.count % 2 == 0:
-            eva = True
+            self.eva = True
         else:
-            eva = False
+            self.eva = False
         if self.config.internet.distributed:
-            send_worker = Thread(target=self.send_model, args=(eva), name="send_worker")
+            send_worker = Thread(target=self.send_model, name="send_worker")
             send_worker.daemon = True
             send_worker.start()
 
@@ -182,7 +183,7 @@ class OptimizeWorker:
             return True
         return False
 
-    def send_model(self, eva):
+    def send_model(self):
         success = False
         for i in range(3):
             remote_server = 'root@115.159.183.150'
@@ -195,7 +196,7 @@ class OptimizeWorker:
                 break
             else:
                 logger.error(f"Send best model failed! {ret.stderr}, cmd = {cmd}")
-        if eva:
+        if self.eva:
             filename = self.model.digest + '.h5'
             weight_path = os.path.join(self.config.resource.model_dir, filename)
             shutil.copy(self.config.resource.model_best_weight_path, weight_path)
