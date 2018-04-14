@@ -48,20 +48,19 @@ def start(config: Config):
         model_base_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
         model_ng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
 
-        # eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes)
-        # eval_worker.start()
-        with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-            futures = []
-            for i in range(config.play.max_processes):
-                eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, pid=i, data=data)
-                futures.append(executor.submit(eval_worker.start))
-                sleep(1)
+        eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, 0, data)
+        res = eval_worker.start()
+        # with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+        #     futures = []
+        #     for i in range(config.play.max_processes):
+        #         eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, pid=i, data=data)
+        #         futures.append(executor.submit(eval_worker.start))
+        #         sleep(1)
         
-        wait(futures)
-        for pipe in model_base_pipes:
-            pipe.close_pipes()
-        for pipe in model_ng_pipes:
-            pipe.close_pipes()
+        # wait(futures)
+        print(res)
+        model_base.close_pipes()
+        model_ng.close_pipes()
 
         response = http_request(config.internet.get_evaluate_model_url)
     logger.info(f"没有待评测权重，请稍等或继续跑谱")
