@@ -26,6 +26,7 @@ if __name__ == "__main__":
     config_type = 'distribute'
     config = Config(config_type=config_type)
     config.opts.device_list = '0'
+    config.opts.log_move = True
     config.resource.create_directories()
     setup_logger(config.resource.eval_log_path)
     config.eval.update_play_config(config.play)
