@@ -58,8 +58,10 @@ def start(config: Config):
                 sleep(1)
         
         wait(futures)
-        model_base_pipes.close_pipes()
-        model_ng_pipes.close_pipes()
+        for pipe in model_base_pipes:
+            pipe.close_pipes()
+        for pipe in model_ng_pipes:
+            pipe.close_pipes()
 
         response = http_request(config.internet.get_evaluate_model_url)
     logger.info(f"没有待评测权重，请稍等或继续跑谱")
@@ -161,7 +163,8 @@ class EvaluateWorker:
             else:
                 action, _ = black.action(state, turns, no_act=no_act)
             end_time = time()
-            logger.debug(f"进程id = {self.pid}, action = {action}, turns = {turns}, time = {(end_time-start_time):.1f}")
+            if self.config.opts.log_move:
+                logger.debug(f"进程id = {self.pid}, action = {action}, turns = {turns}, time = {(end_time-start_time):.1f}")
             if action is None:
                 logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
                 value = -1
