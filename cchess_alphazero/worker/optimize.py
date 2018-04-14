@@ -211,7 +211,7 @@ class OptimizeWorker:
                 else:
                     logger.error(f"Send evaluate model failed! {ret.stderr}, cmd = {cmd}")
             data = {'digest': self.model.digest, 'elo': 0}
-            http_request(config.internet.add_model_url, post=True, data=data)
+            http_request(self.config.internet.add_model_url, post=True, data=data)
 
     def remove_play_data(self):
         files = get_game_data_filenames(self.config.resource)
