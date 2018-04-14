@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 from time import sleep
 from collections import deque
@@ -24,84 +25,54 @@ from cchess_alphazero.environment.lookup_tables import Winner, flip_move, Action
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, write_game_data_to_file
 from cchess_alphazero.lib.model_helper import load_model_weight
 from cchess_alphazero.lib.tf_util import set_session_config
-from cchess_alphazero.lib.web_helper import http_request
+from cchess_alphazero.lib.web_helper import http_request, download_file
 from cchess_alphazero.lib.elo_helper import compute_elo
 
 logger = getLogger(__name__)
 
 def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
-    base_model = {'digest': 'c0506cde5582f425acf5c0ba6ad8a359f789ec85a64d50ab9a01c57916706ecb', 'elo': 344}
     m = Manager()
-    base_weight_path = os.path.join(config.resource.next_generation_model_dir, base_model['digest'] + '.h5')
-    model_base = load_model(config, config.resource.model_best_config_path, base_weight_path)
-    modelbt_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
-    
-    while True:
-        while not check_ng_model(config, exculds=[base_model['digest'] + '.h5']):
-            logger.info(f"Next generation model is None, wait for 300s")
-            sleep(300)
+    response = http_request(config.internet.get_evaluate_model_url)
+    while response['status'] == 0:
+        data = response['data']
+        logger.info(f"评测开始，基准模型：{data['base']['digest'][0:8]}, elo = {data['base']['elo']};"
+                    f"待评测模型：{data['unchecked']['digest'][0:8]}, elo = {data['unchecked']['elo']}")
+        # make path
+        base_weight_path = os.path.join(config.resource.next_generation_model_dir, data['base']['digest'] + '.h5')
+        ng_weight_path = os.path.join(config.resource.next_generation_model_dir, data['unchecked']['digest'] + '.h5')
+        # load model
+        model_base = load_model(config, base_weight_path)
+        model_ng = load_model(config, ng_weight_path)
+        # make pipes
+        model_base_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
+        model_ng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
 
-        logger.info(f"Loading next generation model!")
-        digest = check_ng_model(config, exculds=[base_model['digest'] + '.h5'])
-        logger.debug(f"digest = {digest}")
-        ng_weight_path = os.path.join(config.resource.next_generation_model_dir, digest)
-        model_ng = load_model(config, config.resource.next_generation_config_path, ng_weight_path)
-        modelng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
-
-        # play_worker = EvaluateWorker(config, model1_pipes, model2_pipes)
-        # play_worker.start()
+        # eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes)
+        # eval_worker.start()
         with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
             futures = []
             for i in range(config.play.max_processes):
-                eval_worker = EvaluateWorker(config, modelbt_pipes, modelng_pipes, pid=i)
+                eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, pid=i, data=data)
                 futures.append(executor.submit(eval_worker.start))
                 sleep(1)
         
         wait(futures)
-        model_base.close_pipes()
-        model_ng.close_pipes()
+        model_base_pipes.close_pipes()
+        model_ng_pipes.close_pipes()
 
-        results = []
-        for future in futures:
-            results += future.result()
-        base_elo = base_model['elo']
-        ng_elo = base_elo
-        for res in results:
-            if res[1] == -1: # loss
-                res[1] = 0
-            elif res[1] != 1: # draw
-                res[1] = 0.5
-            if res[0] % 2 == 0:
-                # red = base
-                _, ng_elo = compute_elo(base_elo, ng_elo, res[1])
-            else:
-                # black = base
-                ng_elo, _ = compute_elo(ng_elo, base_elo, 1 - res[1])
-        logger.info(f"Evaluation finished, Next Generation's elo = {ng_elo}, base = {base_elo}")
-        # send ng model to server
-        logger.debug(f"Sending model to server")
-        send_model(ng_weight_path)
-        data = {'digest': digest[:-3], 'elo': ng_elo}
-        http_request(config.internet.add_model_url, post=True, data=data)
-        os.remove(base_weight_path)
-        base_weight_path = ng_weight_path
-        base_model['disgest'] = digest[:-3]
-        base_model['elo'] = ng_elo
-        logger.debug(f"base_model = {base_model}")
-        break
-        model_base = model_ng
-        modelbt_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
-
+        response = http_request(config.internet.get_evaluate_model_url)
+    logger.info(f"没有待评测权重，请稍等或继续跑谱")
 
 class EvaluateWorker:
-    def __init__(self, config: Config, pipes1=None, pipes2=None, pid=None):
+    def __init__(self, config: Config, pipes1=None, pipes2=None, pid=None, data=None):
         self.config = config
         self.player_bt = None
         self.player_ng = None
         self.pid = pid
         self.pipes_bt = pipes1
         self.pipes_ng = pipes2
+        self.data = data
 
     def start(self):
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
@@ -109,24 +80,45 @@ class EvaluateWorker:
         score2 = 0
         results = []
 
-        for idx in range(self.config.eval.game_num):
-            start_time = time()
-            score, turns = self.start_game(idx)
-            end_time = time()
+        idx = 0 if random() > 0.5 else 1
+        start_time = time()
+        value, turns = self.start_game(idx)
+        end_time = time()
+        
+        if (value == 1 and idx == 0) or (value == 0 and idx == 1):
+            result = '基准模型胜'
+        elif (value == 1 and idx == 1) or (value == 0 and idx == 0):
+            result = '带评测模型胜'
+        else:
+            result = '双方连续60回合未吃子，和棋'
 
-            if score < 0:
-                score2 += 1
-            elif score > 0:
-                score1 += 1
-            else:
-                score2 += 0.5
-                score1 += 0.5
-            results.append([idx, score])
+        url = self.config.internet.get_elo_url + self.data['unchecked']['digest']
+        response = http_request(url)
+        if response['status'] == 0:
+            self.data['unchecked']['elo'] = response['data']['elo']
 
-            logger.debug(f"Process{self.pid} play game {idx} time={(end_time - start_time):.1f} sec, "
-                         f"turn={turns / 2}, model1 {score1} - {score2} model2")
-            sleep(random())
-        return results
+        if value == -1: # loss
+            score = 0
+        elif value != 1: # draw
+            score = 0.5
+        else:
+            score = 1
+        if idx == 0:
+            _, new_elo = compute_elo(data['base']['elo'], data['unchecked']['elo'], score)
+        else:
+            new_elo, _ = compute_elo(data['unchecked']['elo'], data['base']['elo'], 1 - score)
+
+        relative_elo = new_elo - data['unchecked']['elo']
+        logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
+                     f"{turns / 2}回合, {result}, Elo 增加 {relative_elo} 分")
+
+        data = {'digest': data['unchecked']['digest'], 'relative_elo': relative_elo}
+        response = http_request(self.config.internet.update_elo_url, post=True, data=data)
+        if response and response['status'] == 0:
+            logger.info('评测结果上传成功！')
+            return True
+        else:
+            return False
 
     def start_game(self, idx):
         pipe1 = self.pipes_bt.pop()
@@ -143,9 +135,11 @@ class EvaluateWorker:
         if idx % 2 == 0:
             red = self.player1
             black = self.player2
+            logger.info(f"进程id = {self.pid} 基准模型执红，待评测模型执黑")
         else:
             red = self.player2
             black = self.player1
+            logger.info(f"进程id = {self.pid} 待评测模型执红，基准模型执黑")
 
         state = senv.INIT_STATE
         history = [state]
@@ -167,7 +161,7 @@ class EvaluateWorker:
             else:
                 action, _ = black.action(state, turns, no_act=no_act)
             end_time = time()
-            # logger.debug(f"pid = {self.pid}, idx = {idx}, action = {action}, turns = {turns}, time = {(end_time-start_time):.1f}")
+            logger.debug(f"进程id = {self.pid}, action = {action}, turns = {turns}, time = {(end_time-start_time):.1f}")
             if action is None:
                 logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
                 value = -1
@@ -199,41 +193,16 @@ class EvaluateWorker:
         return value, turns
 
 
-def replace_best_model(config):
-    rc = config.resource
-    shutil.copyfile(rc.next_generation_config_path, rc.model_best_config_path)
-    shutil.copyfile(rc.next_generation_weight_path, rc.model_best_weight_path)
-    remove_ng_model(config)
-
-def remove_ng_model(config):
-    rc = config.resource
-    os.remove(rc.next_generation_config_path)
-    os.remove(rc.next_generation_weight_path)
-
-def load_model(config, config_path, weight_path, name=None):
+def load_model(config, weight_path, digest):
     model = CChessModel(config)
-    if not load_model_weight(model, config_path, weight_path, name):
-        return None
+    config_path = config.resource.model_best_config_path
+    if (not load_model_weight(model, config_path, weight_path)) or model.digest != digest:
+        logger.info(f"开始下载权重 {digest[0:8]}")
+        url = self.download_base_url + digest + '.h5'
+        download_file(url, weight_path)
+        if not load_model_weight(model, config_path, weight_path):
+            logger.info(f"待评测权重还未上传，请稍后再试")
+            sys.exit()
+    logger.info(f"加载权重 {digest[0:8]} 成功")
     return model
 
-def check_ng_model(config, exculds=[]):
-    weights = [name for name in os.listdir(config.resource.next_generation_model_dir)
-            if name.endswith('.h5')]
-    for weight in weights:
-        if weight not in exculds:
-            return weight
-    return None
-
-def send_model(path):
-    success = False
-    for i in range(3):
-        remote_server = 'root@115.159.183.150'
-        remote_path = '/var/www/alphazero.52coding.com.cn/data/model'
-        cmd = f'scp {path} {remote_server}:{remote_path}'
-        ret = subprocess.run(cmd, shell=True)
-        if ret.returncode == 0:
-            success = True
-            logger.info("Send model success!")
-            break
-        else:
-            logger.error(f"Send model failed! {ret.stderr}, {cmd}")

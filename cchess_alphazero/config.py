@@ -110,5 +110,9 @@ class InternetConfig:
         # self.download_url = 'http://alphazero-1251776088.cossh.myqcloud.com/model/model_best_weight.h5'
         self.get_latest_digest = f'{self.base_url}/api/get_latest_digest'
         self.add_model_url = f'{self.base_url}/api/add_model'
+        self.get_evaluate_model_url = f'{self.base_url}/api/query_for_evaluate'
+        self.download_base_url = f'http://download.52coding.com.cn/'
+        self.get_elo_url = f'{self.base_url}/api/get_elo/'
+        self.update_elo_url = f'{self.base_url}/api/add_eval_result/'
 
 
