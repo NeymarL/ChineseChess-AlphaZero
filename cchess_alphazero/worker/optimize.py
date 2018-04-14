@@ -161,7 +161,7 @@ class OptimizeWorker:
         else:
             eva = False
         if self.config.internet.distributed:
-            send_worker = Thread(target=self.send_model, args=(eva) name="send_worker")
+            send_worker = Thread(target=self.send_model, args=(eva), name="send_worker")
             send_worker.daemon = True
             send_worker.start()
 
