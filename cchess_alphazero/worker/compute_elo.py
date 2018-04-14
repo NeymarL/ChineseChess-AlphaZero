@@ -105,11 +105,11 @@ class EvaluateWorker:
         else:
             score = 1
         if idx == 0:
-            _, new_elo = compute_elo(self.data['base']['elo'], self.data['unchecked']['elo'], score)
+            _, new_elo = compute_elo(int(self.data['base']['elo']), int(self.data['unchecked']['elo']), score)
         else:
-            new_elo, _ = compute_elo(self.data['unchecked']['elo'], self.data['base']['elo'], 1 - score)
+            new_elo, _ = compute_elo(int(self.data['unchecked']['elo']), int(self.data['base']['elo']), 1 - score)
 
-        relative_elo = new_elo - self.data['unchecked']['elo']
+        relative_elo = new_elo - int(self.data['unchecked']['elo'])
         logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
                      f"{turns / 2}回合, {result}, Elo 增加 {relative_elo} 分")
 
