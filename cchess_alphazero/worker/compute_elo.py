@@ -96,7 +96,6 @@ class EvaluateWorker:
         url = self.config.internet.get_elo_url + self.data['unchecked']['digest']
         response = http_request(url)
         if int(response['status']) == 0:
-            logger.debug(f"response = {response}")
             self.data['unchecked']['elo'] = response['data']['elo']
 
         if value == -1: # loss
@@ -106,15 +105,15 @@ class EvaluateWorker:
         else:
             score = 1
         if idx == 0:
-            _, new_elo = compute_elo(data['base']['elo'], data['unchecked']['elo'], score)
+            _, new_elo = compute_elo(data['base']['elo'], self.data['unchecked']['elo'], score)
         else:
-            new_elo, _ = compute_elo(data['unchecked']['elo'], data['base']['elo'], 1 - score)
+            new_elo, _ = compute_elo(data['unchecked']['elo'], self.data['base']['elo'], 1 - score)
 
-        relative_elo = new_elo - data['unchecked']['elo']
+        relative_elo = new_elo - self.data['unchecked']['elo']
         logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
                      f"{turns / 2}回合, {result}, Elo 增加 {relative_elo} 分")
 
-        data = {'digest': data['unchecked']['digest'], 'relative_elo': relative_elo}
+        data = {'digest': self.data['unchecked']['digest'], 'relative_elo': relative_elo}
         response = http_request(self.config.internet.update_elo_url, post=True, data=data)
         if response and int(response['status']) == 0:
             logger.info('评测结果上传成功！')
