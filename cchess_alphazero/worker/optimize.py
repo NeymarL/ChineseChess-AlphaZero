@@ -82,6 +82,7 @@ class OptimizeWorker:
                     steps = self.train_epoch(self.config.trainer.epoch_to_checkpoint)
                     total_steps += steps
                     self.save_current_model()
+                    self.count += 1
                     a, b, c = self.dataset
                     a.clear()
                     b.clear()
@@ -100,7 +101,6 @@ class OptimizeWorker:
                              validation_split=0.02,
                              callbacks=[tensorboard_cb])
         steps = (state_ary.shape[0] // tc.batch_size) * epochs
-        self.count += 1
         return steps
 
     def compile_model(self):
@@ -182,7 +182,7 @@ class OptimizeWorker:
             return True
         return False
 
-    def send_model(self, eva=False):
+    def send_model(self, eva):
         success = False
         for i in range(3):
             remote_server = 'root@115.159.183.150'
