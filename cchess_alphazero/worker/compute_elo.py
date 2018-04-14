@@ -58,9 +58,12 @@ def start(config: Config):
                 sleep(1)
         
         wait(futures)
-
+        # close pipe
         model_base.close_pipes()
         model_ng.close_pipes()
+        # reset model
+        model_base = None
+        model_ng = None
 
         response = http_request(config.internet.get_evaluate_model_url)
     logger.info(f"没有待评测权重，请稍等或继续跑谱")
@@ -77,49 +80,53 @@ class EvaluateWorker:
 
     def start(self):
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
-        score1 = 0
-        score2 = 0
-        results = []
+        need_evaluate = True
 
-        idx = 0 if random() > 0.5 else 1
-        start_time = time()
-        value, turns = self.start_game(idx)
-        end_time = time()
-        
-        if (value == 1 and idx == 0) or (value == -1 and idx == 1):
-            result = '基准模型胜'
-        elif (value == 1 and idx == 1) or (value == -1 and idx == 0):
-            result = '待评测模型胜'
-        else:
-            result = '双方连续60回合未吃子，和棋'
+        while need_evaluate:
+            idx = 0 if random() > 0.5 else 1
+            start_time = time()
+            value, turns = self.start_game(idx)
+            end_time = time()
+            
+            if (value == 1 and idx == 0) or (value == -1 and idx == 1):
+                result = '基准模型胜'
+            elif (value == 1 and idx == 1) or (value == -1 and idx == 0):
+                result = '待评测模型胜'
+            else:
+                result = '双方连续60回合未吃子，和棋'
 
-        url = self.config.internet.get_elo_url + self.data['unchecked']['digest']
-        response = http_request(url)
-        if int(response['status']) == 0:
-            self.data['unchecked']['elo'] = response['data']['elo']
+            url = self.config.internet.get_elo_url + self.data['unchecked']['digest']
+            response = http_request(url)
+            if int(response['status']) == 0:
+                self.data['unchecked']['elo'] = response['data']['elo']
 
-        if value == -1: # loss
-            score = 0
-        elif value == 1: # win
-            score = 1
-        else:
-            score = 0.5
-        if idx == 0:
-            _, new_elo = compute_elo(int(self.data['base']['elo']), int(self.data['unchecked']['elo']), score)
-        else:
-            new_elo, _ = compute_elo(int(self.data['unchecked']['elo']), int(self.data['base']['elo']), score)
+            if value == -1: # loss
+                score = 0
+            elif value == 1: # win
+                score = 1
+            else:
+                score = 0.5
+            if idx == 0:
+                _, new_elo = compute_elo(int(self.data['base']['elo']), int(self.data['unchecked']['elo']), score)
+            else:
+                new_elo, _ = compute_elo(int(self.data['unchecked']['elo']), int(self.data['base']['elo']), score)
 
-        relative_elo = new_elo - int(self.data['unchecked']['elo'])
-        logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
-                     f"{turns / 2}回合, {result}, Elo 增加 {relative_elo} 分")
+            relative_elo = new_elo - int(self.data['unchecked']['elo'])
+            logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
+                         f"{turns / 2}回合, {result}, Elo 增加 {relative_elo} 分")
 
-        data = {'digest': self.data['unchecked']['digest'], 'relative_elo': relative_elo}
-        response = http_request(self.config.internet.update_elo_url, post=True, data=data)
-        if response and int(response['status']) == 0:
-            logger.info('评测结果上传成功！')
-            return True
-        else:
-            return False
+            data = {'digest': self.data['unchecked']['digest'], 'relative_elo': relative_elo}
+            response = http_request(self.config.internet.update_elo_url, post=True, data=data)
+            if response and int(response['status']) == 0:
+                logger.info('评测结果上传成功！')
+
+            response = http_request(config.internet.get_evaluate_model_url)
+            if int(response['status']) == 0 and response['data']['base']['digest'] == self.data['base']['digest']\
+                and response['data']['unchecked']['digest'] == self.data['unchecked']['digest']:
+                need_evaluate = True
+            else:
+                need_evaluate = False
+
 
     def start_game(self, idx):
         pipe1 = self.pipes_bt.pop()
