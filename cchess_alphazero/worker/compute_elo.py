@@ -95,7 +95,7 @@ class EvaluateWorker:
 
         url = self.config.internet.get_elo_url + self.data['unchecked']['digest']
         response = http_request(url)
-        if response['status'] == 0:
+        if int(response['status']) == 0:
             self.data['unchecked']['elo'] = response['data']['elo']
 
         if value == -1: # loss
