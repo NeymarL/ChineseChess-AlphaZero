@@ -21,6 +21,7 @@ from cchess_alphazero.lib.model_helper import need_to_reload_best_model_weight, 
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_policy, flip_move
 from cchess_alphazero.lib.tf_util import set_session_config
+from cchess_alphazero.lib.web_helper import http_request
 
 from keras.optimizers import SGD
 from keras.callbacks import TensorBoard
