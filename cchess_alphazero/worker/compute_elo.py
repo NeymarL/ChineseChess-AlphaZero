@@ -120,12 +120,14 @@ class EvaluateWorker:
             if response and int(response['status']) == 0:
                 logger.info('评测结果上传成功！')
 
-            response = http_request(config.internet.get_evaluate_model_url)
+            response = http_request(self.config.internet.get_evaluate_model_url)
             if int(response['status']) == 0 and response['data']['base']['digest'] == self.data['base']['digest']\
                 and response['data']['unchecked']['digest'] == self.data['unchecked']['digest']:
                 need_evaluate = True
+                logger.info(f"进程{self.pid}继续评测")
             else:
                 need_evaluate = False
+                logger.info(f"进程{self.pid}终止评测")
 
 
     def start_game(self, idx):
