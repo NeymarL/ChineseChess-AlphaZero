@@ -48,17 +48,17 @@ def start(config: Config):
         model_base_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
         model_ng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
 
-        eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, 0, data)
-        res = eval_worker.start()
-        # with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-        #     futures = []
-        #     for i in range(config.play.max_processes):
-        #         eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, pid=i, data=data)
-        #         futures.append(executor.submit(eval_worker.start))
-        #         sleep(1)
+        # eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, 0, data)
+        # res = eval_worker.start()
+        with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+            futures = []
+            for i in range(config.play.max_processes):
+                eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, pid=i, data=data)
+                futures.append(executor.submit(eval_worker.start))
+                sleep(1)
         
-        # wait(futures)
-        print(res)
+        wait(futures)
+
         model_base.close_pipes()
         model_ng.close_pipes()
 
@@ -86,10 +86,10 @@ class EvaluateWorker:
         value, turns = self.start_game(idx)
         end_time = time()
         
-        if (value == 1 and idx == 0) or (value == 0 and idx == 1):
+        if (value == 1 and idx == 0) or (value == -1 and idx == 1):
             result = '基准模型胜'
-        elif (value == 1 and idx == 1) or (value == 0 and idx == 0):
-            result = '带评测模型胜'
+        elif (value == 1 and idx == 1) or (value == -1 and idx == 0):
+            result = '待评测模型胜'
         else:
             result = '双方连续60回合未吃子，和棋'
 
@@ -100,10 +100,10 @@ class EvaluateWorker:
 
         if value == -1: # loss
             score = 0
-        elif value != 1: # draw
-            score = 0.5
-        else:
+        elif value == 1: # win
             score = 1
+        else:
+            score = 0.5
         if idx == 0:
             _, new_elo = compute_elo(int(self.data['base']['elo']), int(self.data['unchecked']['elo']), score)
         else:
