@@ -40,7 +40,8 @@ def http_request(url, post=False, data=None):
     return r.json() if success else None
 
 def download_file(url, save_path):
-    os.remove(save_path)
+    if os.path.exists(save_path):
+        os.remove(save_path)
     file_size = int(urlopen(url).info().get('Content-Length', -1))
     if os.path.exists(save_path):
         first_byte = os.path.getsize(save_path)
