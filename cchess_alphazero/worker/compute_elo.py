@@ -95,27 +95,22 @@ class EvaluateWorker:
             else:
                 result = '双方连续60回合未吃子，和棋'
 
-            url = self.config.internet.get_elo_url + self.data['unchecked']['digest']
-            response = http_request(url)
-            if int(response['status']) == 0:
-                self.data['unchecked']['elo'] = response['data']['elo']
-
             if value == -1: # loss
                 score = 0
             elif value == 1: # win
                 score = 1
             else:
                 score = 0.5
+
             if idx == 0:
-                _, new_elo = compute_elo(int(self.data['base']['elo']), int(self.data['unchecked']['elo']), score)
+                score = 1 - score
             else:
-                new_elo, _ = compute_elo(int(self.data['unchecked']['elo']), int(self.data['base']['elo']), score)
+                score = score
 
-            relative_elo = new_elo - int(self.data['unchecked']['elo'])
             logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
-                         f"{turns / 2}回合, {result}, Elo 增加 {relative_elo} 分")
+                         f"{turns / 2}回合, {result}, 得分：{score}")
 
-            data = {'digest': self.data['unchecked']['digest'], 'relative_elo': relative_elo}
+            data = {'digest': self.data['unchecked']['digest'], 'score': score}
             response = http_request(self.config.internet.update_elo_url, post=True, data=data)
             if response and int(response['status']) == 0:
                 logger.info('评测结果上传成功！')
