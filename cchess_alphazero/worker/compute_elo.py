@@ -34,7 +34,7 @@ def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
     m = Manager()
     response = http_request(config.internet.get_evaluate_model_url)
-    while response['status'] == 0:
+    while int(response['status']) == 0:
         data = response['data']
         logger.info(f"评测开始，基准模型：{data['base']['digest'][0:8]}, elo = {data['base']['elo']};"
                     f"待评测模型：{data['unchecked']['digest'][0:8]}, elo = {data['unchecked']['elo']}")
@@ -48,17 +48,17 @@ def start(config: Config):
         model_base_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
         model_ng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
 
-        eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, 0, data)
-        res = eval_worker.start()
-        # with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
-        #     futures = []
-        #     for i in range(config.play.max_processes):
-        #         eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, pid=i, data=data)
-        #         futures.append(executor.submit(eval_worker.start))
-        #         sleep(1)
+        # eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, 0, data)
+        # res = eval_worker.start()
+        with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
+            futures = []
+            for i in range(config.play.max_processes):
+                eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, pid=i, data=data)
+                futures.append(executor.submit(eval_worker.start))
+                sleep(1)
         
-        # wait(futures)
-        print(res)
+        wait(futures)
+
         model_base.close_pipes()
         model_ng.close_pipes()
 
@@ -96,6 +96,7 @@ class EvaluateWorker:
         url = self.config.internet.get_elo_url + self.data['unchecked']['digest']
         response = http_request(url)
         if int(response['status']) == 0:
+            logger.debug(f"response = {response}")
             self.data['unchecked']['elo'] = response['data']['elo']
 
         if value == -1: # loss
@@ -115,7 +116,7 @@ class EvaluateWorker:
 
         data = {'digest': data['unchecked']['digest'], 'relative_elo': relative_elo}
         response = http_request(self.config.internet.update_elo_url, post=True, data=data)
-        if response and response['status'] == 0:
+        if response and int(response['status']) == 0:
             logger.info('评测结果上传成功！')
             return True
         else:
