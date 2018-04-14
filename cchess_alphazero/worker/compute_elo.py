@@ -42,8 +42,8 @@ def start(config: Config):
         base_weight_path = os.path.join(config.resource.next_generation_model_dir, data['base']['digest'] + '.h5')
         ng_weight_path = os.path.join(config.resource.next_generation_model_dir, data['unchecked']['digest'] + '.h5')
         # load model
-        model_base = load_model(config, base_weight_path)
-        model_ng = load_model(config, ng_weight_path)
+        model_base = load_model(config, base_weight_path, data['base']['digest'])
+        model_ng = load_model(config, ng_weight_path, data['unchecked']['digest'])
         # make pipes
         model_base_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
         model_ng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
