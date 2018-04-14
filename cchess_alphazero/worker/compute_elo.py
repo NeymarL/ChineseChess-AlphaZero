@@ -198,7 +198,7 @@ def load_model(config, weight_path, digest):
     config_path = config.resource.model_best_config_path
     if (not load_model_weight(model, config_path, weight_path)) or model.digest != digest:
         logger.info(f"开始下载权重 {digest[0:8]}")
-        url = self.download_base_url + digest + '.h5'
+        url = self.config.internet.download_base_url + digest + '.h5'
         download_file(url, weight_path)
         if not load_model_weight(model, config_path, weight_path):
             logger.info(f"待评测权重还未上传，请稍后再试")
