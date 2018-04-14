@@ -1,6 +1,7 @@
 import os
 import time
 import subprocess
+import shutil
 import numpy as np
 
 from collections import deque
@@ -156,10 +157,11 @@ class OptimizeWorker:
         save_as_best_model(self.model)
         # -------------- debug --------------
         if self.count % 2 == 0:
-            logger.info("Save as next generation model")
-            save_as_next_generation_model(self.model)
+            eva = True
+        else:
+            eva = False
         if self.config.internet.distributed:
-            send_worker = Thread(target=self.send_model, name="send_worker")
+            send_worker = Thread(target=self.send_model, args=(eva) name="send_worker")
             send_worker.daemon = True
             send_worker.start()
 
@@ -179,7 +181,7 @@ class OptimizeWorker:
             return True
         return False
 
-    def send_model(self):
+    def send_model(self, eva=False):
         success = False
         for i in range(3):
             remote_server = 'root@115.159.183.150'
@@ -188,10 +190,25 @@ class OptimizeWorker:
             ret = subprocess.run(cmd, shell=True)
             if ret.returncode == 0:
                 success = True
-                logger.info("Send model success!")
+                logger.info("Send best model success!")
                 break
             else:
-                logger.error(f"Send model failed! {ret.stderr}, cmd = {cmd}")
+                logger.error(f"Send best model failed! {ret.stderr}, cmd = {cmd}")
+        if eva:
+            filename = self.model.digest + '.h5'
+            weight_path = os.path.join(self.config.resource.model_dir, filename)
+            shutil.copy(self.config.resource.model_best_weight_path, weight_path)
+            for i in range(3):
+                remote_path = '/var/www/alphazero.52coding.com.cn/data/model/next_generation'
+                cmd = f'scp {weight_path} {remote_server}:{remote_path}'
+                ret = subprocess.run(cmd, shell=True)
+                if ret.returncode == 0:
+                    success = True
+                    logger.info("Send evaluate model success!")
+                    os.remove(weight_path)
+                    break
+                else:
+                    logger.error(f"Send evaluate model failed! {ret.stderr}, cmd = {cmd}")
 
     def remove_play_data(self):
         files = get_game_data_filenames(self.config.resource)
