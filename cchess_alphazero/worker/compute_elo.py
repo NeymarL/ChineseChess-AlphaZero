@@ -206,9 +206,14 @@ def load_model(config, weight_path, digest):
         logger.info(f"开始下载权重 {digest[0:8]}")
         url = config.internet.download_base_url + digest + '.h5'
         download_file(url, weight_path)
-        if not load_model_weight(model, config_path, weight_path):
-            logger.info(f"待评测权重还未上传，请稍后再试")
-            sys.exit()
+        try:
+            if not load_model_weight(model, config_path, weight_path):
+                logger.info(f"待评测权重还未上传，请稍后再试")
+                sys.exit()
+        except Exception as e:
+            logger.error(f"加载权重发生错误：{e}，稍后重新下载")
+            os.remove(weight_path)
+            load_model(config, weight_path, digest)
     logger.info(f"加载权重 {digest[0:8]} 成功")
     return model
 
