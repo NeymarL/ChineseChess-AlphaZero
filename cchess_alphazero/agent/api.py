@@ -1,6 +1,7 @@
 from multiprocessing import connection, Pipe
 from threading import Thread
 
+import os
 import numpy as np
 
 from cchess_alphazero.config import Config
