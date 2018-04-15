@@ -213,6 +213,7 @@ def load_model(config, weight_path, digest):
         except Exception as e:
             logger.error(f"加载权重发生错误：{e}，稍后重新下载")
             os.remove(weight_path)
+            sys.exit()
             # load_model(config, weight_path, digest)
     logger.info(f"加载权重 {digest[0:8]} 成功")
     return model
