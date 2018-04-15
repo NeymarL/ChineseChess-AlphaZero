@@ -89,8 +89,13 @@ class CChessModelAPI:
             logger.info(f"正在下载最新权重，请稍后...")
             if download_file(self.config.internet.download_url, self.config.resource.model_best_weight_path):
                 logger.info(f"权重下载完毕！开始训练...")
-                with self.agent_model.graph.as_default():
-                    load_best_model_weight(self.agent_model)
+                try:
+                    with self.agent_model.graph.as_default():
+                        load_best_model_weight(self.agent_model)
+                except Exception as e:
+                    logger.error(f"加载权重发生错误：{e}，稍后重新下载")
+                    os.remove(self.config.resource.model_best_weight_path)
+                    self.try_reload_model_from_internet()
             else:
                 logger.error(f"权重下载失败！请检查网络连接，并重新打开客户端")
         else:

@@ -89,6 +89,7 @@ class CChessModel:
             with open(weight_path, "rb") as f:
                 m.update(f.read())
             return m.hexdigest()
+        return None
 
 
     def load(self, config_path, weight_path):
