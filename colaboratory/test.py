@@ -29,7 +29,6 @@ if __name__ == "__main__":
     config.opts.device_list = '0'
     config.resource.create_directories()
     setup_logger(config.resource.main_log_path)
-    config.internet.distributed = True
     config.opts.log_move = True
     setup_parameters(config)
     self_play.start(config)
