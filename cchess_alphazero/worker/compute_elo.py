@@ -1,7 +1,6 @@
 import os
 import sys
 import shutil
-from time import sleep
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor, wait
 from datetime import datetime
@@ -211,10 +210,10 @@ def load_model(config, weight_path, digest):
                 logger.info(f"待评测权重还未上传，请稍后再试")
                 sys.exit()
         except Exception as e:
-            logger.error(f"加载权重发生错误：{e}，稍后重新下载")
+            logger.error(f"加载权重发生错误：{e}，10s后自动重试下载")
             os.remove(weight_path)
-            sys.exit()
-            # load_model(config, weight_path, digest)
+            sleep(10)
+            load_model(config, weight_path, digest)
     logger.info(f"加载权重 {digest[0:8]} 成功")
     return model
 
