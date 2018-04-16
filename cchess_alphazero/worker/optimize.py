@@ -218,9 +218,11 @@ class OptimizeWorker:
         files = get_game_data_filenames(self.config.resource)
         if len(files) < self.config.play_data.max_file_num:
             return
+        backup_folder = os.path.join(self.config.resource.data_dir, 'backup');
         try:
             for i in range(len(files) - self.config.play_data.max_file_num):
-                os.remove(files[i])
+                # os.remove(files[i])
+                shutil.move(files[i], backup_folder)
         except:
             pass
 
