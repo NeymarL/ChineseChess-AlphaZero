@@ -198,9 +198,12 @@ class EvaluateWorker:
         return value, turns
 
 
-def load_model(config, weight_path, digest):
+def load_model(config, weight_path, digest, config_file=None):
     model = CChessModel(config)
-    config_path = config.resource.model_best_config_path
+    if not config_file:
+        config_path = config.resource.model_best_config_path
+    else:
+        config_path = os.path.join(config.resource.model_dir, config_file)
     if (not load_model_weight(model, config_path, weight_path)) or model.digest != digest:
         logger.info(f"开始下载权重 {digest[0:8]}")
         url = config.internet.download_base_url + digest + '.h5'
@@ -209,6 +212,9 @@ def load_model(config, weight_path, digest):
             if not load_model_weight(model, config_path, weight_path):
                 logger.info(f"待评测权重还未上传，请稍后再试")
                 sys.exit()
+        except ValueError as e:
+            logger.error(f"权重架构不匹配，自动重新加载 {e}")
+            load_model(config, weight_path, digest, 'model_128f.json')
         except Exception as e:
             logger.error(f"加载权重发生错误：{e}，10s后自动重试下载")
             os.remove(weight_path)
