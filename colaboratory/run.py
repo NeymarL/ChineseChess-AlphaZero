@@ -14,6 +14,9 @@ from cchess_alphazero.config import Config, PlayWithHumanConfig
 from cchess_alphazero.worker import self_play
 
 def setup_parameters(config):
+    if len(sys.argv) > 1:
+        config.internet.username = sys.argv[1]
+        print(f'用户名设置为：{config.internet.username}')
     num_cores = mp.cpu_count()
     max_processes = 2
     search_threads = 20
