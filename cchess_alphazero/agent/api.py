@@ -74,7 +74,7 @@ class CChessModelAPI:
             config_path = os.path.join(self.config.resource.model_dir, config_file)
             shutil.copy(config_path, self.config.resource.model_best_config_path)
         try:
-            if self.config.internet.distributed:
+            if self.config.internet.distributed and not config_file:
                 self.try_reload_model_from_internet()
             else:
                 if self.need_reload and need_to_reload_best_model_weight(self.agent_model):
