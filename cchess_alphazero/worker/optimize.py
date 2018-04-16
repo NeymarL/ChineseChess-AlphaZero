@@ -187,7 +187,7 @@ class OptimizeWorker:
         success = False
         for i in range(3):
             remote_server = 'root@115.159.183.150'
-            remote_path = '/var/www/alphazero.52coding.com.cn/data/model'
+            remote_path = '/var/www/alphazero.52coding.com.cn/data/model/128x7'
             cmd = f'scp {self.config.resource.model_best_weight_path} {remote_server}:{remote_path}'
             ret = subprocess.run(cmd, shell=True)
             if ret.returncode == 0:
