@@ -77,7 +77,7 @@ class ModelConfig:
         '''
         WARNING: DO NOT CHANGE THESE PARAMETERS
         '''
-        self.cnn_filter_num = 256
+        self.cnn_filter_num = 128
         self.cnn_first_filter_size = 5
         self.cnn_filter_size = 3
         self.res_layer_num = 7
