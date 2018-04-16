@@ -17,8 +17,8 @@ def setup_parameters(config):
     username = input(f"请输入用户名：")
     config.internet.username = username
     num_cores = mp.cpu_count()
-    max_processes = num_cores // 2 if num_cores < 20 else 10
-    search_threads = 10 if num_cores < 10 else (num_cores // 10) * 10
+    max_processes = num_cores if num_cores < 20 else 10
+    search_threads = 10 if num_cores < 10 else 20
     max_processes = input(f"请输入运行进程数（推荐{max_processes}）：")
     max_processes = int(max_processes)
     print(f"max_processes = {max_processes}, search_threads = {search_threads}")

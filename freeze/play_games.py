@@ -17,7 +17,7 @@ from cchess_alphazero.play_games import play
 
 def setup_parameters(config):
     num_cores = mp.cpu_count()
-    search_threads = 10 if num_cores < 10 else (num_cores // 10) * 10
+    search_threads = 10 if num_cores < 10 else 20
     print(f"search_threads = {search_threads}")
     config.play.search_threads = search_threads
 
