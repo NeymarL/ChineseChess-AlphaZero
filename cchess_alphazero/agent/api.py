@@ -69,7 +69,10 @@ class CChessModelAPI:
                     k = 0
                     i += 1
 
-    def try_reload_model(self):
+    def try_reload_model(self, config_file=None):
+        if config_file:
+            config_path = os.path.join(self.config.resource.model_dir, config_file)
+            shutil.copy(config_path, self.config.resource.model_best_config_path)
         try:
             if self.config.internet.distributed:
                 self.try_reload_model_from_internet()
@@ -92,14 +95,11 @@ class CChessModelAPI:
             if download_file(self.config.internet.download_url, self.config.resource.model_best_weight_path):
                 logger.info(f"权重下载完毕！开始训练...")
                 try:
-                    if config_file:
-                        config_path = os.path.join(self.config.resource.model_dir, config_file)
-                        shutil.copy(config_path, self.config.resource.model_best_config_path)
                     with self.agent_model.graph.as_default():
                         load_best_model_weight(self.agent_model)
                 except ValueError as e:
                     logger.error(f"权重架构不匹配，自动重新加载 {e}")
-                    self.try_reload_model_from_internet(config_file='model_256f.json')
+                    self.try_reload_model(config_file='model_256f.json')
                 except Exception as e:
                     logger.error(f"加载权重发生错误：{e}，稍后重新下载")
                     os.remove(self.config.resource.model_best_weight_path)
