@@ -105,7 +105,7 @@ class InternetConfig:
         self.distributed = False
         self.username = getpass.getuser()
         self.base_url = 'http://alphazero.52coding.com.cn'
-        self.upload_url = f'{self.base_url}/api/upload_game_file'
+        self.upload_url = f'{self.base_url}/api/upload_game_file/128x7'
         self.download_url = f'http://download.52coding.com.cn/128x7/model_best_weight.h5'
         # self.download_url = 'http://alphazero-1251776088.cossh.myqcloud.com/model/128x7/model_best_weight.h5'
         self.get_latest_digest = f'{self.base_url}/api/get_latest_digest/128x7'
