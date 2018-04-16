@@ -3,6 +3,7 @@ from threading import Thread
 
 import os
 import numpy as np
+import shutil
 
 from cchess_alphazero.config import Config
 from cchess_alphazero.lib.model_helper import load_best_model_weight, need_to_reload_best_model_weight
