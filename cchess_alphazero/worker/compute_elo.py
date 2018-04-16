@@ -212,7 +212,10 @@ def load_model(config, weight_path, digest, config_file=None):
             if not load_model_weight(model, config_path, weight_path):
                 logger.info(f"待评测权重还未上传，请稍后再试")
                 sys.exit()
-        except (ValueError, tensorflow.python.framework.errors_impl.InvalidArgumentError) as e:
+        except ValueError as e:
+            logger.error(f"权重架构不匹配，自动重新加载 {e}")
+            return load_model(config, weight_path, digest, 'model_256f.json')
+        except tensorflow.python.framework.errors_impl.InvalidArgumentError as e:
             logger.error(f"权重架构不匹配，自动重新加载 {e}")
             return load_model(config, weight_path, digest, 'model_256f.json')
         except Exception as e:
