@@ -214,12 +214,12 @@ def load_model(config, weight_path, digest, config_file=None):
                 sys.exit()
         except ValueError as e:
             logger.error(f"权重架构不匹配，自动重新加载 {e}")
-            load_model(config, weight_path, digest, 'model_256f.json')
+            return load_model(config, weight_path, digest, 'model_256f.json')
         except Exception as e:
             logger.error(f"加载权重发生错误：{e}，10s后自动重试下载")
             os.remove(weight_path)
             sleep(10)
-            load_model(config, weight_path, digest)
+            return load_model(config, weight_path, digest)
     logger.info(f"加载权重 {digest[0:8]} 成功")
     return model
 
