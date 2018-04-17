@@ -26,7 +26,7 @@ class PlayDataConfig:
     def __init__(self):
         self.sl_nb_game_in_file = 250
         self.nb_game_in_file = 1     # WARNING: DO NOT CHANGE THIS PARAMETER
-        self.max_file_num = 4000
+        self.max_file_num = 5000
         self.nb_game_save_record = 1 # not supported in distributed mode
 
 
@@ -53,7 +53,7 @@ class PlayConfig:
 
 class TrainerConfig:
     def __init__(self):
-        self.min_games_to_begin_learn = 2000 
+        self.min_games_to_begin_learn = 4000 
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 4
         self.vram_frac = 1.0
