@@ -36,7 +36,7 @@ class PlayConfig:
         self.max_processes = 1
         self.search_threads = 10
         self.vram_frac = 1.0
-        self.simulation_num_per_move = 400 # just for debug
+        self.simulation_num_per_move = 100 # just for debug
         self.c_puct = 1.5
         self.noise_eps = 0.25
         self.dirichlet_alpha = 0.2

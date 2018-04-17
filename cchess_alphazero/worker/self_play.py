@@ -65,7 +65,8 @@ class SelfPlayWorker:
 
         while True:
             start_time = time()
-            value, turns, state, search_tree, store = self.start_game(idx, search_tree)
+            search_tree = defaultdict(VisitState)
+            value, turns, state, store = self.start_game(idx, search_tree)
             end_time = time()
             logger.debug(f"Process {self.pid}-{self.id} play game {idx} time={(end_time - start_time):.1f} sec, "
                          f"turn={turns / 2}, winner = {value:.2f} (1 = red, -1 = black, 0 draw)")
@@ -163,7 +164,7 @@ class SelfPlayWorker:
 
         self.cur_pipes.append(pipes)
         self.remove_play_data()
-        return v, turns, state, search_tree, store
+        return v, turns, state, store
 
     def save_play_data(self, idx, data):
         self.buffer += data

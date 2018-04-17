@@ -9,6 +9,7 @@ import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.config import Config
 from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed
 from time import time, sleep
+import gc 
 
 logger = getLogger(__name__)
 
@@ -29,7 +30,6 @@ class ActionState:
         self.w = 0      # W(s, a) : total action value
         self.q = 0      # Q(s, a) = N / W : action value
         self.p = 0      # P(s, a) : prior probability
-        self.next = None
 
 class CChessPlayer:
     def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, enable_resign=False, debugging=False):
@@ -72,6 +72,8 @@ class CChessPlayer:
 
     def close(self, wait=True):
         self.job_done = True
+        del self.tree
+        gc.collect()
         if self.executor is not None:
             self.executor.shutdown(wait=wait)
 
@@ -216,13 +218,15 @@ class CChessPlayer:
 
                 # logger.debug(f"apply virtual_loss = {virtual_loss}, as.n = {action_state.n}, w = {action_state.w}, q = {action_state.q}")
                 
-                if action_state.next is None:
-                    action_state.next = senv.step(state, sel_action)
+                # if action_state.next is None:
+                history.append(sel_action)
+                state = senv.step(state, sel_action)
+                history.append(state)
                 # logger.debug(f"step action {sel_action}, next = {action_state.next}")
 
-            history.append(sel_action)
-            state = action_state.next
-            history.append(state)
+            # history.append(sel_action)
+            # state = action_state.next
+            # history.append(state)
 
     def select_action_q_and_u(self, state, is_root_node) -> str:
         '''
