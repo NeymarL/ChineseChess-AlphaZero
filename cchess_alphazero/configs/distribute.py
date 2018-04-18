@@ -7,7 +7,7 @@ class EvaluateConfig:
         self.c_puct = 1 # lower  = prefer mean action value
         self.tau_decay_rate = 0
         self.noise_eps = 0.1
-        self.max_game_length = 100
+        self.max_game_length = 200
         self.max_processes = 6
         self.search_threads = 20
 
@@ -46,7 +46,7 @@ class PlayConfig:
         self.resign_threshold = -0.98
         self.min_resign_turn = 40
         self.enable_resign_rate = 0
-        self.max_game_length = 100
+        self.max_game_length = 200
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
 
@@ -58,8 +58,8 @@ class TrainerConfig:
         self.cleaning_processes = 4
         self.vram_frac = 1.0
         self.batch_size = 512
-        self.epoch_to_checkpoint = 3
-        self.dataset_size = 1000000
+        self.epoch_to_checkpoint = 2
+        self.dataset_size = 10000000
         self.start_total_steps = 0
         self.save_model_steps = 25
         self.load_data_steps = 100
