@@ -131,9 +131,9 @@ class EvaluateWorker:
         search_tree2 = defaultdict(VisitState)
 
         self.player1 = CChessPlayer(self.config, search_tree=search_tree1, pipes=pipe1, 
-                        debugging=False, enable_resign=True)
+                        debugging=False, enable_resign=False)
         self.player2 = CChessPlayer(self.config, search_tree=search_tree2, pipes=pipe2, 
-                        debugging=False, enable_resign=True)
+                        debugging=False, enable_resign=False)
 
         # even: bst = red, ng = black; odd: bst = black, ng = red
         if idx % 2 == 0:
