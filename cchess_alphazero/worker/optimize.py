@@ -82,8 +82,8 @@ class OptimizeWorker:
                 if len(self.dataset[0]) > self.config.trainer.batch_size:
                     steps = self.train_epoch(self.config.trainer.epoch_to_checkpoint)
                     total_steps += steps
-                    self.count += 1
                     self.save_current_model()
+                    self.count += 1
                     a, b, c = self.dataset
                     a.clear()
                     b.clear()
