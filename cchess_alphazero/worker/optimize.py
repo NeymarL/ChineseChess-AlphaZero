@@ -157,6 +157,7 @@ class OptimizeWorker:
 
     def save_current_model(self):
         logger.info("Save as ng model")
+        save_as_best_model(self.model)
         save_as_next_generation_model(self.model)
         # -------------- debug --------------
         if self.count % 1 == 0:
