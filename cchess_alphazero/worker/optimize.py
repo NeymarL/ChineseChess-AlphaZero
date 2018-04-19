@@ -90,6 +90,7 @@ class OptimizeWorker:
                     c.clear()
                     self.update_learning_rate(total_steps)
                     self.remove_play_data()
+                    break
 
     def train_epoch(self, epochs):
         tc = self.config.trainer
@@ -155,10 +156,10 @@ class OptimizeWorker:
         return model
 
     def save_current_model(self):
-        logger.info("Save as best model")
-        save_as_best_model(self.model)
+        logger.info("Save as ng model")
+        save_as_next_generation_model(self.model)
         # -------------- debug --------------
-        if self.count % 2 == 0:
+        if self.count % 1 == 0:
             self.eva = True
         else:
             self.eva = False
@@ -185,34 +186,34 @@ class OptimizeWorker:
 
     def send_model(self):
         success = False
+        # for i in range(3):
+        #     remote_server = 'root@115.159.183.150'
+        #     remote_path = '/var/www/alphazero.52coding.com.cn/data/model/128x7'
+        #     cmd = f'scp {self.config.resource.model_best_weight_path} {remote_server}:{remote_path}'
+        #     ret = subprocess.run(cmd, shell=True)
+        #     if ret.returncode == 0:
+        #         success = True
+        #         logger.info("Send best model success!")
+        #         break
+        #     else:
+        #         logger.error(f"Send best model failed! {ret.stderr}, cmd = {cmd}")
+        # if self.eva:
+        filename = self.model.digest + '.h5'
+        weight_path = os.path.join(self.config.resource.next_generation_model_dir, filename)
+        shutil.copy(self.config.resource.next_generation_weight_path, weight_path)
         for i in range(3):
-            remote_server = 'root@115.159.183.150'
-            remote_path = '/var/www/alphazero.52coding.com.cn/data/model/128x7'
-            cmd = f'scp {self.config.resource.model_best_weight_path} {remote_server}:{remote_path}'
+            remote_path = '/var/www/alphazero.52coding.com.cn/data/model/next_generation'
+            cmd = f'scp {weight_path} {remote_server}:{remote_path}'
             ret = subprocess.run(cmd, shell=True)
             if ret.returncode == 0:
                 success = True
-                logger.info("Send best model success!")
+                logger.info("Send evaluate model success!")
+                os.remove(weight_path)
                 break
             else:
-                logger.error(f"Send best model failed! {ret.stderr}, cmd = {cmd}")
-        if self.eva:
-            filename = self.model.digest + '.h5'
-            weight_path = os.path.join(self.config.resource.model_dir, filename)
-            shutil.copy(self.config.resource.model_best_weight_path, weight_path)
-            for i in range(3):
-                remote_path = '/var/www/alphazero.52coding.com.cn/data/model/next_generation'
-                cmd = f'scp {weight_path} {remote_server}:{remote_path}'
-                ret = subprocess.run(cmd, shell=True)
-                if ret.returncode == 0:
-                    success = True
-                    logger.info("Send evaluate model success!")
-                    os.remove(weight_path)
-                    break
-                else:
-                    logger.error(f"Send evaluate model failed! {ret.stderr}, cmd = {cmd}")
-            data = {'digest': self.model.digest, 'elo': 0}
-            http_request(self.config.internet.add_model_url, post=True, data=data)
+                logger.error(f"Send evaluate model failed! {ret.stderr}, cmd = {cmd}")
+        data = {'digest': self.model.digest, 'elo': 0}
+        http_request(self.config.internet.add_model_url, post=True, data=data)
 
     def remove_play_data(self):
         files = get_game_data_filenames(self.config.resource)

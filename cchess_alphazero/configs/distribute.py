@@ -45,7 +45,7 @@ class PlayConfig:
         self.virtual_loss = 3
         self.resign_threshold = -0.99
         self.min_resign_turn = 40
-        self.enable_resign_rate = 0.8
+        self.enable_resign_rate = 0.99
         self.max_game_length = 200
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
@@ -66,7 +66,7 @@ class TrainerConfig:
         self.momentum = 0.9
         self.loss_weights = [1.0, 1.0]
         self.lr_schedules = [
-            (0, 0.01),
+            (0, 0.03),
             (150000, 0.003),
             (400000, 0.0001),
         ]
