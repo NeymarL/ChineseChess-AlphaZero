@@ -187,17 +187,17 @@ class OptimizeWorker:
     def send_model(self):
         success = False
         remote_server = 'root@115.159.183.150'
-        # for i in range(3):
-        #     remote_server = 'root@115.159.183.150'
-        #     remote_path = '/var/www/alphazero.52coding.com.cn/data/model/128x7'
-        #     cmd = f'scp {self.config.resource.model_best_weight_path} {remote_server}:{remote_path}'
-        #     ret = subprocess.run(cmd, shell=True)
-        #     if ret.returncode == 0:
-        #         success = True
-        #         logger.info("Send best model success!")
-        #         break
-        #     else:
-        #         logger.error(f"Send best model failed! {ret.stderr}, cmd = {cmd}")
+        for i in range(3):
+            remote_server = 'root@115.159.183.150'
+            remote_path = '/var/www/alphazero.52coding.com.cn/data/model/128x7/model_best_weight.h5'
+            cmd = f'scp {self.config.resource.next_generation_weight_path} {remote_server}:{remote_path}'
+            ret = subprocess.run(cmd, shell=True)
+            if ret.returncode == 0:
+                success = True
+                logger.info("Send best model success!")
+                break
+            else:
+                logger.error(f"Send best model failed! {ret.stderr}, cmd = {cmd}")
         # if self.eva:
         filename = self.model.digest + '.h5'
         weight_path = os.path.join(self.config.resource.next_generation_model_dir, filename)
