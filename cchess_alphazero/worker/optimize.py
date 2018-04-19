@@ -80,6 +80,7 @@ class OptimizeWorker:
                 shuffle(self.filenames)
                 self.fill_queue()
                 if len(self.dataset[0]) > self.config.trainer.batch_size:
+                    self.update_learning_rate(total_steps)
                     steps = self.train_epoch(self.config.trainer.epoch_to_checkpoint)
                     total_steps += steps
                     self.save_current_model()
@@ -88,7 +89,6 @@ class OptimizeWorker:
                     a.clear()
                     b.clear()
                     c.clear()
-                    self.update_learning_rate(total_steps)
                     self.remove_play_data()
                     break
 
@@ -186,6 +186,7 @@ class OptimizeWorker:
 
     def send_model(self):
         success = False
+        remote_server = 'root@115.159.183.150'
         # for i in range(3):
         #     remote_server = 'root@115.159.183.150'
         #     remote_path = '/var/www/alphazero.52coding.com.cn/data/model/128x7'
