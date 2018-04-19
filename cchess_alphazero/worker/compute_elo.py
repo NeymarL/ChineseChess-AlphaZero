@@ -190,9 +190,6 @@ class EvaluateWorker:
         if turns % 2 == 1:  # black turn
             value = -value
 
-        if idx % 2 == 1:   # return player1' value
-            value = -value
-
         self.pipes_bt.append(pipe1)
         self.pipes_ng.append(pipe2)
         return value, turns
