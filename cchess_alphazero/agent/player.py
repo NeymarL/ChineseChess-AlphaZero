@@ -309,8 +309,6 @@ class CChessPlayer:
                 for hist in node.visit:
                     self.executor.submit(self.MCTS_search, state, hist)
                 node.visit = []
-                # node.w += v
-                # z = node.w * 1.0 / node.sum_n
 
         virtual_loss = self.config.play.virtual_loss
         # logger.debug(f"backup from {state}, v = {v}, history = {history}")
@@ -320,12 +318,10 @@ class CChessPlayer:
             v = - v
             with self.node_lock[state]:
                 node = self.tree[state]
-                # node.w += v
                 action_state = node.a[action]
                 action_state.n += 1 - virtual_loss
                 action_state.w += v + virtual_loss
                 action_state.q = action_state.w * 1.0 / action_state.n
-                # z = node.w * 1.0 / node.sum_n
                 # logger.debug(f"update value: state = {state}, action = {action}, n = {action_state.n}, w = {action_state.w}, q = {action_state.q}")
 
         with self.t_lock:

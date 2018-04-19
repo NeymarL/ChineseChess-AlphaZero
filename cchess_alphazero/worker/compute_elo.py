@@ -107,7 +107,7 @@ class EvaluateWorker:
                 score = score
 
             logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
-                         f"{turns / 2}回合, {result}, 得分：{score}")
+                         f"{turns / 2}回合, {result}, 得分：{score}, value = {value}, idx = {idx}")
 
             data = {'digest': self.data['unchecked']['digest'], 'score': score}
             response = http_request(self.config.internet.update_elo_url, post=True, data=data)
