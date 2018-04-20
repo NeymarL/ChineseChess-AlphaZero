@@ -49,7 +49,11 @@ def need_to_reload_best_model_weight(model):
 def load_model_weight(model, config_path, weight_path, name=None):
     if name is not None:
         logger.info(f"{name}: load model from {config_path}")
-    return model.load(config_path, weight_path)
+    try:
+        return  model.load(config_path, weight_path)
+    except ValueError:
+        config_path = os.path.join(config.resource.model_dir, 'model_256f.json')
+        return load_model_weight(model, config_path, weight_path)
 
 def save_as_next_generation_model(model):
     return model.save(model.config.resource.next_generation_config_path, model.config.resource.next_generation_weight_path)
