@@ -165,9 +165,10 @@ class OptimizeWorker:
         else:
             self.eva = False
         if self.config.internet.distributed:
-            send_worker = Thread(target=self.send_model, name="send_worker")
-            send_worker.daemon = True
-            send_worker.start()
+            # send_worker = Thread(target=self.send_model, name="send_worker")
+            # send_worker.daemon = True
+            # send_worker.start()
+            self.send_model()
 
     def decide_learning_rate(self, total_steps):
         ret = None
