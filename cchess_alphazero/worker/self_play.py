@@ -141,6 +141,7 @@ class SelfPlayWorker:
             history.append(final_move)
             # policys.append(policy)
             state = senv.step(state, final_move)
+            turns += 1
             history.append(state)
 
         self.player.close()
