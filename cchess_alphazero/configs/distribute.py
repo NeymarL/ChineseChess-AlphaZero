@@ -53,7 +53,7 @@ class PlayConfig:
 
 class TrainerConfig:
     def __init__(self):
-        self.min_games_to_begin_learn = 10000 
+        self.min_games_to_begin_learn = 5000 
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 4
         self.vram_frac = 1.0
