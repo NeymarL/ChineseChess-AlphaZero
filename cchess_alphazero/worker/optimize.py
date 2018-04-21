@@ -80,10 +80,10 @@ class OptimizeWorker:
                 shuffle(self.filenames)
                 self.fill_queue()
                 if len(self.dataset[0]) > self.config.trainer.batch_size:
-                    self.update_learning_rate(total_steps)
                     steps = self.train_epoch(self.config.trainer.epoch_to_checkpoint)
                     total_steps += steps
                     self.save_current_model()
+                    self.update_learning_rate(total_steps)
                     self.count += 1
                     a, b, c = self.dataset
                     a.clear()
@@ -106,7 +106,7 @@ class OptimizeWorker:
         return steps
 
     def compile_model(self):
-        self.opt = SGD(lr=1e-2, momentum=self.config.trainer.momentum)
+        self.opt = SGD(lr=0.03, momentum=self.config.trainer.momentum)
         losses = ['categorical_crossentropy', 'mean_squared_error'] # avoid overfit for supervised 
         self.model.model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
 
