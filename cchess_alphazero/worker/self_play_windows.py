@@ -181,6 +181,8 @@ def self_play_buffer(config, cur) -> (tuple, list):
         turns += 1
         if no_eat:
             no_eat_count += 1
+        else:
+            no_eat_count = 0
         history.append(state)
 
         if no_eat_count >= 120:
