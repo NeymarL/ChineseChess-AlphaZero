@@ -185,7 +185,7 @@ def self_play_buffer(config, cur) -> (tuple, list):
             no_eat_count = 0
         history.append(state)
 
-        if no_eat_count >= 120:
+        if no_eat_count >= 120 or turns / 2 >= config.play.max_game_length:
             game_over = True
             value = 0
         else:
