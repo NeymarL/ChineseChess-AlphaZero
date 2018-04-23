@@ -154,6 +154,7 @@ class UCI:
                 self.history.append(action)
                 self.state = senv.step(self.state, action)
                 self.is_red_turn = not self.is_red_turn
+                self.turns += 1
                 self.history.append(self.state)
             logger.debug(f"state = {self.state}")
             # senv.render(self.state)
@@ -192,7 +193,7 @@ class UCI:
         self.pipe = self.model.get_pipes(need_reload=False)
         self.search_tree = defaultdict(VisitState)
         self.player = CChessPlayer(self.config, search_tree=self.search_tree, pipes=self.pipe,
-                              enable_resign=False, debugging=True)
+                              enable_resign=False, debugging=True, uci=True)
         for i in range(len(self.args)):
             if self.args[i] == 'depth':
                 depth = int(self.args[i + 1]) * 100
@@ -278,6 +279,7 @@ class UCI:
             for mov, action_state in node.a.items():
                 if action_state.n > cnt:
                     ponder = mov
+                    cnt = action_state.n
         if not self.is_red_turn:
             action = flip_move(action)
         action = senv.to_uci_move(action)

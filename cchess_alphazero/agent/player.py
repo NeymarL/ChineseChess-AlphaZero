@@ -7,7 +7,7 @@ import concurrent.futures.thread
 import numpy as np
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.config import Config
-from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed
+from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_move
 from time import time, sleep
 import gc 
 
@@ -32,7 +32,7 @@ class ActionState:
         self.p = 0      # P(s, a) : prior probability
 
 class CChessPlayer:
-    def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, enable_resign=False, debugging=False):
+    def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, enable_resign=False, debugging=False, uci=False):
         self.config = config
         self.play_config = play_config or self.config.play
         self.labels_n = len(ActionLabelsRed)
@@ -64,6 +64,7 @@ class CChessPlayer:
         self.all_done = Lock()
         self.num_task = 0
         self.done_tasks = 0
+        self.uci = uci
 
         self.job_done = False
 
@@ -147,7 +148,7 @@ class CChessPlayer:
             self.num_task = depth - done if depth > done else 0
         if infinite:
             self.num_task = 100000
-
+        depth = 0
         # MCTS search
         if self.num_task > 0:
             all_tasks = self.num_task
@@ -162,7 +163,10 @@ class CChessPlayer:
                 for i in range(self.num_task):
                     self.executor.submit(self.MCTS_search, state, [state], True)
                 self.all_done.acquire(True)
-                # info depth xx pv xxx
+                if self.uci and depth != self.done_tasks // 100:
+                    # info depth xx pv xxx
+                    depth = self.done_tasks // 100
+                    self.print_depth_info(state, turns)
         self.all_done.release()
 
         policy, resign = self.calc_policy(state, turns)
@@ -363,6 +367,34 @@ class CChessPlayer:
 
         policy /= np.sum(policy)
         return policy, False
+
+    def print_depth_info(self, state, turns):
+        '''
+        info depth xx pv xxx
+        '''
+        depth = self.done_tasks // 100
+        output = f"info depth {depth} pv"
+        i = 0
+        while i < 10:
+            node = self.tree[state]
+            bestmove = None
+            n = 0
+            if len(node.a) == 0:
+                break
+            for mov, action_state in node.a.items():
+                if action_state.n > n:
+                    n = action_state.n
+                    bestmove = mov
+            state = senv.step(state, bestmove)
+            if turns % 2 == 1:
+                bestmove = flip_move(bestmove)
+            bestmove = senv.to_uci_move(bestmove)
+            output += " " + bestmove
+            i += 1
+            turns += 1
+        print(output)
+        logger.debug(output)
+        
 
     def apply_temperature(self, policy, turn) -> np.ndarray:
         if turn < 30 and self.play_config.tau_decay_rate != 0:
