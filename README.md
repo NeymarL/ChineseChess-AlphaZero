@@ -9,6 +9,7 @@ This project is based on these main resources:
 2. The **great** Reversi/Chess/Chinese chess development of the DeepMind ideas that @mokemokechicken/@Akababa/@TDteach did in their repo: https://github.com/mokemokechicken/reversi-alpha-zero, https://github.com/Akababa/Chess-Zero, https://github.com/TDteach/AlphaZero_ChineseChess
 3. A Chinese chess engine with gui: https://github.com/mm12432/MyChess
 
+**Note**: The distributed version is in [distributed](https://github.com/NeymarL/ChineseChess-AlphaZero/tree/distributed) branch.
 
 **Note**: This repo is still under contruction. There is also a slower implementation of MCTS player (previous version), see branch [old](https://github.com/NeymarL/ChineseChess-AlphaZero/tree/old).
 
@@ -83,8 +84,6 @@ Make sure Keras is using Tensorflow and you have Python 3.6.3+.
 * `c_puct`: balance parameter of value network and policy network in MCTS.
 * `search_threads`: balance parameter of speed and accuracy in MCTS.
 * `dirichlet_alpha`: random parameter in self-play.
-* `dirichlet_noise_only_for_legal_moves`: if true, apply dirichlet noise only for legal moves. I don't know whether the DeepMind setting was true or false.
-* `vram_frac`: memory use fraction
 
 ### Basic Usage
 
