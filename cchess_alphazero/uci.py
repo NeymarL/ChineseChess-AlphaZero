@@ -54,6 +54,7 @@ class UCI:
         self.start_time = None
         self.end_time = None
         self.search_tree = None
+        self.t = None
 
     def main(self):
         while True:
@@ -76,6 +77,7 @@ class UCI:
         self.history = [self.state]
         self.is_red_turn = True
         print('id name AlphaZero')
+        print('id author alphazero.52coding.com.cn')
         print('uciok')
 
     def cmd_ucci(self):
@@ -166,11 +168,11 @@ class UCI:
         go ...
         　　让引擎根据内置棋盘的设置和设定的搜索方式来思考，有以下搜索方式可供选择(可以多选，直接跟在go后面)：
         　　❌(1) searchmoves <move1> .... <moven>，只让引擎在这几步中选择一步；
-        　　❌(2) wtime <x>，白方剩余时间(单位是毫秒)；
+        　　✅(2) wtime <x>，白方剩余时间(单位是毫秒)；
         　　　     btime <x>，黑方剩余时间；
-        　　　     winc <x>，白方每步增加的时间(适用于Fischer制)；
-        　　　     binc <x>，黑方每步增加的时间；
-        　　　     movestogo <x>，还有多少回合进入下一时段(适用于时段制)；
+        　　　     ❌winc <x>，白方每步增加的时间(适用于Fischer制)；
+        　　　     ❌binc <x>，黑方每步增加的时间；
+        　　　     ❌movestogo <x>，还有多少回合进入下一时段(适用于时段制)；
         　　这些选项用来设定时钟，它决定了引擎的思考时间；
         　　❌(3) ponder，让引擎进行后台思考(即对手在用时，引擎的时钟不起作用)；
         　　✅(4) depth <x>，指定搜索深度；
@@ -182,6 +184,7 @@ class UCI:
         if not self.is_ready:
             return
         self.start_time = time()
+        self.t = None
         depth = None
         infinite = True
         self.remain_time = None
@@ -192,20 +195,30 @@ class UCI:
                               enable_resign=False, debugging=True)
         for i in range(len(self.args)):
             if self.args[i] == 'depth':
-                depth = int(self.args[i + 1])
+                depth = int(self.args[i + 1]) * 100
                 infinite = False
             if self.args[i] == 'movetime' or self.args[i] == 'time':
                 self.remain_time = int(self.args[i + 1]) / 1000
             if self.args[i] == 'infinite':
                 infinite = True
+            if self.args[i] == 'wtime':
+                if self.is_red_turn:
+                    self.remain_time = int(self.args[i + 1]) / 1000
+                    depth = 800
+                    infinite = False
+            if self.args[i] == 'btime':
+                if not self.is_red_turn:
+                    self.remain_time = int(self.args[i + 1]) / 1000
+                    depth = 800
+                    infinite = False
         logger.debug(f"depth = {depth}, infinite = {infinite}, remain_time = {self.remain_time}")
         search_worker = Thread(target=self.search_action, args=(depth, infinite))
         search_worker.daemon = True
         search_worker.start()
         
         if self.remain_time:
-            t = Timer(self.remain_time - 0.01, self.cmd_stop)
-            t.start()
+            self.t = Timer(self.remain_time - 0.01, self.cmd_stop)
+            self.t.start()
         
 
     def cmd_stop(self):
@@ -219,9 +232,10 @@ class UCI:
                     if self.history[i] == self.state:
                         no_act.append(self.history[i + 1])
             action, value = self.player.close_and_return_action(self.state, self.turns, no_act)
+            depth = self.player.done_tasks // 100
             self.player = None
             self.model.close_pipes()
-            self.info_best_move(action, value)
+            self.info_best_move(action, value, depth)
         else:
             logger.error(f"bestmove none")
 
@@ -241,17 +255,20 @@ class UCI:
                 if self.history[i] == self.state:
                     no_act.append(self.history[i + 1])
         action, _ = self.player.action(self.state, self.turns, no_act=no_act, depth=depth, infinite=infinite)
+        if self.t:
+            self.t.cancel()
         _, value = self.player.debug[self.state]
+        depth = self.player.done_tasks // 100
         self.player.close(wait=False)
         self.player = None
         self.model.close_pipes()
-        self.info_best_move(action, value)
+        self.info_best_move(action, value, depth)
 
-    def info_best_move(self, action, value):
+    def info_best_move(self, action, value, depth):
         self.end_time = time()
         score = int(value * 1000)
-        print(f"info time {int((self.end_time - self.start_time) * 1000)} score {score}")
-        logger.debug(f"info time {int((self.end_time - self.start_time) * 1000)} score {score}")
+        print(f"info depth {depth} score {score} time {int((self.end_time - self.start_time) * 1000)}")
+        logger.debug(f"info depth {depth} score {score} time {int((self.end_time - self.start_time) * 1000)}")
         # get ponder
         state = senv.step(self.state, action)
         ponder = None

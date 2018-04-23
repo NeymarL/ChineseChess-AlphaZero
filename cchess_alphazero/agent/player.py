@@ -63,6 +63,7 @@ class CChessPlayer:
 
         self.all_done = Lock()
         self.num_task = 0
+        self.done_tasks = 0
 
         self.job_done = False
 
@@ -140,6 +141,7 @@ class CChessPlayer:
         done = 0
         if state in self.tree:
             done = self.tree[state].sum_n
+        self.done_tasks = done
         self.num_task = self.play_config.simulation_num_per_move - done
         if depth:
             self.num_task = depth - done if depth > done else 0
@@ -155,10 +157,12 @@ class CChessPlayer:
             # logger.debug(f"all_task = {self.num_task}, batch = {batch}")
             for iter in range(batch):
                 self.num_task = min(self.config.play.search_threads, all_tasks - self.config.play.search_threads * iter)
+                self.done_tasks += self.num_task
                 # logger.debug(f"iter = {iter}, num_task = {self.num_task}")
                 for i in range(self.num_task):
                     self.executor.submit(self.MCTS_search, state, [state], True)
                 self.all_done.acquire(True)
+                # info depth xx pv xxx
         self.all_done.release()
 
         policy, resign = self.calc_policy(state, turns)
