@@ -10,6 +10,7 @@ from cchess_alphazero.config import Config
 from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_move
 from time import time, sleep
 import gc 
+import sys
 
 logger = getLogger(__name__)
 
@@ -149,6 +150,7 @@ class CChessPlayer:
         if infinite:
             self.num_task = 100000
         depth = 0
+        start_time = time()
         # MCTS search
         if self.num_task > 0:
             all_tasks = self.num_task
@@ -166,7 +168,8 @@ class CChessPlayer:
                 if self.uci and depth != self.done_tasks // 100:
                     # info depth xx pv xxx
                     depth = self.done_tasks // 100
-                    self.print_depth_info(state, turns)
+                    _, value = self.debug[state]
+                    self.print_depth_info(state, turns, start_time, value)
         self.all_done.release()
 
         policy, resign = self.calc_policy(state, turns)
@@ -368,12 +371,14 @@ class CChessPlayer:
         policy /= np.sum(policy)
         return policy, False
 
-    def print_depth_info(self, state, turns):
+    def print_depth_info(self, state, turns, start_time, value):
         '''
         info depth xx pv xxx
         '''
         depth = self.done_tasks // 100
-        output = f"info depth {depth} pv"
+        end_time = time()
+        score = int(value * 1000)
+        output = f"info depth {depth} score {score} time {int((end_time - start_time) * 1000)} pv"
         i = 0
         while i < 10:
             node = self.tree[state]
@@ -394,6 +399,7 @@ class CChessPlayer:
             turns += 1
         print(output)
         logger.debug(output)
+        sys.stdout.flush()
         
 
     def apply_temperature(self, policy, turn) -> np.ndarray:

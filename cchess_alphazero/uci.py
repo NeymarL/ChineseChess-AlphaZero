@@ -270,6 +270,7 @@ class UCI:
         score = int(value * 1000)
         print(f"info depth {depth} score {score} time {int((self.end_time - self.start_time) * 1000)}")
         logger.debug(f"info depth {depth} score {score} time {int((self.end_time - self.start_time) * 1000)}")
+        sys.stdout.flush()
         # get ponder
         state = senv.step(self.state, action)
         ponder = None
@@ -291,6 +292,7 @@ class UCI:
             output += f" ponder {ponder}"
         print(output)
         logger.debug(output)
+        sys.stdout.flush()
 
 
 if __name__ == "__main__":
