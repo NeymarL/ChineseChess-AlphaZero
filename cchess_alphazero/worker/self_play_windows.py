@@ -1,4 +1,5 @@
 import os
+import gc 
 import numpy as np
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor
@@ -200,6 +201,8 @@ def self_play_buffer(config, cur) -> (tuple, list):
         history.append(state)
 
     player.close()
+    del player
+    gc.collect()
 
     if turns % 2 == 1:  # balck turn
         value = -value
