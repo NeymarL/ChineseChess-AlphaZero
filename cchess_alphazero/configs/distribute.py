@@ -55,7 +55,7 @@ class TrainerConfig:
     def __init__(self):
         self.min_games_to_begin_learn = 5000 
         self.min_data_size_to_learn = 0
-        self.cleaning_processes = 4
+        self.cleaning_processes = 8
         self.vram_frac = 1.0
         self.batch_size = 512
         self.epoch_to_checkpoint = 2
@@ -66,7 +66,7 @@ class TrainerConfig:
         self.momentum = 0.9
         self.loss_weights = [1.0, 1.0]
         self.lr_schedules = [
-            (0, 0.03),
+            (0, 0.01),
             (150000, 0.003),
             (400000, 0.0001),
         ]
