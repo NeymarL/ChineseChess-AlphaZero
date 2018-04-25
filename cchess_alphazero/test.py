@@ -233,6 +233,26 @@ def test_request():
     res = http_request(url, post=True, data=data)
     print(res)
 
+def fixbug():
+    from cchess_alphazero.config import Config
+    from cchess_alphazero.lib.data_helper import get_game_data_filenames, read_game_data_from_file, write_game_data_to_file
+    c = Config('distribute')
+    files = get_game_data_filenames(c.resource)
+    cnt = 0
+    for filename in files:
+        data = read_game_data_from_file(filename)
+        state = data[0]
+        real_data = [state]
+        for item in data[1:]:
+            action = item[0]
+            value = -item[1]
+            real_data.append([action, value])
+        write_game_data_to_file(filename, real_data)
+        cnt += 1
+        if cnt % 1000 == 0:
+            print(cnt)
+
+
 if __name__ == "__main__":
-    test_upload()
+    fixbug()
     
