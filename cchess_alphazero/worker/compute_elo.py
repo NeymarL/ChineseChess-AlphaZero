@@ -189,6 +189,7 @@ class EvaluateWorker:
             history.append(final_move)
             state = senv.step(state, final_move)
             turns += 1
+            value = - value
             history.append(state)
 
         data = []
