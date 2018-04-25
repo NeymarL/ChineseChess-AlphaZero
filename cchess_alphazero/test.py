@@ -240,7 +240,10 @@ def fixbug():
     files = get_game_data_filenames(c.resource)
     cnt = 0
     for filename in files:
-        data = read_game_data_from_file(filename)
+        try:
+            data = read_game_data_from_file(filename)
+        except:
+            print(f"error: {filename}")
         state = data[0]
         real_data = [state]
         for item in data[1:]:
