@@ -244,6 +244,7 @@ def fixbug():
             data = read_game_data_from_file(filename)
         except:
             print(f"error: {filename}")
+            continue
         state = data[0]
         real_data = [state]
         for item in data[1:]:
