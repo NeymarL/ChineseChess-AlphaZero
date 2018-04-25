@@ -220,12 +220,11 @@ class EvaluateWorker:
         path = os.path.join(rc.play_data_dir, filename)
         logger.info(f"Process {self.pid} save play data to {path}")
         write_game_data_to_file(path, data)
-        if self.config.internet.distributed:
-            logger.info(f"Uploading play data {filename} ...")
-            red, black = data[0], data[1]
-            upload_worker = Thread(target=self.upload_eval_data, args=(path, filename, red, black, value), name="upload_worker")
-            upload_worker.daemon = True
-            upload_worker.start()
+        logger.info(f"Uploading play data {filename} ...")
+        red, black = data[0], data[1]
+        upload_worker = Thread(target=self.upload_eval_data, args=(path, filename, red, black, value), name="upload_worker")
+        upload_worker.daemon = True
+        upload_worker.start()
 
     def upload_eval_data(self, path, filename, red, black, result):
         data = {'digest': self.data['unchecked']['digest'], 'red_digest': red, 'black_digest': black, 'result': result}
