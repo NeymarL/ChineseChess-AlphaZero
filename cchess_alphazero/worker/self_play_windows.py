@@ -198,6 +198,7 @@ def self_play_buffer(config, cur) -> (tuple, list):
         # policys.append(policy)
         state = senv.step(state, final_move)
         turns += 1
+        value = -value
         history.append(state)
 
     player.close()
