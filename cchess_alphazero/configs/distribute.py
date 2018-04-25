@@ -59,7 +59,7 @@ class TrainerConfig:
         self.vram_frac = 1.0
         self.batch_size = 512
         self.epoch_to_checkpoint = 2
-        self.dataset_size = 10000000
+        self.dataset_size = 90000000
         self.start_total_steps = 0
         self.save_model_steps = 25
         self.load_data_steps = 100
