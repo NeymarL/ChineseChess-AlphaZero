@@ -201,18 +201,19 @@ class EvaluateWorker:
         if turns % 2 == 1:  # black turn
             value = -value
 
+        v = value
         data.append(history[0])
         for i in range(turns):
             k = i * 2
-            data.append([history[k + 1], value])
-            value = -value
-        self.save_play_data(idx, data)
+            data.append([history[k + 1], v])
+            v = -v
+        self.save_play_data(idx, data, value)
 
         self.pipes_bt.append(pipe1)
         self.pipes_ng.append(pipe2)
         return value, turns
 
-    def save_play_data(self, idx, data):
+    def save_play_data(self, idx, data, value):
         rc = self.config.resource
         game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
         filename = rc.play_data_filename_tmpl % game_id
@@ -220,12 +221,15 @@ class EvaluateWorker:
         logger.info(f"Process {self.pid} save play data to {path}")
         write_game_data_to_file(path, data)
         if self.config.internet.distributed:
-            upload_worker = Thread(target=self.upload_eval_data, args=(path, filename), name="upload_worker")
+            logger.info(f"Uploading play data {filename} ...")
+            red, black = data[0], data[1]
+            upload_worker = Thread(target=self.upload_eval_data, args=(path, filename, red, black, value), name="upload_worker")
             upload_worker.daemon = True
             upload_worker.start()
 
-    def upload_eval_data(self, path, filename):
-        response = upload_file(self.config.internet.upload_eval_url, path, filename, rm=False)
+    def upload_eval_data(self, path, filename, red, black, result):
+        data = {'digest': self.data['unchecked']['digest'], 'red_digest': red, 'black_digest': black, 'result': result}
+        response = upload_file(self.config.internet.upload_eval_url, path, filename, data, rm=False)
         if response is not None and response['status'] == 0:
             logger.info(f"Upload play data {filename} finished.")
         else:
