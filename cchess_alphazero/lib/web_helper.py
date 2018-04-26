@@ -26,17 +26,19 @@ def upload_file(url, path, filename=None, data=None, rm=False):
 
 def http_request(url, post=False, data=None):
     success = False
-    try:
-        if post:
-            r = requests.post(url, data=data)
-        else:
-            r = requests.get(url)
-        if r.status_code != 200:
-            logger.error(f"Error occurs when request {url}: {r.text}")
-        else:
-            success = True
-    except Exception as e:
-        logger.error(f"Error occurs when request {url}: {e}")
+    for i in range(3):
+        try:
+            if post:
+                r = requests.post(url, data=data)
+            else:
+                r = requests.get(url)
+            if r.status_code != 200:
+                logger.error(f"Error occurs when request {url}: {r.text}")
+            else:
+                success = True
+                break
+        except Exception as e:
+            logger.error(f"Error occurs when request {url}: {e}")
     return r.json() if success else None
 
 def download_file(url, save_path):
