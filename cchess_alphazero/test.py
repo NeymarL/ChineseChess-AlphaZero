@@ -241,6 +241,7 @@ def fixbug():
     files = get_game_data_filenames(c.resource)
     cnt = 0
     fix = 0
+    draw_cnt = 0
     for filename in files:
         try:
             data = read_game_data_from_file(filename)
@@ -254,30 +255,40 @@ def fixbug():
         draw = False
         action = None
         value = None
+        is_red_turn = True
         for item in data[1:]:
             action = item[0]
             value = -item[1]
             if value == 0:
                 need_fix = False
                 draw = True
+                draw_cnt += 1
                 break
             state = senv.step(state, action)
+            is_red_turn = not is_red_turn
             real_data.append([action, value])
         if not draw:
             game_over, v, final_move = senv.done(state)
             if final_move:
                 v = -v
-            if v == value:
-                need_fix = True
-            else:
+                is_red_turn = not is_red_turn
+            if not is_red_turn:
+                v = -v
+            if not game_over:
+                v = 1
+            # print(game_over, v, final_move, state)
+            if v == data[1][1]:
                 need_fix = False
+            else:
+                need_fix = True
         if need_fix:
             write_game_data_to_file(filename, real_data)
+            print(filename)
             fix += 1
         cnt += 1
         if cnt % 1000 == 0:
-            print(cnt, fix)
-    print(f"all {cnt}, fix {fix}")
+            print(cnt, fix, draw_cnt)
+    print(f"all {cnt}, fix {fix}, draw {draw_cnt}")
 
 
 if __name__ == "__main__":
