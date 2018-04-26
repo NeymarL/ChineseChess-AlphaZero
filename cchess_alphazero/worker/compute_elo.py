@@ -85,7 +85,7 @@ class EvaluateWorker:
         while need_evaluate:
             idx = 0 if random() > 0.5 else 1
             start_time = time()
-            value, turns = self.start_game(idx)
+            value, turns, data = self.start_game(idx)
             end_time = time()
             
             if (value == 1 and idx == 0) or (value == -1 and idx == 1):
@@ -110,10 +110,11 @@ class EvaluateWorker:
             logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
                          f"{turns / 2}回合, {result}, 得分：{score}, value = {value}, idx = {idx}")
 
-            data = {'digest': self.data['unchecked']['digest'], 'score': score}
-            response = http_request(self.config.internet.update_elo_url, post=True, data=data)
+            response = self.save_play_data(idx, data, value, score)
             if response and int(response['status']) == 0:
                 logger.info('评测结果上传成功！')
+            else:
+                logger.info(f"评测结果上传失败，服务器返回{response}")
 
             response = http_request(self.config.internet.get_evaluate_model_url)
             if int(response['status']) == 0 and response['data']['base']['digest'] == self.data['base']['digest']\
@@ -177,6 +178,8 @@ class EvaluateWorker:
             turns += 1
             if no_eat:
                 no_eat_count += 1
+            else:
+                no_eat_count = 0
             history.append(state)
 
             if no_eat_count >= 120 or turns / 2 >= self.config.play.max_game_length:
@@ -209,13 +212,12 @@ class EvaluateWorker:
             k = i * 2
             data.append([history[k + 1], v])
             v = -v
-        self.save_play_data(idx, data, value)
 
         self.pipes_bt.append(pipe1)
         self.pipes_ng.append(pipe2)
-        return value, turns
+        return value, turns, data
 
-    def save_play_data(self, idx, data, value):
+    def save_play_data(self, idx, data, value, score):
         rc = self.config.resource
         game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
         filename = rc.play_data_filename_tmpl % game_id
@@ -224,17 +226,12 @@ class EvaluateWorker:
         write_game_data_to_file(path, data)
         logger.info(f"Uploading play data {filename} ...")
         red, black = data[0], data[1]
-        upload_worker = Thread(target=self.upload_eval_data, args=(path, filename, red, black, value), name="upload_worker")
-        upload_worker.daemon = True
-        upload_worker.start()
+        return self.upload_eval_data(path, filename, red, black, value, score)
 
     def upload_eval_data(self, path, filename, red, black, result):
-        data = {'digest': self.data['unchecked']['digest'], 'red_digest': red, 'black_digest': black, 'result': result}
+        data = {'digest': self.data['unchecked']['digest'], 'red_digest': red, 'black_digest': black, 'result': result, 'score': score}
         response = upload_file(self.config.internet.upload_eval_url, path, filename, data, rm=False)
-        if response is not None and response['status'] == 0:
-            logger.info(f"Upload play data {filename} finished.")
-        else:
-            logger.error(f'Upload play data {filename} failed. {response.msg if response is not None else None}')
+        return response
 
 
 def load_model(config, weight_path, digest, config_file=None):
