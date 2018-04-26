@@ -228,7 +228,7 @@ class EvaluateWorker:
         red, black = data[0], data[1]
         return self.upload_eval_data(path, filename, red, black, value, score)
 
-    def upload_eval_data(self, path, filename, red, black, result):
+    def upload_eval_data(self, path, filename, red, black, result, score):
         data = {'digest': self.data['unchecked']['digest'], 'red_digest': red, 'black_digest': black, 'result': result, 'score': score}
         response = upload_file(self.config.internet.upload_eval_url, path, filename, data, rm=False)
         return response
