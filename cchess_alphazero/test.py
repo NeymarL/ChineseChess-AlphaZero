@@ -236,25 +236,48 @@ def test_request():
 def fixbug():
     from cchess_alphazero.config import Config
     from cchess_alphazero.lib.data_helper import get_game_data_filenames, read_game_data_from_file, write_game_data_to_file
+    import cchess_alphazero.environment.static_env as senv
     c = Config('distribute')
     files = get_game_data_filenames(c.resource)
     cnt = 0
+    fix = 0
     for filename in files:
         try:
             data = read_game_data_from_file(filename)
         except:
             print(f"error: {filename}")
+            os.remove(filename)
             continue
         state = data[0]
         real_data = [state]
+        need_fix = True
+        draw = False
+        action = None
+        value = None
         for item in data[1:]:
             action = item[0]
             value = -item[1]
+            if value == 0:
+                need_fix = False
+                draw = True
+                break
+            state = senv.step(state, action)
             real_data.append([action, value])
-        write_game_data_to_file(filename, real_data)
+        if not draw:
+            game_over, v, final_move = senv.done(state)
+            if final_move:
+                v = -v
+            if v == value:
+                need_fix = True
+            else:
+                need_fix = False
+        if need_fix:
+            write_game_data_to_file(filename, real_data)
+            fix += 1
         cnt += 1
         if cnt % 1000 == 0:
-            print(cnt)
+            print(cnt, fix)
+    print(f"all {cnt}, fix {fix}")
 
 
 if __name__ == "__main__":
