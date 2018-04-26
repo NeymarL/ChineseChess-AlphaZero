@@ -283,7 +283,7 @@ def fixbug():
                 need_fix = True
         if need_fix:
             write_game_data_to_file(filename, real_data)
-            print(filename)
+            # print(filename)
             fix += 1
         cnt += 1
         if cnt % 1000 == 0:
