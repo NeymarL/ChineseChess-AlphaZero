@@ -122,7 +122,13 @@ class SelfPlayWorker:
             # self.player.search_results = {}
             history.append(action)
             # policys.append(policy)
-            state, no_eat = senv.new_step(state, action)
+            try:
+                state, no_eat = senv.new_step(state, action)
+            except Exception as e:
+                logger.error(f"{e}, no_act = {no_act}, policy = {policy}")
+                game_over = True
+                value = 0
+                break
             turns += 1
             if no_eat:
                 no_eat_count += 1
@@ -151,7 +157,7 @@ class SelfPlayWorker:
 
         v = value
         if turns < 10:
-            if random() > 0.7:
+            if random() > 0.9:
                 store = True
             else:
                 store = False

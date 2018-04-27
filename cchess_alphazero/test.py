@@ -196,7 +196,7 @@ def test_ucci():
 
 def test_done():
     import cchess_alphazero.environment.static_env as senv
-    state = '1Rems1e1r/4m4/2c6/p3C1p1p/9/6P2/P3P3P/1c5C1/3p5/2EMSME1R'
+    state = '4s4/9/4e4/p8/2e2R2p/P5E2/8P/9/9/4S1E2'
     board = senv.state_to_board(state)
     for i in range(9, -1, -1):
         print(board[i])
@@ -292,5 +292,5 @@ def fixbug():
 
 
 if __name__ == "__main__":
-    fixbug()
+    test_done()
     
