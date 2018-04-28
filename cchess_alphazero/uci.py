@@ -232,8 +232,7 @@ class UCI:
                 for i in range(len(self.history) - 1):
                     if self.history[i] == self.state:
                         no_act.append(self.history[i + 1])
-            action, value = self.player.close_and_return_action(self.state, self.turns, no_act)
-            depth = self.player.done_tasks // 100
+            action, value, depth = self.player.close_and_return_action(self.state, self.turns, no_act)
             self.player = None
             self.model.close_pipes()
             self.info_best_move(action, value, depth)

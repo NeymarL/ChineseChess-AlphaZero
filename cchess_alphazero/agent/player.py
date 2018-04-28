@@ -98,7 +98,7 @@ class CChessPlayer:
             _, value = self.debug[state]
         else:
             value = 0
-        return self.labels[my_action], value
+        return self.labels[my_action], value, self.done_tasks // 100
 
     def sender(self):
         '''
