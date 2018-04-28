@@ -291,6 +291,16 @@ def fixbug():
     print(f"all {cnt}, fix {fix}, draw {draw_cnt}")
 
 
+def plot_model():
+    from keras.utils import plot_model
+    from cchess_alphazero.agent.model import CChessModel
+    from cchess_alphazero.config import Config
+    config = Config('distribute')
+    model = CChessModel(config)
+    model.build()
+    plot_model(model.model, to_file='model.png', show_shapes=True, show_layer_names=True)
+
+
 if __name__ == "__main__":
-    test_done()
+    plot_model()
     
