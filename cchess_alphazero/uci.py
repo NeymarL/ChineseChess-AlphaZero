@@ -78,6 +78,7 @@ class UCI:
         self.is_red_turn = True
         print('id name AlphaZero')
         print('id author alphazero.52coding.com.cn')
+        print('id version v2.1')
         print('uciok')
 
     def cmd_ucci(self):
