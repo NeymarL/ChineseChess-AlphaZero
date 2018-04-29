@@ -32,15 +32,18 @@
 │   │   ├── test_cli_game.py    : human vs human with cli
 │   │   └── test_window_game.py : human vs human with gui
 │   ├── worker
+│   │   ├── self_play.py    : self play worker
+│   │   ├── self_play_windows.py    : self play worker of Windows os
+│   │   ├── compute_elo.py  : evaluate next generation model and compute it's elo
 │   │   ├── optimize.py     : trainer
 │   │   ├── sl.py           : supervised learning worker
 │   │   ├── sl_onegreen.py  : supervised learning worker which train data crawled from game.onegreen.net
-│   │   ├── self_play.py    : self play worker
 │   │   ├── play_with_ucci_engine.py   : play with an ucci engine rather than self play
 │   │   └── evaluator.py    : evaluate next generation model with current best model
 │   ├── config.py           : setup configuration
 │   ├── manager.py          : manage to start which worker
 │   ├── run.py              : start interface
+│   ├── uci.py              : for UCI protocal
 ├── └── test.py             : for debug and test
 
 ```
