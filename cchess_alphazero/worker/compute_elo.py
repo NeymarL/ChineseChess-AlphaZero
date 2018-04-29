@@ -187,7 +187,7 @@ class EvaluateWorker:
                 game_over = True
                 value = 0
             else:
-                game_over, value, final_move, check = senv.done(state)
+                game_over, value, final_move, check = senv.done(state, need_check=True)
 
         if final_move:
             history.append(final_move)

@@ -197,7 +197,7 @@ def self_play_buffer(config, cur) -> (tuple, list):
             game_over = True
             value = 0
         else:
-            game_over, value, final_move, check = senv.done(state)
+            game_over, value, final_move, check = senv.done(state, need_check=True)
 
     if final_move:
         # policy = build_policy(final_move, False)

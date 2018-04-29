@@ -11,7 +11,7 @@ INIT_STATE = 'rkemsmekr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR'
 BOARD_HEIGHT = 10
 BOARD_WIDTH = 9
 
-def done(state, turns=-1):
+def done(state, turns=-1, need_check=False):
     if 's' not in state:
         return (True, 1, None)
     if 'S' not in state:
@@ -58,7 +58,7 @@ def done(state, turns=-1):
                 v = 1
                 final_move = mov
                 break
-    if winner is None:
+    if winner is None and need_check:
         black_state = fliped_state(state)
         black_moves = get_legal_moves(black_state)
         for mov in black_moves:
@@ -66,7 +66,10 @@ def done(state, turns=-1):
             if dest == red_k:
                 check = True
                 break
-    return (winner is not None, v, final_move, check)
+    if need_check:
+        return (winner is not None, v, final_move, check)
+    else:
+        return (winner is not None, v, final_move)
 
 def step(state, action):
     board = state_to_board(state)

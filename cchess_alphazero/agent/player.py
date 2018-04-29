@@ -189,7 +189,7 @@ class CChessPlayer:
         """
         while True:
             # logger.debug(f"start MCTS, state = {state}, history = {history}")
-            game_over, v, _, _ = senv.done(state)
+            game_over, v, _ = senv.done(state)
             if game_over:
                 self.executor.submit(self.update_tree, None, v, history)
                 break
