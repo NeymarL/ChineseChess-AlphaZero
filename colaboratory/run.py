@@ -34,4 +34,5 @@ if __name__ == "__main__":
     config.internet.distributed = True
     config.opts.log_move = True
     setup_parameters(config)
+    config.internet.download_url = 'http://alphazero-1251776088.cossh.myqcloud.com/model/128x7/model_best_weight.h5'
     self_play.start(config)
