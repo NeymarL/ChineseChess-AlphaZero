@@ -61,11 +61,15 @@ def done(state, turns=-1, need_check=False):
     if winner is None and need_check:
         black_state = fliped_state(state)
         black_moves = get_legal_moves(black_state)
+        # render(black_state)
+        red_k[0] = 9 - red_k[0]
         for mov in black_moves:
             dest = [int(mov[3]), int(mov[2])]
             if dest == red_k:
                 check = True
+                # logger.debug(f"Checking move {mov}")
                 break
+        # logger.debug(f"red_k = {red_k}, black_moves = {black_moves}, check = {check}")
     if need_check:
         return (winner is not None, v, final_move, check)
     else:
