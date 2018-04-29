@@ -48,6 +48,7 @@ def done(state, turns=-1):
             v = 1
             winner = Winner.red
     final_move = None
+    check = False
     if winner is None:
         legal_moves = get_legal_moves(state, board)
         for mov in legal_moves:
@@ -57,7 +58,15 @@ def done(state, turns=-1):
                 v = 1
                 final_move = mov
                 break
-    return (winner is not None, v, final_move)
+    if winner is None:
+        black_state = fliped_state(state)
+        black_moves = get_legal_moves(black_state)
+        for mov in black_moves:
+            dest = [int(mov[3]), int(mov[2])]
+            if dest == red_k:
+                check = True
+                break
+    return (winner is not None, v, final_move, check)
 
 def step(state, action):
     board = state_to_board(state)

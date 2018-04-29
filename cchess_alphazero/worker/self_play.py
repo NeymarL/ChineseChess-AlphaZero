@@ -98,10 +98,11 @@ class SelfPlayWorker:
         game_over = False
         final_move = None
         no_eat_count = 0
+        check = False
 
         while not game_over:
             no_act = None
-            if state in history[:-1]:
+            if not check and state in history[:-1]:
                 no_act = []
                 for i in range(len(history) - 1):
                     if history[i] == state:
@@ -140,7 +141,7 @@ class SelfPlayWorker:
                 game_over = True
                 value = 0
             else:
-                game_over, value, final_move = senv.done(state)
+                game_over, value, final_move, check = senv.done(state)
 
         if final_move:
             # policy = self.build_policy(final_move, False)

@@ -196,7 +196,8 @@ class PlayWithHuman:
                 labels_n = len(ActionLabelsRed)
                 self.ai.search_results = {}
                 state = self.env.get_state()
-                if state in self.history[:-1]:
+                _, _, _, check = senv.done(state)
+                if not check and state in self.history[:-1]:
                     no_act = []
                     for i in range(len(self.history) - 1):
                         if self.history[i] == state:
@@ -212,7 +213,7 @@ class PlayWithHuman:
                     action = flip_move(action)
                 key = self.env.get_state()
                 p, v = self.ai.debug[key]
-                logger.info(f"NN value = {v:.3f}")
+                logger.info(f"check = {check}, NN value = {v:.3f}")
                 self.nn_value = v
                 logger.info("MCTS results:")
                 self.mcts_moves = {}
