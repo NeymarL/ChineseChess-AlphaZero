@@ -16,6 +16,8 @@ import cchess_alphazero.worker.self_play_windows as self_play
 def setup_parameters(config):
     username = input(f"请输入用户名：")
     config.internet.username = username
+    gpu = input(f"请输入GPU编号（0代表第一块，1代表第二块，以此类推...）：")
+    config.opts.device_list = gpu
     num_cores = mp.cpu_count()
     max_processes = num_cores // 2 if num_cores < 20 else 10
     search_threads = 20
@@ -31,7 +33,6 @@ if __name__ == "__main__":
     sys.setrecursionlimit(10000)
     config_type = 'distribute'
     config = Config(config_type=config_type)
-    config.opts.device_list = '0'
     config.resource.create_directories()
     setup_logger(config.resource.main_log_path)
     config.internet.distributed = True
