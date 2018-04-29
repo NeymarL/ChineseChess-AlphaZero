@@ -69,6 +69,12 @@ class UCI:
                 logger.error(f"Error command: {cmd}")
 
     def cmd_uci(self):
+        print('id name AlphaZero')
+        print('id author alphazero.52coding.com.cn')
+        print('id version v2.2')
+        print('option name gpu spin default 0 min 0 max 7')
+        print('uciok')
+        sys.stdout.flush()
         self.load_model()
         self.is_ready = True
         self.turns = 0
@@ -76,10 +82,6 @@ class UCI:
         self.state = senv.INIT_STATE
         self.history = [self.state]
         self.is_red_turn = True
-        print('id name AlphaZero')
-        print('id author alphazero.52coding.com.cn')
-        print('id version v2.1')
-        print('uciok')
 
     def cmd_ucci(self):
         self.load_model()
@@ -91,16 +93,22 @@ class UCI:
         self.is_red_turn = True
         print('id name AlphaZero')
         print('ucciok')
+        sys.stdout.flush()
 
     def cmd_setoption(self):
         '''
         setoption name <id> [value <x>]
         '''
-        pass
+        if len(self.args) > 3:
+            id = self.args[1]
+            if id == 'gpu':
+                value = self.args[3]
+                self.config.opts.device_list = value
 
     def cmd_isready(self):
         if self.is_ready == True:
             print('readyok')
+            sys.stdout.flush()
         logger.debug(f"is_ready = {self.is_ready}")
 
     def cmd_position(self):
