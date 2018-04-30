@@ -75,6 +75,8 @@ class UCI:
         print('option name gpu spin default 0 min 0 max 7')
         print('uciok')
         sys.stdout.flush()
+        set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, 
+            device_list=self.config.opts.device_list)
         self.load_model()
         self.is_ready = True
         self.turns = 0
@@ -104,6 +106,8 @@ class UCI:
             if id == 'gpu':
                 value = self.args[3]
                 self.config.opts.device_list = value
+                set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, 
+                    device_list=self.config.opts.device_list)
 
     def cmd_isready(self):
         if self.is_ready == True:
