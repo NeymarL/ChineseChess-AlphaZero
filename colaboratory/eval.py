@@ -31,4 +31,5 @@ if __name__ == "__main__":
     setup_logger(config.resource.eval_log_path)
     config.eval.update_play_config(config.play)
     setup_parameters(config)
+    config.internet.download_base_url = 'http://alphazero-1251776088.cossh.myqcloud.com/model/'
     evaluator.start(config)
