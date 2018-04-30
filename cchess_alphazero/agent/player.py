@@ -87,7 +87,7 @@ class CChessPlayer:
             # self.executor = None
             self.executor._threads.clear()
             concurrent.futures.thread._threads_queues.clear()
-        policy, resign = self.calc_policy(state, turns)
+        policy, resign = self.calc_policy(state, turns, no_act)
         if resign:  # resign
             return None
         if no_act is not None:
