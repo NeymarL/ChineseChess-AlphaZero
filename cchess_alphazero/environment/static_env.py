@@ -63,6 +63,7 @@ def done(state, turns=-1, need_check=False):
         black_moves = get_legal_moves(black_state)
         # render(black_state)
         red_k[0] = 9 - red_k[0]
+        red_k[1] = 8 - red_k[1]
         for mov in black_moves:
             dest = [int(mov[3]), int(mov[2])]
             if dest == red_k:
