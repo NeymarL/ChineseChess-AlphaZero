@@ -169,7 +169,7 @@ class CChessPlayer:
                     # info depth xx pv xxx
                     depth = self.done_tasks // 100
                     _, value = self.debug[state]
-                    self.print_depth_info(state, turns, start_time, value)
+                    self.print_depth_info(state, turns, start_time, value, no_act)
         self.all_done.release()
 
         policy, resign = self.calc_policy(state, turns)
@@ -371,26 +371,32 @@ class CChessPlayer:
         policy /= np.sum(policy)
         return policy, False
 
-    def print_depth_info(self, state, turns, start_time, value):
+    def print_depth_info(self, state, turns, start_time, value, no_act):
         '''
         info depth xx pv xxx
         '''
         depth = self.done_tasks // 100
         end_time = time()
+        if turns % 2 == 1:
+            value = -value
         score = int(value * 1000)
         output = f"info depth {depth} score {score} time {int((end_time - start_time) * 1000)} pv"
         i = 0
         while i < 10:
             node = self.tree[state]
             bestmove = None
+            root = True
             n = 0
             if len(node.a) == 0:
                 break
             for mov, action_state in node.a.items():
                 if action_state.n > n:
+                    if root and no_act and mov in no_act:
+                        continue
                     n = action_state.n
                     bestmove = mov
             state = senv.step(state, bestmove)
+            root = False
             if turns % 2 == 1:
                 bestmove = flip_move(bestmove)
             bestmove = senv.to_uci_move(bestmove)

@@ -271,6 +271,8 @@ class UCI:
         self.player.close(wait=False)
         self.player = None
         self.model.close_pipes()
+        if self.turns % 2 == 1:
+            value = -value
         self.info_best_move(action, value, depth)
 
     def info_best_move(self, action, value, depth):
