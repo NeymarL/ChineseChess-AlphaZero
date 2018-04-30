@@ -172,7 +172,7 @@ class CChessPlayer:
                     self.print_depth_info(state, turns, start_time, value, no_act)
         self.all_done.release()
 
-        policy, resign = self.calc_policy(state, turns)
+        policy, resign = self.calc_policy(state, turns, no_act)
 
         if resign:  # resign
             return None, list(policy)
@@ -341,7 +341,7 @@ class CChessPlayer:
             if self.num_task <= 0:
                 self.all_done.release()
 
-    def calc_policy(self, state, turns) -> np.ndarray:
+    def calc_policy(self, state, turns, no_act) -> np.ndarray:
         '''
         calculate π(a|s0) according to the visit count
         '''
@@ -352,6 +352,9 @@ class CChessPlayer:
 
         for mov, action_state in node.a.items():
             policy[self.move_lookup[mov]] = action_state.n
+            if no_act and mov in no_act:
+                policy[self.move_lookup[mov]] = 0
+                continue
             if self.debugging:
                 debug_result[mov] = (action_state.n, action_state.q, action_state.p)
             if action_state.q > max_q_value:
