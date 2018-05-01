@@ -145,6 +145,8 @@ class CChessPlayer:
         done = 0
         if state in self.tree:
             done = self.tree[state].sum_n
+        if no_act:
+            done = 0
         self.done_tasks = done
         self.num_task = self.play_config.simulation_num_per_move - done
         if depth:
@@ -277,6 +279,7 @@ class CChessPlayer:
 
         for mov in legal_moves:
             if is_root_node and self.no_act and mov in self.no_act:
+                # logger.debug(f"mov = {mov}, no_act = {self.no_act}, continue")
                 continue
             action_state = node.a[mov]
             p_ = action_state.p
