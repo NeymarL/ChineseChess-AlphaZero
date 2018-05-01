@@ -160,9 +160,21 @@ class EvaluateWorker:
             no_act = None
             if not check and state in history[:-1]:
                 no_act = []
+                free_move = defaultdict(int)
                 for i in range(len(history) - 1):
                     if history[i] == state:
-                        no_act.append(history[i + 1])
+                        # 如果走了下一步是将军或捉：禁止走那步
+                        if senv.will_check_or_catch(state, self.history[i+1]):
+                            no_act.append(self.history[i + 1])
+                        # 否则当作闲着处理
+                        else:
+                            free_move[state] += 1
+                            if free_move[state] >= 2:
+                                # 作和棋处理
+                                game_over = True
+                                value = 0
+                                logger.info("闲着循环三次，作和棋处理")
+                                break
             if turns % 2 == 0:
                 action, _ = red.action(state, turns, no_act=no_act)
             else:

@@ -300,7 +300,12 @@ def plot_model():
     model.build()
     plot_model(model.model, to_file='model.png', show_shapes=True, show_layer_names=True)
 
+def test_check_and_catch():
+    import cchess_alphazero.environment.static_env as senv
+    state = senv.INIT_STATE
+    action = '1242'
+    print(senv.will_check_or_catch(state, action))
 
 if __name__ == "__main__":
-    plot_model()
+    test_check_and_catch()
     

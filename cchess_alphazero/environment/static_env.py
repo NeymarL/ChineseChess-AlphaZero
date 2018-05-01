@@ -1,7 +1,7 @@
 import numpy as np
 
 from cchess_alphazero.environment.light_env.common import *
-from cchess_alphazero.environment.lookup_tables import Winner, Fen_2_Idx
+from cchess_alphazero.environment.lookup_tables import Winner, Fen_2_Idx, flip_move
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -347,4 +347,53 @@ def to_uci_move(action):
     x0, x1 = chr(ord('a') + int(action[0])), chr(ord('a') + int(action[2]))
     move = x0 + action[1] + x1 + action[3]
     return move
+
+def will_check_or_catch(state, action):
+    '''
+    判断走了下一步是否会造成红方将军或捉子
+    '''
+    state = step(state, action)     # 判断当前state的红方是否会被将/捉
+    board = state_to_board(state)
+    # 判断被将
+    red_k = [0, 0]
+    for i in range(BOARD_HEIGHT):
+        for j in range(BOARD_WIDTH):
+            if board[i][j] == 'k':
+                red_k[0] = i
+                red_k[1] = j
+    black_state = fliped_state(state)
+    black_moves = get_legal_moves(black_state)
+    # render(black_state)
+    red_k[0] = 9 - red_k[0]
+    red_k[1] = 8 - red_k[1]
+    for mov in black_moves:
+        dest = [int(mov[3]), int(mov[2])]
+        if dest == red_k:
+            check = True
+            logger.debug(f"Checking move {mov}")
+            return True
+    # 判断被捉
+    for mov in black_moves:
+        next_state, no_eat = new_step(black_state, mov)
+        if not no_eat:  # 有吃子
+            # 判断能不能吃回来(防御)
+            could_defend = False
+            next_moves = get_legal_moves(next_state)
+            fliped_move = flip_move(mov)
+            dest = fliped_move[2:]
+            for nmov in next_moves:
+                if nmov[2:] == dest:
+                    could_defend = True
+                    break
+            if not could_defend:
+                # 判断吃子源是否为未过河的兵
+                i = int(mov[3])
+                j = int(mov[2])
+                black_board = state_to_board(black_state)
+                if black_board[i][j] == 'p' and i <= 5:
+                    # 未过河的兵
+                    continue
+                logger.debug(f"Catch: mov = {mov}, chessman = {black_board[i][j]}")
+                return True
+    return False
     
