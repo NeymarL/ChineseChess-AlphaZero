@@ -181,6 +181,8 @@ def self_play_buffer(config, cur) -> (tuple, list):
                             value = 0
                             logger.info("闲着循环三次，作和棋处理")
                             break
+        if game_over:
+            break
         start_time = time()
         action, policy = player.action(state, turns, no_act)
         end_time = time()
