@@ -175,6 +175,8 @@ class EvaluateWorker:
                                 value = 0
                                 logger.info("闲着循环三次，作和棋处理")
                                 break
+            if game_over:
+                break
             if turns % 2 == 0:
                 action, _ = red.action(state, turns, no_act=no_act)
             else:
