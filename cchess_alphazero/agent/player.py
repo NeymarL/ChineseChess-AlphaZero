@@ -66,6 +66,7 @@ class CChessPlayer:
         self.num_task = 0
         self.done_tasks = 0
         self.uci = uci
+        self.no_act = None
 
         self.job_done = False
 
@@ -140,6 +141,7 @@ class CChessPlayer:
     def action(self, state, turns, no_act=None, depth=None, infinite=False) -> str:
         self.all_done.acquire(True)
         self.root_state = state
+        self.no_act = no_act
         done = 0
         if state in self.tree:
             done = self.tree[state].sum_n
@@ -274,6 +276,8 @@ class CChessPlayer:
         best_action = None
 
         for mov in legal_moves:
+            if is_root_node and self.no_act and mov in self.no_act:
+                continue
             action_state = node.a[mov]
             p_ = action_state.p
             if is_root_node:
