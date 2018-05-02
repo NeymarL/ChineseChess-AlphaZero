@@ -124,6 +124,7 @@ class EvaluateWorker:
                     and response['data']['unchecked']['digest'] == self.data['unchecked']['digest']:
                     need_evaluate = True
                     logger.info(f"继续评测")
+                    idx = 0 if random() > 0.5 else 1
                     ff = executor.submit(self_play_buffer, self.config, self.pipes_bt, self.pipes_ng, idx, self.data)
                     ff.add_done_callback(recall_fn)
                     futures.append(ff) # Keep it going
