@@ -117,7 +117,7 @@ class CChessModel:
     def get_pipes(self, num=1, api=None, need_reload=True):
         if self.api is None:
             self.api = CChessModelAPI(self.config, self)
-            self.api.start()
+            self.api.start(need_reload)
         return self.api.get_pipe(need_reload)
 
     def close_pipes(self):

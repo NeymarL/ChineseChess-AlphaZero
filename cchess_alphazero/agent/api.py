@@ -22,7 +22,8 @@ class CChessModelAPI:
         self.need_reload = True
         self.done = False
 
-    def start(self):
+    def start(self, need_reload=True):
+        self.need_reload = need_reload
         prediction_worker = Thread(target=self.predict_batch_worker, name="prediction_worker")
         prediction_worker.daemon = True
         prediction_worker.start()
@@ -34,11 +35,11 @@ class CChessModelAPI:
         return you
 
     def predict_batch_worker(self):
-        if self.config.internet.distributed:
+        if self.config.internet.distributed and self.need_reload:
             self.try_reload_model_from_internet()
         last_model_check_time = time()
         while not self.done:
-            if last_model_check_time + 600 < time():
+            if last_model_check_time + 600 < time() and self.need_reload:
                 self.try_reload_model()
                 last_model_check_time = time()
             ready = connection.wait(self.pipes, timeout=0.001)
