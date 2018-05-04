@@ -396,4 +396,13 @@ def will_check_or_catch(state, action):
                 logger.debug(f"Catch: mov = {mov}, chessman = {black_board[i][j]}")
                 return True
     return False
-    
+
+def has_attack_chessman(state):
+    '''
+    INIT_STATE = 'rkemsmekr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR'
+    '''
+    for chessman in state:
+        c = chessman.lower()
+        if c == 'r' or c == 'k' or c == 'p' or c == 'c':
+            return True
+    return False

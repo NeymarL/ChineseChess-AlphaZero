@@ -271,6 +271,11 @@ def self_play_buffer(config, pipes_bt, pipes_ng, idx, res_data) -> (tuple, list)
             value = 0
         else:
             game_over, value, final_move, check = senv.done(state, need_check=True)
+            if not game_over:
+                if not senv.has_attack_chessman(state):
+                    logger.info(f"双方无进攻子力，作和。state = {state}")
+                    game_over = True
+                    value = 0
 
     if final_move:
         history.append(final_move)
