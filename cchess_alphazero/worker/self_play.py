@@ -1,4 +1,5 @@
 import os
+import gc
 import numpy as np
 from time import sleep
 from collections import deque
@@ -167,6 +168,9 @@ class SelfPlayWorker:
             history.append(state)
 
         self.player.close()
+        self.player = None
+        del self.player
+        gc.collect()
         if turns % 2 == 1:  # balck turn
             value = -value
 
