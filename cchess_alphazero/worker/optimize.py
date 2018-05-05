@@ -25,6 +25,7 @@ from cchess_alphazero.lib.web_helper import http_request
 
 from keras.optimizers import SGD
 from keras.callbacks import TensorBoard
+from keras.utils import multi_gpu_model
 import keras.backend as K
 
 logger = getLogger(__name__)
@@ -108,7 +109,11 @@ class OptimizeWorker:
     def compile_model(self):
         self.opt = SGD(lr=0.01, momentum=self.config.trainer.momentum)
         losses = ['categorical_crossentropy', 'mean_squared_error'] # avoid overfit for supervised 
-        self.model.model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
+        if self.config.opts.use_multiple_gpus:
+            model = multi_gpu_model(self.model.model, cpu_merge=False, gpus=self.config.opts.gpu_num)
+        else:
+            model = self.model.model
+        model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
 
     def update_learning_rate(self, total_steps):
         # The deepmind paper says

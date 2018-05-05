@@ -77,11 +77,13 @@ class ResourceConfig:
 class Options:
     new = False
     light = True
-    device_list = '0,1'
+    device_list = '0'
     bg_style = 'CANVAS'
     piece_style = 'WOOD'
     random = 'none'
     log_move = False
+    use_multiple_gpus = False
+    gpu_num = 1
 
 class PlayWithHumanConfig:
     def __init__(self):
