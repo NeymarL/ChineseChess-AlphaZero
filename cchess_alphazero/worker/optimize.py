@@ -97,12 +97,20 @@ class OptimizeWorker:
         tc = self.config.trainer
         state_ary, policy_ary, value_ary = self.collect_all_loaded_data()
         tensorboard_cb = TensorBoard(log_dir="./logs", batch_size=tc.batch_size, histogram_freq=1)
-        self.model.model.fit(state_ary, [policy_ary, value_ary],
-                             batch_size=tc.batch_size,
-                             epochs=epochs,
-                             shuffle=True,
-                             validation_split=0.02,
-                             callbacks=[tensorboard_cb])
+        if self.config.opts.use_multiple_gpus:
+            self.mg_model.fit(state_ary, [policy_ary, value_ary],
+                                 batch_size=tc.batch_size,
+                                 epochs=epochs,
+                                 shuffle=True,
+                                 validation_split=0.02,
+                                 callbacks=[tensorboard_cb])
+        else:
+            self.model.model.fit(state_ary, [policy_ary, value_ary],
+                                 batch_size=tc.batch_size,
+                                 epochs=epochs,
+                                 shuffle=True,
+                                 validation_split=0.02,
+                                 callbacks=[tensorboard_cb])
         steps = (state_ary.shape[0] // tc.batch_size) * epochs
         return steps
 
@@ -110,10 +118,10 @@ class OptimizeWorker:
         self.opt = SGD(lr=0.01, momentum=self.config.trainer.momentum)
         losses = ['categorical_crossentropy', 'mean_squared_error'] # avoid overfit for supervised 
         if self.config.opts.use_multiple_gpus:
-            model = multi_gpu_model(self.model.model, gpus=self.config.opts.gpu_num)
+            self.mg_model = multi_gpu_model(self.model.model, gpus=self.config.opts.gpu_num)
+            self.mg_model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
         else:
-            model = self.model.model
-        model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
+            self.model.model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
 
     def update_learning_rate(self, total_steps):
         # The deepmind paper says
