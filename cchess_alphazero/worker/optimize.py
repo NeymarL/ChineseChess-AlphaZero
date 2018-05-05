@@ -110,7 +110,7 @@ class OptimizeWorker:
         self.opt = SGD(lr=0.01, momentum=self.config.trainer.momentum)
         losses = ['categorical_crossentropy', 'mean_squared_error'] # avoid overfit for supervised 
         if self.config.opts.use_multiple_gpus:
-            model = multi_gpu_model(self.model.model, cpu_merge=False, gpus=self.config.opts.gpu_num)
+            model = multi_gpu_model(self.model.model, gpus=self.config.opts.gpu_num)
         else:
             model = self.model.model
         model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
