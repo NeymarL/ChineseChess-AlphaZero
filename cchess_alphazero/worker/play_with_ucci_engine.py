@@ -1,4 +1,5 @@
 import os
+import gc
 import subprocess
 import numpy as np
 from time import sleep
@@ -97,7 +98,6 @@ class SelfPlayWorker:
 
         state = senv.INIT_STATE
         history = [state]
-        policys = [] 
         value = 0
         turns = 0       # even == red; odd == black
         game_over = False
@@ -113,7 +113,7 @@ class SelfPlayWorker:
                     for i in range(len(history) - 1):
                         if history[i] == state:
                             no_act.append(history[i + 1])
-                action, policy = self.player.action(state, turns, no_act)
+                action, _ = self.player.action(state, turns, no_act)
                 if action is None:
                     logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
                     value = -1
@@ -127,14 +127,7 @@ class SelfPlayWorker:
                     break
                 if turns % 2 == 1:
                     action = flip_move(action)
-                try:
-                    policy = self.build_policy(action, False)
-                except Exception as e:
-                    logger.error(f"Build policy error {e}, action = {action}, state = {state}, fen = {fen}")
-                    value = 0
-                    break
             history.append(action)
-            policys.append(policy)
             state = senv.step(state, action)
             turns += 1
             history.append(state)
@@ -146,9 +139,7 @@ class SelfPlayWorker:
                 game_over, value, final_move, check = senv.done(state, need_check=True)
 
         if final_move:
-            policy = self.build_policy(final_move, False)
             history.append(final_move)
-            policys.append(policy)
             state = senv.step(state, final_move)
             history.append(state)
             turns += 1
