@@ -162,10 +162,10 @@ class SelfPlayWorker:
             store = True
 
         if store:
-            data = []
+            data = [history[0]]
             for i in range(turns):
                 k = i * 2
-                data.append([history[k], value])
+                data.append([history[k + 1], value])
                 value = -value
             self.save_play_data(idx, data)
 
