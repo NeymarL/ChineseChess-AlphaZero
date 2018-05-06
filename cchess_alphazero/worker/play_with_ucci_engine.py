@@ -61,11 +61,11 @@ class SelfPlayWorker:
 
         idx = 1
         self.buffer = []
-        search_tree = defaultdict(VisitState)
 
         while True:
+            search_tree = defaultdict(VisitState)
             start_time = time()
-            value, turns, state, search_tree, store = self.start_game(idx, search_tree)
+            value, turns, state, store = self.start_game(idx, search_tree)
             end_time = time()
             if value != 1 and value != -1:
                 winner = 'Draw'
@@ -141,9 +141,9 @@ class SelfPlayWorker:
 
             if turns / 2 >= self.config.play.max_game_length:
                 game_over = True
-                value = senv.evaluate(state)
+                value = 0
             else:
-                game_over, value, final_move, check = senv.done(state)
+                game_over, value, final_move, check = senv.done(state, need_check=True)
 
         if final_move:
             policy = self.build_policy(final_move, False)
@@ -155,6 +155,9 @@ class SelfPlayWorker:
             value = -value
 
         self.player.close()
+        del search_tree
+        del self.player
+        gc.collect()
         if turns % 2 == 1:  # balck turn
             value = -value
 
@@ -177,7 +180,7 @@ class SelfPlayWorker:
 
         self.cur_pipes.append(pipes)
         self.remove_play_data()
-        return v, turns, state, search_tree, store
+        return v, turns, state, store
 
     def get_ucci_move(self, fen, time=3):
         p = subprocess.Popen(self.config.resource.eleeye_path,

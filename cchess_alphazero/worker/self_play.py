@@ -173,7 +173,7 @@ class SelfPlayWorker:
             history.append(state)
 
         self.player.close()
-        self.player = None
+        del search_tree
         del self.player
         gc.collect()
         if turns % 2 == 1:  # balck turn
