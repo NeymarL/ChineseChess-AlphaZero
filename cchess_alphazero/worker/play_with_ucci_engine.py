@@ -151,13 +151,15 @@ class SelfPlayWorker:
             policys.append(policy)
             state = senv.step(state, final_move)
             history.append(state)
+            turns += 1
+            value = -value
 
         self.player.close()
         if turns % 2 == 1:  # balck turn
             value = -value
 
         v = value
-        if v == 0 or turns <= 10:
+        if turns <= 10:
             if random() > 0.7:
                 store = True
             else:
@@ -169,7 +171,7 @@ class SelfPlayWorker:
             data = []
             for i in range(turns):
                 k = i * 2
-                data.append([history[k], policys[i], value])
+                data.append([history[k], value])
                 value = -value
             self.save_play_data(idx, data)
 
