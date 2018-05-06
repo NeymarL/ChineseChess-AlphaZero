@@ -25,7 +25,7 @@ from cchess_alphazero.lib.web_helper import http_request
 
 from keras.optimizers import SGD
 from keras.callbacks import TensorBoard
-from keras.utils import multi_gpu_model
+# from keras.utils import multi_gpu_model
 import keras.backend as K
 
 logger = getLogger(__name__)
