@@ -49,6 +49,7 @@ class PlayConfig:
         self.max_game_length = 200
         self.share_mtcs_info_in_self_play = False
         self.reset_mtcs_info_per_game = 5
+        self.td_alpha = 0.01
 
 
 class TrainerConfig:

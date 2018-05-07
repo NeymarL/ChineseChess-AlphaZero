@@ -48,6 +48,7 @@ class PlayConfig:
         self.enable_resign_rate = 0.1
         self.resign_threshold = -0.92
         self.min_resign_turn = 20
+        self.td_alpha = 0.01
 
 class TrainerConfig:
     def __init__(self):
