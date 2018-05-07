@@ -72,6 +72,8 @@ class EvaluateWorker:
         self.pipes_ng = self.m.list([model_ng.get_pipes(need_reload=False) for _ in range(self.config.play.max_processes)])
 
         need_evaluate = True
+        self.config.opts.evaluate = True
+        
         with ProcessPoolExecutor(max_workers=self.config.play.max_processes) as executor:
             while need_evaluate:
                 start_time = time()

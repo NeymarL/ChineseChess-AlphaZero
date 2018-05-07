@@ -81,6 +81,7 @@ class EvaluateWorker:
     def start(self):
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
         need_evaluate = True
+        self.config.opts.evaluate = True
 
         while need_evaluate:
             idx = 0 if random() > 0.5 else 1
