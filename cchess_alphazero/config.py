@@ -84,6 +84,7 @@ class Options:
     log_move = False
     use_multiple_gpus = False
     gpu_num = 1
+    use_td = False
 
 class PlayWithHumanConfig:
     def __init__(self):

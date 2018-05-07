@@ -30,6 +30,7 @@ def create_parser():
     parser.add_argument("--random", help="choose a style of randomness", choices=RANDOM_LIST, default="none")
     parser.add_argument("--distributed", help="whether upload/download file from remote server", action="store_true")
     parser.add_argument("--elo", help="whether to compute elo score", action="store_true")
+    parser.add_argument("--td", help="use TD search instead of MCTS", action="store_true")
     return parser
 
 def setup(config: Config, args):
@@ -68,6 +69,8 @@ def start():
         config.opts.use_multiple_gpus = True
         config.opts.gpu_num = len(gpus)
         logger.info(f"User GPU {config.opts.device_list}")
+
+    config.opts.use_td = args.td
 
     if args.cmd == 'self':
         if args.ucci:

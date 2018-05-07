@@ -17,7 +17,7 @@ import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.environment.chessboard import Chessboard
 from cchess_alphazero.environment.chessman import *
 from cchess_alphazero.agent.model import CChessModel
-from cchess_alphazero.agent.player import CChessPlayer, VisitState
+from cchess_alphazero.agent.td_player import CChessPlayer, VisitState
 from cchess_alphazero.agent.api import CChessModelAPI
 from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
