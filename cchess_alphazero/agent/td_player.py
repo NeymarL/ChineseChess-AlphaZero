@@ -188,7 +188,7 @@ class CChessPlayer:
 
     def TD_search(self, state, history=[], is_root_node=False) -> float:
         """
-        Monte Carlo Tree Search
+        Temporal Difference Search
         """
         while True:
             # logger.debug(f"start MCTS, state = {state}, history = {history}")
@@ -227,13 +227,22 @@ class CChessPlayer:
                 
                 action_state = self.tree[state].a[sel_action]
                 action_state.n += virtual_loss
+                action_state.q = (action_state.q * action_state.n - virtual_loss) / action_state.n
 
                 # logger.debug(f"apply virtual_loss = {virtual_loss}, as.n = {action_state.n}, w = {action_state.w}, q = {action_state.q}")
                 
                 history.append(sel_action)
-                state = senv.step(state, sel_action)
-                history.append(state)
+                next_state = senv.step(state, sel_action)
+                history.append(next_state)
                 # logger.debug(f"step action {sel_action}, next = {action_state.next}")
+                
+                if next_state in self.tree:
+                    next_state_value = -self.tree[next_state].v
+                    node.v = node.v + self.play_config.td_alpha * (next_state_value - node.v)
+                    action_state = node.a[sel_action]
+                    action_state.n += 1 - virtual_loss
+                    action_state.q = next_state_value
+                state = next_state
 
 
     def select_action_q_and_u(self, state, is_root_node) -> str:
@@ -325,7 +334,7 @@ class CChessPlayer:
         virtual_loss = self.config.play.virtual_loss
         # logger.debug(f"backup from {state}, v = {v}, history = {history}")
         next_state_value = -v
-        while len(history) > 0:
+        if len(history) > 0:
             action = history.pop()
             state = history.pop()
             with self.node_lock[state]:
