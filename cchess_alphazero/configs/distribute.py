@@ -67,8 +67,8 @@ class TrainerConfig:
         self.loss_weights = [1.0, 1.0]
         self.lr_schedules = [
             (0, 0.01),
-            (150000, 0.003),
-            (400000, 0.0001),
+            (400000, 0.001),
+            (600000, 0.0001),
         ]
         self.sl_game_step = 2000
 
