@@ -4,12 +4,12 @@ import numpy as np
 from collections import defaultdict
 from logging import getLogger
 from time import sleep, time
+from datetime import datetime
 
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.environment.chessboard import Chessboard
 from cchess_alphazero.environment.chessman import *
 from cchess_alphazero.agent.model import CChessModel
-from cchess_alphazero.agent.player import CChessPlayer, VisitState
 from cchess_alphazero.agent.api import CChessModelAPI
 from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
@@ -32,8 +32,10 @@ class ObSelfPlay:
         self.config = config
         self.env = CChessEnv()
         self.model = None
-        self.pipe = None
-        self.ai = None
+        self.mcts_pipe = None
+        self.td_pipe = None
+        self.mcts_ai = None
+        self.td_ai = None
         self.chessmans = None
 
     def load_model(self):
@@ -44,9 +46,18 @@ class ObSelfPlay:
     def start(self):
         self.env.reset()
         self.load_model()
-        self.pipe = self.model.get_pipes()
-        self.ai = CChessPlayer(self.config, search_tree=defaultdict(VisitState), pipes=self.pipe,
-                              enable_resign=True, debugging=False)
+        self.mcts_pipe = self.model.get_pipes()
+        self.td_pipe = self.model.get_pipes()
+
+        from cchess_alphazero.agent.player import CChessPlayer
+        from cchess_alphazero.agent.player import VisitState
+        self.mcts_ai = CChessPlayer(self.config, search_tree=defaultdict(VisitState), pipes=self.mcts_pipe,
+                              enable_resign=False, debugging=False)
+
+        from cchess_alphazero.agent.td_player import CChessPlayer
+        from cchess_alphazero.agent.td_player import VisitState
+        self.td_ai = CChessPlayer(self.config, search_tree=defaultdict(VisitState), pipes=self.td_pipe,
+                              enable_resign=False, debugging=False)
 
         labels = ActionLabelsRed
         labels_n = len(ActionLabelsRed)
@@ -57,12 +68,20 @@ class ObSelfPlay:
         while not self.env.board.is_end():
             no_act = None
             state = self.env.get_state()
-            if state in history[:-1]:
+            _, _, _, check = senv.done(state, need_check=True)
+            if not check and state in history[:-1]:
                 no_act = []
+                free_move = defaultdict(int)
                 for i in range(len(history) - 1):
                     if history[i] == state:
-                        no_act.append(history[i + 1])
-            action, _ = self.ai.action(state, self.env.num_halfmoves, no_act)
+                        # 如果走了下一步是将军或捉：禁止走那步
+                        if senv.will_check_or_catch(state, history[i+1]):
+                            no_act.append(history[i + 1])
+            # MCTS 执红，TD执黑
+            if self.env.num_halfmoves % 2 == 0: 
+                action, _ = self.mcts_ai.action(state, self.env.num_halfmoves, no_act)
+            else:
+                action, _ = self.td_ai.action(state, self.env.num_halfmoves, no_act)
             history.append(action)
             if action is None:
                 print("AI投降了!")
@@ -72,13 +91,18 @@ class ObSelfPlay:
                 action = flip_move(action)
             self.env.step(action)
             history.append(self.env.get_state())
-            print(f"AI选择移动 {move}")
+            print(f"{move}")
             self.env.board.print_to_cl()
-            sleep(1)
 
-        self.ai.close()
+        self.mcts_ai.close()
+        self.td_ai.close()
         print(f"胜者是 is {self.env.board.winner} !!!")
+        logger.info(f"胜者是 is {self.env.board.winner} !!! MCTS 执红，TD执黑")
         self.env.board.print_record()
+        game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
+        path = os.path.join(self.config.resource.play_record_dir, self.config.resource.play_record_filename_tmpl % game_id)
+        self.env.board.save_record(path)
+        logger.info(f"Save game record to {path}")
 
 class ObSelfPlayUCCI:
     def __init__(self, config: Config, ai_move_first=True):

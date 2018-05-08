@@ -229,6 +229,8 @@ class Chessboard(object):
                     else:
                         self.winner = Winner.black
                     break
+        if self.winner is None and self.turns >= 200:
+            self.winner = Winner.draw
         return self.winner != None
 
 

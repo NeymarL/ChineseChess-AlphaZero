@@ -164,7 +164,7 @@ class CChessPlayer:
             for iter in range(batch):
                 self.num_task = min(self.config.play.search_threads, all_tasks - self.config.play.search_threads * iter)
                 self.done_tasks += self.num_task
-                # logger.debug(f"iter = {iter}, num_task = {self.num_task}")
+                # logger.debug(f"TD search: iter = {iter}, num_task = {self.num_task}")
                 for i in range(self.num_task):
                     self.executor.submit(self.TD_search, state, [state], True)
                 self.all_done.acquire(True)
