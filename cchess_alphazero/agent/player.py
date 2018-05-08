@@ -286,7 +286,7 @@ class CChessPlayer:
             if is_root_node:
                 p_ = (1 - e) * p_ + e * np.random.dirichlet([dir_alpha])[0]
             # Q + U
-            score = action_state.q + c_puct * p_ * xx_ / (1 + action_state.n)
+            score = action_state.q + c_puct * p_ * xx_ / (1.0 + action_state.n)
             # if score > 0.1 and is_root_node:
             #     logger.debug(f"U+Q = {score:.2f}, move = {mov}, q = {action_state.q:.2f}")
             if action_state.q > (1 - 1e-7):
