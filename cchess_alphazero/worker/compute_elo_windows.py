@@ -175,9 +175,19 @@ class EvaluateWorker:
         return self.upload_eval_data(path, filename, red, black, value, score)
 
     def upload_eval_data(self, path, filename, red, black, result, score):
-        data = {'digest': self.data['unchecked']['digest'], 'red_digest': red, 'black_digest': black, 'result': result, 'score': score}
+        hash = self.fetch_digest(path)
+        data = {'digest': self.data['unchecked']['digest'], 'red_digest': red, 'black_digest': black, 
+                'result': result, 'score': score, 'hash': hash}
         response = upload_file(self.config.internet.upload_eval_url, path, filename, data, rm=False)
         return response
+
+    def fetch_digest(file_path):
+        if os.path.exists(file_path):
+            m = hashlib.sha256()
+            with open(file_path, "rb") as f:
+                m.update(f.read())
+            return m.hexdigest()
+        return None
 
 def recall_fn(future):
     global thr_free
