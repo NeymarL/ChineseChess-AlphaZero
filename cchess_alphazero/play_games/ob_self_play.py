@@ -77,8 +77,8 @@ class ObSelfPlay:
                         # 如果走了下一步是将军或捉：禁止走那步
                         if senv.will_check_or_catch(state, history[i+1]):
                             no_act.append(history[i + 1])
-            # MCTS 执红，TD执黑
-            if self.env.num_halfmoves % 2 == 0: 
+            # TD 执红，MCTS执黑
+            if self.env.num_halfmoves % 2 == 1: 
                 action, _ = self.mcts_ai.action(state, self.env.num_halfmoves, no_act)
             else:
                 action, _ = self.td_ai.action(state, self.env.num_halfmoves, no_act)
@@ -97,7 +97,7 @@ class ObSelfPlay:
         self.mcts_ai.close()
         self.td_ai.close()
         print(f"胜者是 is {self.env.board.winner} !!!")
-        logger.info(f"胜者是 is {self.env.board.winner} !!! MCTS 执红，TD执黑")
+        logger.info(f"胜者是 is {self.env.board.winner} !!! TD 执红，MCTS执黑")
         self.env.board.print_record()
         game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
         path = os.path.join(self.config.resource.play_record_dir, self.config.resource.play_record_filename_tmpl % game_id)
