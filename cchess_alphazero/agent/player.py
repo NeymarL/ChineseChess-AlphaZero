@@ -419,7 +419,7 @@ class CChessPlayer:
         
 
     def apply_temperature(self, policy, turn) -> np.ndarray:
-        if turn < 20 and self.play_config.tau_decay_rate != 0:
+        if turn < 30 and self.play_config.tau_decay_rate != 0:
             tau = tau = np.power(self.play_config.tau_decay_rate, turn + 1)
         else:
             tau = 0
