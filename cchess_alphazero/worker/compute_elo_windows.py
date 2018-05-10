@@ -13,7 +13,7 @@ from time import time
 from collections import defaultdict
 from threading import Lock
 from time import sleep
-from random import random
+from random import random, randint
 
 import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.agent.model import CChessModel
@@ -203,6 +203,11 @@ def recall_fn(future):
     job_done.release()
 
 def self_play_buffer(config, pipes_bt, pipes_ng, idx, res_data) -> (tuple, list):
+    sleep(random())
+    playouts = randint(8, 12) * 100
+    config.play.simulation_num_per_move = playouts
+    logger.info(f"Set playouts = {config.play.simulation_num_per_move}")
+
     pipe1 = pipes_bt.pop() # borrow
     pipe2 = pipes_ng.pop()
 

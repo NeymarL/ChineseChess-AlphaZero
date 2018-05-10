@@ -5,7 +5,7 @@ class EvaluateConfig:
         self.simulation_num_per_move = 800
         self.thinking_loop = 1
         self.c_puct = 1 # lower  = prefer mean action value
-        self.tau_decay_rate = 0
+        self.tau_decay_rate = 0.5
         self.noise_eps = 0.1
         self.max_game_length = 200
         self.max_processes = 10

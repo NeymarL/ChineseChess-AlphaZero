@@ -11,7 +11,7 @@ from threading import Thread
 from time import time, sleep
 from collections import defaultdict
 from multiprocessing import Lock
-from random import random
+from random import random, randint
 import numpy as np
 import subprocess
 
@@ -129,6 +129,11 @@ class EvaluateWorker:
 
 
     def start_game(self, idx):
+        sleep(random())
+        playouts = randint(8, 12) * 100
+        self.config.play.simulation_num_per_move = playouts
+        logger.info(f"Set playouts = {self.config.play.simulation_num_per_move}")
+
         pipe1 = self.pipes_bt.pop()
         pipe2 = self.pipes_ng.pop()
         search_tree1 = defaultdict(VisitState)
