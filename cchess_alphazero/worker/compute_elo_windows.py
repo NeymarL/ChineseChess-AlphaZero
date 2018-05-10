@@ -179,6 +179,7 @@ class EvaluateWorker:
         hash = self.fetch_digest(path)
         data = {'digest': self.data['unchecked']['digest'], 'red_digest': red, 'black_digest': black, 
                 'result': result, 'score': score, 'hash': hash}
+        logger.debug(f"data = {data}")
         response = upload_file(self.config.internet.upload_eval_url, path, filename, data, rm=False)
         return response
 
