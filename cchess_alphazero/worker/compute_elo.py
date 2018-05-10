@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import hashlib
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor, wait
 from datetime import datetime
