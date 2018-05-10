@@ -95,8 +95,10 @@ def start():
         if args.elo == False:
             from cchess_alphazero.worker import evaluator
         else:
-            mp.set_start_method('spawn')
-            import cchess_alphazero.worker.compute_elo_windows as evaluator
+            if mp.get_start_method() == 'spawn':
+                import cchess_alphazero.worker.compute_elo_windows as evaluator
+            else:
+                from cchess_alphazero.worker.compute_elo import evaluator
         config.eval.update_play_config(config.play)
         evaluator.start(config)
     elif args.cmd == 'sl':
