@@ -55,7 +55,7 @@ class TrainerConfig:
     def __init__(self):
         self.min_games_to_begin_learn = 5000 
         self.min_data_size_to_learn = 0
-        self.cleaning_processes = 8
+        self.cleaning_processes = 20
         self.vram_frac = 1.0
         self.batch_size = 512
         self.epoch_to_checkpoint = 2

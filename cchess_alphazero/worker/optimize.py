@@ -115,8 +115,8 @@ class OptimizeWorker:
         return steps
 
     def compile_model(self):
-        self.opt = SGD(lr=0.01, momentum=self.config.trainer.momentum)
-        losses = ['categorical_crossentropy', 'mean_squared_error'] # avoid overfit for supervised 
+        self.opt = SGD(lr=0.002, momentum=self.config.trainer.momentum)
+        losses = ['categorical_crossentropy', 'mean_squared_error']
         if self.config.opts.use_multiple_gpus:
             self.mg_model = multi_gpu_model(self.model.model, gpus=self.config.opts.gpu_num)
             self.mg_model.compile(optimizer=self.opt, loss=losses, loss_weights=self.config.trainer.loss_weights)
@@ -136,21 +136,25 @@ class OptimizeWorker:
 
     def fill_queue(self):
         futures = deque()
+        n = len(self.filenames)
         with ProcessPoolExecutor(max_workers=self.config.trainer.cleaning_processes) as executor:
             for _ in range(self.config.trainer.cleaning_processes):
                 if len(self.filenames) == 0:
                     break
                 filename = self.filenames.pop()
-                logger.debug("loading data from %s" % (filename))
+                # logger.debug("loading data from %s" % (filename))
                 futures.append(executor.submit(load_data_from_file, filename))
             while futures and len(self.dataset[0]) < self.config.trainer.dataset_size: #fill tuples
                 _tuple = futures.popleft().result()
                 if _tuple is not None:
                     for x, y in zip(self.dataset, _tuple):
                         x.extend(y)
-                if len(self.filenames) > 0:
+                m = len(self.filenames)
+                if m > 0:
+                    if (n - m) % 1000 == 0:
+                        logger.info(f"Reading {n - m} files")
                     filename = self.filenames.pop()
-                    logger.debug("loading data from %s" % (filename))
+                    # logger.debug("loading data from %s" % (filename))
                     futures.append(executor.submit(load_data_from_file, filename))
 
     def collect_all_loaded_data(self):
