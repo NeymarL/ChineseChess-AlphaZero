@@ -58,7 +58,7 @@ class TrainerConfig:
         self.cleaning_processes = 20
         self.vram_frac = 1.0
         self.batch_size = 1024
-        self.epoch_to_checkpoint = 2
+        self.epoch_to_checkpoint = 1
         self.dataset_size = 90000000
         self.start_total_steps = 0
         self.save_model_steps = 25
@@ -67,7 +67,7 @@ class TrainerConfig:
         self.loss_weights = [1.0, 1.0]
         self.lr_schedules = [
             (0, 0.01),
-            (400000, 0.001),
+            (200000, 0.003),
             (600000, 0.0001),
         ]
         self.sl_game_step = 2000
