@@ -118,7 +118,7 @@ class OptimizeWorker:
         return steps
 
     def compile_model(self):
-        self.opt = SGD(lr=0.002, momentum=self.config.trainer.momentum)
+        self.opt = SGD(lr=0.01, momentum=self.config.trainer.momentum)
         losses = ['categorical_crossentropy', 'mean_squared_error']
         if self.config.opts.use_multiple_gpus:
             self.mg_model = multi_gpu_model(self.model.model, gpus=self.config.opts.gpu_num)
