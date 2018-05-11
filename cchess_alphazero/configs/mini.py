@@ -69,7 +69,7 @@ class TrainerConfig:
             (300000, 0.0001),
         ]
         self.sl_game_step = 10000
-        self.load_step = 5
+        self.load_step = 6
 
 class ModelConfig:
     def __init__(self):

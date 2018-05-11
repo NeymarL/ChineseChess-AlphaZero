@@ -59,9 +59,9 @@ class OptimizeWorker:
 
         while True:
             files = get_game_data_filenames(self.config.resource)
-            offset = self.config.trainer.load_step
-            if (len(files) < self.config.trainer.load_step \
-              or ((last_file is not None) and files.index(last_file) + offset > len(files))):
+            offset = self.config.trainer.min_games_to_begin_learn
+            if (len(files) < self.config.trainer.min_games_to_begin_learn \
+              or ((last_file is not None) and files.index(last_file) + 1 + offset > len(files))):
                 # if last_file is not None:
                 #     logger.info('Waiting for enough data 300s, ' + str((len(files) - files.index(last_file)) * self.config.play_data.nb_game_in_file) \
                 #             +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
@@ -73,12 +73,15 @@ class OptimizeWorker:
                     self.save_current_model(send=True)
                 break
             else:
-                if last_file is not None and len(files) > self.config.trainer.load_step:
+                if last_file is not None:
                     idx = files.index(last_file) + 1
-                    files = files[idx:idx + self.config.trainer.load_step]
+                    if len(files) - idx > self.config.trainer.load_step:
+                        files = files[idx:idx + self.config.trainer.load_step]
+                    else:
+                        files = files[idx:]
                 elif len(files) > self.config.trainer.load_step:
-                    files = files[0:offset]
-                last_file = files[self.config.trainer.load_step - 1]
+                    files = files[0:self.config.trainer.load_step]
+                last_file = files[-1]
                 logger.info(f"Last file = {last_file}")
                 self.filenames = deque(files)
                 logger.debug(f"Start training {len(self.filenames)} files")
