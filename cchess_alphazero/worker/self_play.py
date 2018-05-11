@@ -4,7 +4,7 @@ import numpy as np
 from time import sleep
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from logging import getLogger
 from multiprocessing import Manager
 from time import time, sleep
@@ -207,7 +207,9 @@ class SelfPlayWorker:
             return
 
         rc = self.config.resource
-        game_id = datetime.now().strftime("%Y%m%d-%H%M%S.%f")
+        utc_dt = datetime.utcnow().replace(tzinfo=timezone.utc)
+        bj_dt = utc_dt.astimezone(timezone(timedelta(hours=8)))
+        game_id = bj_dt.strftime("%Y%m%d-%H%M%S.%f")
         filename = rc.play_data_filename_tmpl % game_id
         path = os.path.join(rc.play_data_dir, filename)
         logger.info(f"Process {self.pid} save play data to {path}")
