@@ -55,7 +55,7 @@ class TrainerConfig:
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 1
         self.vram_frac = 1.0
-        self.batch_size = 20 
+        self.batch_size = 2 
         self.epoch_to_checkpoint = 1
         self.dataset_size = 100000
         self.start_total_steps = 0
@@ -69,6 +69,7 @@ class TrainerConfig:
             (300000, 0.0001),
         ]
         self.sl_game_step = 10000
+        self.load_step = 5
 
 class ModelConfig:
     def __init__(self):

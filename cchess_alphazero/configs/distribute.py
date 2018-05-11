@@ -67,10 +67,11 @@ class TrainerConfig:
         self.loss_weights = [1.0, 1.0]
         self.lr_schedules = [
             (0, 0.01),
-            (400000, 0.001),
+            (200000, 0.002),
             (600000, 0.0001),
         ]
         self.sl_game_step = 2000
+        self.load_step = 25000
 
 class ModelConfig:
     def __init__(self):

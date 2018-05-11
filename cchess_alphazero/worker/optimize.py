@@ -59,22 +59,26 @@ class OptimizeWorker:
 
         while True:
             files = get_game_data_filenames(self.config.resource)
-            offset = self.config.trainer.min_games_to_begin_learn // self.config.play_data.nb_game_in_file
-            if (len(files) * self.config.play_data.nb_game_in_file < self.config.trainer.min_games_to_begin_learn \
+            offset = self.config.trainer.load_step
+            if (len(files) < self.config.trainer.load_step \
               or ((last_file is not None) and files.index(last_file) + offset > len(files))):
+                # if last_file is not None:
+                #     logger.info('Waiting for enough data 300s, ' + str((len(files) - files.index(last_file)) * self.config.play_data.nb_game_in_file) \
+                #             +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
+                # else:
+                #     logger.info('Waiting for enough data 300s, ' + str(len(files) * self.config.play_data.nb_game_in_file) \
+                #             +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
+                # time.sleep(300)
                 if last_file is not None:
-                    logger.info('Waiting for enough data 300s, ' + str((len(files) - files.index(last_file)) * self.config.play_data.nb_game_in_file) \
-                            +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
-                else:
-                    logger.info('Waiting for enough data 300s, ' + str(len(files) * self.config.play_data.nb_game_in_file) \
-                            +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
-                time.sleep(300)
-                continue
+                    self.save_current_model(send=True)
+                break
             else:
-                bef_files = files
-                if last_file is not None and len(files) > offset:
-                    files = files[-offset:]
-                last_file = files[-1]
+                if last_file is not None and len(files) > self.config.trainer.load_step:
+                    idx = files.index(last_file) + 1
+                    files = files[idx:idx + self.config.trainer.load_step]
+                elif len(files) > self.config.trainer.load_step:
+                    files = files[0:offset]
+                last_file = files[self.config.trainer.load_step - 1]
                 logger.info(f"Last file = {last_file}")
                 self.filenames = deque(files)
                 logger.debug(f"Start training {len(self.filenames)} files")
@@ -83,15 +87,14 @@ class OptimizeWorker:
                 if len(self.dataset[0]) > self.config.trainer.batch_size:
                     steps = self.train_epoch(self.config.trainer.epoch_to_checkpoint)
                     total_steps += steps
-                    self.save_current_model()
+                    self.save_current_model(send=False)
                     self.update_learning_rate(total_steps)
                     self.count += 1
                     a, b, c = self.dataset
                     a.clear()
                     b.clear()
                     c.clear()
-                    self.remove_play_data()
-                    break
+                    # self.remove_play_data()
 
     def train_epoch(self, epochs):
         tc = self.config.trainer
@@ -172,16 +175,14 @@ class OptimizeWorker:
             save_as_best_model(model)
         return model
 
-    def save_current_model(self):
+    def save_current_model(self, send=False):
         logger.info("Save as ng model")
-        # save_as_best_model(self.model)
-        save_as_next_generation_model(self.model)
-        # -------------- debug --------------
-        if self.count % 1 == 0:
-            self.eva = True
+        if not send:
+            # save_as_best_model(self.model)
+            pass
         else:
-            self.eva = False
-        if self.config.internet.distributed:
+            save_as_next_generation_model(self.model)
+        if self.config.internet.distributed and send:
             # send_worker = Thread(target=self.send_model, name="send_worker")
             # send_worker.daemon = True
             # send_worker.start()
@@ -237,11 +238,9 @@ class OptimizeWorker:
 
     def remove_play_data(self):
         files = get_game_data_filenames(self.config.resource)
-        if len(files) < self.config.play_data.max_file_num:
-            return
         backup_folder = os.path.join(self.config.resource.data_dir, 'backup');
         try:
-            for i in range(len(files) - self.config.play_data.max_file_num):
+            for i in range(len(files)):
                 # os.remove(files[i])
                 shutil.move(files[i], backup_folder)
         except:
