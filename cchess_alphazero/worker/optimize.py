@@ -1,5 +1,6 @@
 import os
 import time
+import gc
 import subprocess
 import shutil
 import numpy as np
@@ -97,7 +98,10 @@ class OptimizeWorker:
                     a.clear()
                     b.clear()
                     c.clear()
-                    # self.remove_play_data()
+                    del self.dataset, a, b, c
+                    gc.collect()
+                    self.dataset = deque(), deque(), deque()
+                    self.backup_play_data()
 
     def train_epoch(self, epochs):
         tc = self.config.trainer
@@ -239,9 +243,11 @@ class OptimizeWorker:
         data = {'digest': self.model.digest, 'elo': 0}
         http_request(self.config.internet.add_model_url, post=True, data=data)
 
-    def remove_play_data(self):
+    def backup_play_data(self):
         files = get_game_data_filenames(self.config.resource)
-        backup_folder = os.path.join(self.config.resource.data_dir, 'backup');
+        backup_folder = os.path.join(self.config.resource.data_dir, 'trained');
+        if not os.path.exists(backup_folder):
+            os.makedirs(backup_folder)
         try:
             for i in range(len(files)):
                 # os.remove(files[i])
