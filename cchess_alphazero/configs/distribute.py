@@ -57,7 +57,7 @@ class TrainerConfig:
         self.min_data_size_to_learn = 0
         self.cleaning_processes = 20
         self.vram_frac = 1.0
-        self.batch_size = 512
+        self.batch_size = 1024
         self.epoch_to_checkpoint = 2
         self.dataset_size = 90000000
         self.start_total_steps = 0
