@@ -16,6 +16,8 @@ import cchess_alphazero.worker.compute_elo as evaluator
 def setup_parameters(config):
     num_cores = mp.cpu_count()
     max_processes = 2
+    if len(sys.argv) > 1:
+        max_processes = int(sys.argv[1])
     search_threads = 20
     print(f"max_processes = {max_processes}, search_threads = {search_threads}")
     config.play.max_processes = max_processes
