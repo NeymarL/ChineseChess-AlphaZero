@@ -185,8 +185,7 @@ class OptimizeWorker:
     def save_current_model(self, send=False):
         logger.info("Save as ng model")
         if not send:
-            # save_as_best_model(self.model)
-            pass
+            save_as_best_model(self.model)
         else:
             save_as_next_generation_model(self.model)
         if self.config.internet.distributed and send:
