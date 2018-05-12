@@ -250,7 +250,7 @@ class OptimizeWorker:
             os.makedirs(backup_folder)
         for i in range(len(files)):
             try:
-                    shutil.move(files[i], backup_folder)
+                shutil.move(files[i], backup_folder)
             except Exception as e:
                 logger.error(f"Backup error : {e}")
         logger.info(f"backup {len(files)} files")
