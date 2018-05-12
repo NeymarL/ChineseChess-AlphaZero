@@ -88,6 +88,7 @@ class OptimizeWorker:
                 logger.debug(f"Start training {len(self.filenames)} files")
                 shuffle(self.filenames)
                 self.fill_queue()
+                self.update_learning_rate(total_steps)
                 if len(self.dataset[0]) > self.config.trainer.batch_size:
                     steps = self.train_epoch(self.config.trainer.epoch_to_checkpoint)
                     total_steps += steps
@@ -125,7 +126,7 @@ class OptimizeWorker:
         return steps
 
     def compile_model(self):
-        self.opt = SGD(lr=0.003, momentum=self.config.trainer.momentum)
+        self.opt = SGD(lr=0.02, momentum=self.config.trainer.momentum)
         losses = ['categorical_crossentropy', 'mean_squared_error']
         if self.config.opts.use_multiple_gpus:
             self.mg_model = multi_gpu_model(self.model.model, gpus=self.config.opts.gpu_num)
