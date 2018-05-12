@@ -74,7 +74,7 @@ class OptimizeWorker:
                     self.save_current_model(send=True)
                 break
             else:
-                if last_file is not None:
+                if last_file is not None and last_file in files:
                     idx = files.index(last_file) + 1
                     if len(files) - idx > self.config.trainer.load_step:
                         files = files[idx:idx + self.config.trainer.load_step]
