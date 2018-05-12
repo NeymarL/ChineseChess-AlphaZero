@@ -271,11 +271,11 @@ class PlayWithHuman:
     def draw_evaluation(self, screen, widget_background):
         title_label = 'AlphaZero信息'
         self.draw_label(screen, widget_background, title_label, 300, 16, 10)
-        info_label = f'MCTS搜索次数：{self.config.play.simulation_num_per_move}'
+        info_label = f'TD搜索次数：{self.config.play.simulation_num_per_move}'
         self.draw_label(screen, widget_background, info_label, 335, 14, 10)
         eval_label = f"当前局势评估: {self.nn_value:.3f}"
         self.draw_label(screen, widget_background, eval_label, 360, 14, 10)
-        label = f"MCTS搜索结果:"
+        label = f"TD搜索结果:"
         self.draw_label(screen, widget_background, label, 395, 14, 10)
         label = f"着法 访问计数 动作价值 先验概率"
         self.draw_label(screen, widget_background, label, 415, 12, 10)
