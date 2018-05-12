@@ -10,7 +10,8 @@ logger = getLogger(__name__)
 
 def get_game_data_filenames(rc: ResourceConfig):
     pattern = os.path.join(rc.play_data_dir, rc.play_data_filename_tmpl % "*")
-    files = list(sorted(glob(pattern), key=get_key))
+    # files = list(sorted(glob(pattern), key=get_key))
+    files = list(sorted(glob(pattern)))
     return files
 
 def write_game_data_to_file(path, data):
