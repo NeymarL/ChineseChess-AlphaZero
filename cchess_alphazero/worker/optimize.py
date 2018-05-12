@@ -260,6 +260,7 @@ def load_data_from_file(filename):
         data = read_game_data_from_file(filename)
     except Exception as e:
         logger.error(f"Error when loading data {e}")
+        os.remove(filename)
         return None
     if data is None:
         return None
