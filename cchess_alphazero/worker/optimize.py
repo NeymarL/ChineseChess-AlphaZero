@@ -248,12 +248,11 @@ class OptimizeWorker:
         backup_folder = os.path.join(self.config.resource.data_dir, 'trained');
         if not os.path.exists(backup_folder):
             os.makedirs(backup_folder)
-        try:
-            for i in range(len(files)):
-                # os.remove(files[i])
-                shutil.move(files[i], backup_folder)
-        except:
-            pass
+        for i in range(len(files)):
+            try:
+                    shutil.move(files[i], backup_folder)
+            except Exception as e:
+                logger.error(f"Backup error : {e}")
         logger.info(f"backup {len(files)} files")
 
 def load_data_from_file(filename):
