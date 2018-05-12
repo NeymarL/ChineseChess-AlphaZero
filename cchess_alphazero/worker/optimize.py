@@ -84,6 +84,7 @@ class OptimizeWorker:
                     files = files[0:self.config.trainer.load_step]
                 last_file = files[-1]
                 logger.info(f"Last file = {last_file}")
+                logger.debug(f"files = {files[0:-1:2000]}")
                 self.filenames = deque(files)
                 logger.debug(f"Start training {len(self.filenames)} files")
                 shuffle(self.filenames)
