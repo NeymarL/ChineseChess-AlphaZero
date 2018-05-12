@@ -244,7 +244,7 @@ class OptimizeWorker:
         http_request(self.config.internet.add_model_url, post=True, data=data)
 
     def backup_play_data(self):
-        files = get_game_data_filenames(self.config.resource)
+        files = self.filenames
         backup_folder = os.path.join(self.config.resource.data_dir, 'trained');
         if not os.path.exists(backup_folder):
             os.makedirs(backup_folder)
