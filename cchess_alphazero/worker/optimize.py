@@ -101,7 +101,7 @@ class OptimizeWorker:
                     del self.dataset, a, b, c
                     gc.collect()
                     self.dataset = deque(), deque(), deque()
-                    self.backup_play_data()
+                    self.backup_play_data(files)
 
     def train_epoch(self, epochs):
         tc = self.config.trainer
@@ -242,8 +242,7 @@ class OptimizeWorker:
         data = {'digest': self.model.digest, 'elo': 0}
         http_request(self.config.internet.add_model_url, post=True, data=data)
 
-    def backup_play_data(self):
-        files = self.filenames
+    def backup_play_data(self, files):
         backup_folder = os.path.join(self.config.resource.data_dir, 'trained');
         if not os.path.exists(backup_folder):
             os.makedirs(backup_folder)
