@@ -295,9 +295,11 @@ def plot_model():
     from keras.utils import plot_model
     from cchess_alphazero.agent.model import CChessModel
     from cchess_alphazero.config import Config
+    from cchess_alphazero.lib.model_helper import save_as_best_model
     config = Config('distribute')
     model = CChessModel(config)
     model.build()
+    save_as_best_model(model)
     plot_model(model.model, to_file='model.png', show_shapes=True, show_layer_names=True)
 
 def test_check_and_catch():
@@ -307,5 +309,5 @@ def test_check_and_catch():
     print(senv.will_check_or_catch(state, action))
 
 if __name__ == "__main__":
-    test_check_and_catch()
+    plot_model()
     

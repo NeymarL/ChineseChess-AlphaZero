@@ -155,6 +155,42 @@ def state_to_planes(state):
                 j += int(letter)
     return planes
 
+def state_history_to_planes(state, history):
+    '''
+    e.g.
+        rkemsmekr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR
+        rkemsmek1/8r/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR
+    '''
+    planes = np.zeros(shape=(28, 10, 9), dtype=np.float32)
+    rows = state.split('/')
+    # 0 ~ 14 for current state
+    for i in range(len(rows)):
+        row = rows[i]
+        j = 0
+        for letter in row:
+            if letter.isalpha():
+                # 0 ~ 7 : upper, 7 ~ 14: lower
+                planes[Fen_2_Idx[letter] + int(letter.islower()) * 7][i][j] = 1
+                j += 1
+            else:
+                j += int(letter)
+    # 14 ~ 28 for last state
+    # history = [...,last state, red action, black state, black action, current state]
+    if history and len(history) >= 5:
+        last_state = history[-5]
+        rows = last_state.split('/')
+        for i in range(len(rows)):
+            row = rows[i]
+            j = 0
+            for letter in row:
+                if letter.isalpha():
+                    # 0 ~ 7 : upper, 7 ~ 14: lower
+                    planes[Fen_2_Idx[letter] + int(letter.islower()) * 7 + 14][i][j] = 1
+                    j += 1
+                else:
+                    j += int(letter)
+    return planes
+
 def board_to_state(board):
     c = 0
     fen = ''

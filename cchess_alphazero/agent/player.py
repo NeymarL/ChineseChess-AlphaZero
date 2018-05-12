@@ -306,7 +306,10 @@ class CChessPlayer:
         '''
         Evaluate the state, return its policy and value computed by neural network
         '''
-        state_planes = senv.state_to_planes(state)
+        if self.config.opts.has_history:
+            state_planes = senv.state_history_to_planes(state, history)
+        else:
+            state_planes = senv.state_to_planes(state)
         with self.q_lock:
             self.buffer_planes.append(state_planes)
             self.buffer_history.append(history)

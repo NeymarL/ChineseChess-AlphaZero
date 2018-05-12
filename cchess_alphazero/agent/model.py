@@ -31,7 +31,7 @@ class CChessModel:
 
     def build(self):
         mc = self.config.model
-        in_x = x = Input((14, 10, 9)) # 14 x 10 x 9
+        in_x = x = Input((28, 10, 9)) # (2 x 14) x 10 x 9
 
         # (batch, channels, height, width)
         x = Conv2D(filters=mc.cnn_filter_num, kernel_size=mc.cnn_first_filter_size, padding="same",
@@ -46,7 +46,7 @@ class CChessModel:
         res_out = x
 
         # for policy output
-        x = Conv2D(filters=2, kernel_size=1, data_format="channels_first", use_bias=False, 
+        x = Conv2D(filters=32, kernel_size=1, data_format="channels_first", use_bias=False, 
                     kernel_regularizer=l2(mc.l2_reg), name="policy_conv-1-2")(res_out)
         x = BatchNormalization(axis=1, name="policy_batchnorm")(x)
         x = Activation("relu", name="policy_relu")(x)

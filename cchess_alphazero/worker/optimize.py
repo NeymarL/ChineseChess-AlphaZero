@@ -155,7 +155,7 @@ class OptimizeWorker:
                     break
                 filename = self.filenames.pop()
                 # logger.debug("loading data from %s" % (filename))
-                futures.append(executor.submit(load_data_from_file, filename))
+                futures.append(executor.submit(load_data_from_file, filename, self.config.opts.has_history))
             while futures and len(self.dataset[0]) < self.config.trainer.dataset_size: #fill tuples
                 _tuple = futures.popleft().result()
                 if _tuple is not None:
@@ -167,7 +167,7 @@ class OptimizeWorker:
                         logger.info(f"Reading {n - m} files")
                     filename = self.filenames.pop()
                     # logger.debug("loading data from %s" % (filename))
-                    futures.append(executor.submit(load_data_from_file, filename))
+                    futures.append(executor.submit(load_data_from_file, filename, self.config.opts.has_history))
 
     def collect_all_loaded_data(self):
         state_ary, policy_ary, value_ary = self.dataset
@@ -255,7 +255,7 @@ class OptimizeWorker:
                 logger.error(f"Backup error : {e}")
         logger.info(f"backup {len(files)} files")
 
-def load_data_from_file(filename):
+def load_data_from_file(filename, use_history=False):
     try:
         data = read_game_data_from_file(filename)
     except Exception as e:
@@ -264,14 +264,18 @@ def load_data_from_file(filename):
         return None
     if data is None:
         return None
-    return expanding_data(data)
+    return expanding_data(data, use_history)
 
-def expanding_data(data):
+def expanding_data(data, use_history=False):
     state = data[0]
     real_data = []
     action = None
     policy = None
     value = None
+    if use_history:
+        history = [state]
+    else:
+        history = None
     for item in data[1:]:
         action = item[0]
         value = item[1]
@@ -282,22 +286,30 @@ def expanding_data(data):
             return None
         real_data.append([state, policy, value])
         state = senv.step(state, action)
+        if use_history:
+            history.append(action)
+            history.append(state)
         
-    return convert_to_trainging_data(real_data)
+    return convert_to_trainging_data(real_data, history)
 
 
 def convert_to_trainging_data(data):
     state_list = []
     policy_list = []
     value_list = []
+    i = 0
 
     for state, policy, value in data:
-        state_planes = senv.state_to_planes(state)
+        if history is None:
+            state_planes = senv.state_to_planes(state)
+        else:
+            state_planes = senv.state_history_to_planes(state, history[0:i * 2 + 1])
         sl_value = value
 
         state_list.append(state_planes)
         policy_list.append(policy)
         value_list.append(sl_value)
+        i += 1
 
     return np.asarray(state_list, dtype=np.float32), \
            np.asarray(policy_list, dtype=np.float32), \
