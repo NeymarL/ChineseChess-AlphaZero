@@ -252,6 +252,7 @@ class OptimizeWorker:
                 shutil.move(files[i], backup_folder)
         except:
             pass
+        logger.info(f"backup {len(files)} files")
 
 def load_data_from_file(filename):
     try:
