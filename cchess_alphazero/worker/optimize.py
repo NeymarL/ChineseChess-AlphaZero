@@ -62,7 +62,7 @@ class OptimizeWorker:
             files = get_game_data_filenames(self.config.resource)
             offset = self.config.trainer.min_games_to_begin_learn
             if (len(files) < self.config.trainer.min_games_to_begin_learn \
-              or ((last_file is not None) and files.index(last_file) + 1 + offset > len(files))):
+              or ((last_file is not None and last_file in files) and files.index(last_file) + 1 + offset > len(files))):
                 # if last_file is not None:
                 #     logger.info('Waiting for enough data 300s, ' + str((len(files) - files.index(last_file)) * self.config.play_data.nb_game_in_file) \
                 #             +' vs '+ str(self.config.trainer.min_games_to_begin_learn)+' games')
