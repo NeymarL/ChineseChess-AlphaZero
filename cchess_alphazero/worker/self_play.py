@@ -29,7 +29,7 @@ logger = getLogger(__name__)
 def load_model(config):
     model = CChessModel(config)
     if config.internet.distributed or config.opts.new or not load_best_model_weight(model):
-        model.build()
+        # model.build()
         # save_as_best_model(model)
     return model
 
