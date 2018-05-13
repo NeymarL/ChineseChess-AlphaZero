@@ -43,8 +43,8 @@ def start(config: Config):
         base_weight_path = os.path.join(config.resource.next_generation_model_dir, data['base']['digest'] + '.h5')
         ng_weight_path = os.path.join(config.resource.next_generation_model_dir, data['unchecked']['digest'] + '.h5')
         # load model
-        model_base = load_model(config, base_weight_path, data['base']['digest'])
-        model_ng = load_model(config, ng_weight_path, data['unchecked']['digest'])
+        model_base, hist_base = load_model(config, base_weight_path, data['base']['digest'])
+        model_ng, hist_ng = load_model(config, ng_weight_path, data['unchecked']['digest'])
         # make pipes
         model_base_pipes = m.list([model_base.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
         model_ng_pipes = m.list([model_ng.get_pipes(need_reload=False) for _ in range(config.play.max_processes)])
@@ -54,7 +54,7 @@ def start(config: Config):
         with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
             futures = []
             for i in range(config.play.max_processes):
-                eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, pid=i, data=data)
+                eval_worker = EvaluateWorker(config, model_base_pipes, model_ng_pipes, i, data, hist_base, hist_ng)
                 futures.append(executor.submit(eval_worker.start))
                 sleep(1)
         
@@ -70,7 +70,7 @@ def start(config: Config):
     logger.info(f"没有待评测权重，请稍等或继续跑谱")
 
 class EvaluateWorker:
-    def __init__(self, config: Config, pipes1=None, pipes2=None, pid=None, data=None):
+    def __init__(self, config: Config, pipes1=None, pipes2=None, pid=None, data=None, hist_base=True, hist_ng=True):
         self.config = config
         self.player_bt = None
         self.player_ng = None
@@ -78,6 +78,8 @@ class EvaluateWorker:
         self.pipes_bt = pipes1
         self.pipes_ng = pipes2
         self.data = data
+        self.hist_base = hist_base
+        self.hist_ng = hist_ng
 
     def start(self):
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
@@ -140,9 +142,9 @@ class EvaluateWorker:
         search_tree2 = defaultdict(VisitState)
 
         self.player1 = CChessPlayer(self.config, search_tree=search_tree1, pipes=pipe1, 
-                        debugging=False, enable_resign=False)
+                        debugging=False, enable_resign=False, use_history=self.hist_base)
         self.player2 = CChessPlayer(self.config, search_tree=search_tree2, pipes=pipe2, 
-                        debugging=False, enable_resign=False)
+                        debugging=False, enable_resign=False, use_history=self.hist_ng)
 
         # even: bst = red, ng = black; odd: bst = black, ng = red
         if idx % 2 == 0:
@@ -273,8 +275,10 @@ class EvaluateWorker:
 
 def load_model(config, weight_path, digest, config_file=None):
     model = CChessModel(config)
+    use_history = True
     if not config_file:
         config_path = config.resource.model_best_config_path
+        use_history = False
     else:
         config_path = os.path.join(config.resource.model_dir, config_file)
     if (not load_model_weight(model, config_path, weight_path)) or model.digest != digest:
@@ -287,13 +291,13 @@ def load_model(config, weight_path, digest, config_file=None):
                 sys.exit()
         except ValueError as e:
             logger.error(f"权重架构不匹配，自动重新加载 {e}")
-            return load_model(config, weight_path, digest, 'model_256f.json')
+            return load_model(config, weight_path, digest, 'model_128f.json')
         except Exception as e:
             logger.error(f"加载权重发生错误：{e}，10s后自动重试下载")
             os.remove(weight_path)
             sleep(10)
             return load_model(config, weight_path, digest)
     logger.info(f"加载权重 {digest[0:8]} 成功")
-    return model
+    return model, use_history
 
 

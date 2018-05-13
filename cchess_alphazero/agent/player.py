@@ -33,7 +33,8 @@ class ActionState:
         self.p = 0      # P(s, a) : prior probability
 
 class CChessPlayer:
-    def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, enable_resign=False, debugging=False, uci=False):
+    def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, 
+            enable_resign=False, debugging=False, uci=False, use_history=True):
         self.config = config
         self.play_config = play_config or self.config.play
         self.labels_n = len(ActionLabelsRed)
@@ -41,6 +42,7 @@ class CChessPlayer:
         self.move_lookup = {move: i for move, i in zip(self.labels, range(self.labels_n))}
         self.pipe = pipes                   # pipes that used to communicate with CChessModelAPI thread
         self.node_lock = defaultdict(Lock)  # key: state key, value: Lock of that state
+        self.use_history = use_history
 
         if search_tree is None:
             self.tree = defaultdict(VisitState)  # key: state key, value: VisitState
@@ -306,7 +308,7 @@ class CChessPlayer:
         '''
         Evaluate the state, return its policy and value computed by neural network
         '''
-        if self.config.opts.has_history:
+        if self.use_history:
             state_planes = senv.state_history_to_planes(state, history)
         else:
             state_planes = senv.state_to_planes(state)
