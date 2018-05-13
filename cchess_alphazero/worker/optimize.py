@@ -293,7 +293,7 @@ def expanding_data(data, use_history=False):
     return convert_to_trainging_data(real_data, history)
 
 
-def convert_to_trainging_data(data):
+def convert_to_trainging_data(data, history):
     state_list = []
     policy_list = []
     value_list = []
