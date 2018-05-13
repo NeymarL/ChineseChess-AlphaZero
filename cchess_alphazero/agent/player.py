@@ -34,7 +34,7 @@ class ActionState:
 
 class CChessPlayer:
     def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, 
-            enable_resign=False, debugging=False, uci=False, use_history=True):
+            enable_resign=False, debugging=False, uci=False, use_history=False):
         self.config = config
         self.play_config = play_config or self.config.play
         self.labels_n = len(ActionLabelsRed)
