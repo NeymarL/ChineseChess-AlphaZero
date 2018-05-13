@@ -103,7 +103,7 @@ class CChessModelAPI:
                         load_best_model_weight(self.agent_model)
                 except ValueError as e:
                     logger.error(f"权重架构不匹配，自动重新加载 {e}")
-                    self.try_reload_model(config_file='model_256f.json')
+                    self.try_reload_model(config_file='model_128f.json')
                 except Exception as e:
                     logger.error(f"加载权重发生错误：{e}，稍后重新下载")
                     os.remove(self.config.resource.model_best_weight_path)
