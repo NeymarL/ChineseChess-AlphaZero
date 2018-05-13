@@ -31,6 +31,7 @@ def load_model(config):
     if config.internet.distributed or config.opts.new or not load_best_model_weight(model):
         # model.build()
         # save_as_best_model(model)
+        pass
     return model
 
 def start(config: Config):
