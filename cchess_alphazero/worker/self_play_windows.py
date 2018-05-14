@@ -94,7 +94,7 @@ class SelfPlayWorker:
 
     def load_model(self):
         model = CChessModel(self.config)
-        if self.config.internet.distributed or self.config.opts.new or not load_best_model_weight(model):
+        if self.config.opts.new or not load_best_model_weight(model):
             model.build()
             save_as_best_model(model)
         return model
