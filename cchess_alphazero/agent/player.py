@@ -140,10 +140,12 @@ class CChessPlayer:
                 self.buffer_history = self.buffer_history[k:]
             self.run_lock.release()
 
-    def action(self, state, turns, no_act=None, depth=None, infinite=False) -> str:
+    def action(self, state, turns, no_act=None, depth=None, infinite=False, hist=None) -> str:
         self.all_done.acquire(True)
         self.root_state = state
         self.no_act = no_act
+        if hist and len(hist) >= 5:
+            hist = hist[-5:]
         done = 0
         if state in self.tree:
             done = self.tree[state].sum_n
@@ -169,7 +171,7 @@ class CChessPlayer:
                 self.done_tasks += self.num_task
                 # logger.debug(f"iter = {iter}, num_task = {self.num_task}")
                 for i in range(self.num_task):
-                    self.executor.submit(self.MCTS_search, state, [state], True)
+                    self.executor.submit(self.MCTS_search, state, [state], True, hist)
                 self.all_done.acquire(True)
                 if self.uci and depth != self.done_tasks // 100:
                     # info depth xx pv xxx
@@ -189,7 +191,7 @@ class CChessPlayer:
         my_action = int(np.random.choice(range(self.labels_n), p=self.apply_temperature(policy, turns)))
         return self.labels[my_action], list(policy)
 
-    def MCTS_search(self, state, history=[], is_root_node=False) -> float:
+    def MCTS_search(self, state, history=[], is_root_node=False, real_hist=None) -> float:
         """
         Monte Carlo Tree Search
         """
@@ -207,7 +209,10 @@ class CChessPlayer:
                     self.tree[state].legal_moves = senv.get_legal_moves(state)
                     self.tree[state].waiting = True
                     # logger.debug(f"expand_and_evaluate {state}, sum_n = {self.tree[state].sum_n}, history = {history}")
-                    self.expand_and_evaluate(state, history)
+                    if is_root_node and real_hist:
+                        self.expand_and_evaluate(state, history, real_hist)
+                    else:
+                        self.expand_and_evaluate(state, history)
                     break
 
                 if state in history[:-1]: # loop -> loss
@@ -304,12 +309,17 @@ class CChessPlayer:
         #     logger.debug(f"selected action = {best_action}, with U + Q = {best_score}")
         return best_action
 
-    def expand_and_evaluate(self, state, history):
+    def expand_and_evaluate(self, state, history, real_hist=None):
         '''
         Evaluate the state, return its policy and value computed by neural network
         '''
         if self.use_history:
-            state_planes = senv.state_history_to_planes(state, history)
+            if real_hist:
+                # logger.debug(f"real history = {real_hist}")
+                state_planes = senv.state_history_to_planes(state, real_hist)
+            else:
+                # logger.debug(f"history = {history}")
+                state_planes = senv.state_history_to_planes(state, history)
         else:
             state_planes = senv.state_to_planes(state)
         with self.q_lock:

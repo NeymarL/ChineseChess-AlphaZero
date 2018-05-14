@@ -161,6 +161,7 @@ def state_history_to_planes(state, history):
         rkemsmekr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR
         rkemsmek1/8r/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR
     '''
+    # logger.debug(f"state = {state}")
     planes = np.zeros(shape=(28, 10, 9), dtype=np.float32)
     rows = state.split('/')
     # 0 ~ 14 for current state
@@ -178,6 +179,7 @@ def state_history_to_planes(state, history):
     # history = [...,last state, red action, black state, black action, current state]
     if history and len(history) >= 5:
         last_state = history[-5]
+        # logger.debug(f"last state = {last_state}")
         rows = last_state.split('/')
         for i in range(len(rows)):
             row = rows[i]

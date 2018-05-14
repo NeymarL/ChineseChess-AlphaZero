@@ -281,6 +281,7 @@ def load_model(config, weight_path, digest, config_file=None):
         use_history = False
     else:
         config_path = os.path.join(config.resource.model_dir, config_file)
+    logger.debug(f"config_path = {config_path}, digest = {digest}")
     if (not load_model_weight(model, config_path, weight_path)) or model.digest != digest:
         logger.info(f"开始下载权重 {digest[0:8]}")
         url = config.internet.download_base_url + digest + '.h5'

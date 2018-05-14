@@ -89,7 +89,8 @@ class SelfPlayWorker:
         else:
             enable_resign = False
 
-        self.player = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, enable_resign=enable_resign, debugging=False)
+        self.player = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, 
+                                    enable_resign=enable_resign, debugging=False, use_history=False)
 
         state = senv.INIT_STATE
         history = [state]
