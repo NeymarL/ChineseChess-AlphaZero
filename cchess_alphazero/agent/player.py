@@ -299,7 +299,7 @@ class CChessPlayer:
             if action_state.q > (1 - 1e-7):
                 best_action = mov
                 break
-            if score > best_score:
+            if score >= best_score:
                 best_score = score
                 best_action = mov
 
@@ -415,11 +415,14 @@ class CChessPlayer:
             if len(node.a) == 0:
                 break
             for mov, action_state in node.a.items():
-                if action_state.n > n:
+                if action_state.n >= n:
                     if root and no_act and mov in no_act:
                         continue
                     n = action_state.n
                     bestmove = mov
+            if bestmove is None:
+                logger.error(f"state = {state}, turns = {turns}, no_act = {no_act}, root = {root}, len(as) = {len(node.a)}")
+                break
             state = senv.step(state, bestmove)
             root = False
             if turns % 2 == 1:
