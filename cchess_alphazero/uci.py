@@ -30,12 +30,12 @@ import cchess_alphazero.environment.static_env as senv
 from cchess_alphazero.agent.model import CChessModel
 from cchess_alphazero.agent.player import CChessPlayer, VisitState
 from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_move
-from cchess_alphazero.lib.model_helper import load_best_model_weight
+from cchess_alphazero.lib.model_helper import load_model_weight
 from cchess_alphazero.lib.tf_util import set_session_config
 
 logger = getLogger(__name__)
 
-CMD_LIST = ['uci', 'setoption', 'isrealy', 'position', 'go', 'stop', 'ponderhit', 'quit', 'fen', 'ucci']
+CMD_LIST = ['uci', 'setoption', 'isrealy', 'position', 'go', 'stop', 'ponderhit', 'quit', 'fen', 'ucinewgame']
 
 class UCI:
     def __init__(self, config: Config):
@@ -53,8 +53,8 @@ class UCI:
         self.turns = 0
         self.start_time = None
         self.end_time = None
-        self.search_tree = None
         self.t = None
+        self.use_history = False
 
     def main(self):
         while True:
@@ -77,7 +77,7 @@ class UCI:
         sys.stdout.flush()
         set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, 
             device_list=self.config.opts.device_list)
-        self.load_model()
+        self.use_history = self.load_model()
         self.is_ready = True
         self.turns = 0
         self.remain_time = None
@@ -85,17 +85,11 @@ class UCI:
         self.history = [self.state]
         self.is_red_turn = True
 
-    def cmd_ucci(self):
-        self.load_model()
-        self.is_ready = True
-        self.turns = 0
-        self.remain_time = None
+    def cmd_ucinewgame(self):
         self.state = senv.INIT_STATE
         self.history = [self.state]
+        self.is_ready = True
         self.is_red_turn = True
-        print('id name AlphaZero')
-        print('ucciok')
-        sys.stdout.flush()
 
     def cmd_setoption(self):
         '''
@@ -206,7 +200,7 @@ class UCI:
         self.pipe = self.model.get_pipes(need_reload=False)
         self.search_tree = defaultdict(VisitState)
         self.player = CChessPlayer(self.config, search_tree=self.search_tree, pipes=self.pipe,
-                              enable_resign=False, debugging=True, uci=True)
+                              enable_resign=False, debugging=True, uci=True, use_history=self.use_history)
         for i in range(len(self.args)):
             if self.args[i] == 'depth':
                 depth = int(self.args[i + 1]) * 100
@@ -255,10 +249,24 @@ class UCI:
     def cmd_quit(self):
         sys.exit()
 
-    def load_model(self):
+    def load_model(self, config_file=None):
+        use_history = True
         self.model = CChessModel(self.config)
-        if not load_best_model_weight(self.model):
-            self.model.build()
+        weight_path = self.config.resource.model_best_weight_path
+        if not config_file:
+            config_path = config.resource.model_best_config_path
+            use_history = False
+        else:
+            config_path = os.path.join(config.resource.model_dir, config_file)
+        try:
+            if not load_model_weight(self.model, config_path, weight_path):
+                self.model.build()
+                use_history = True
+        except Exception as e:
+            logger.info(f"Exception {e}, 重新加载权重")
+            return self.load_model(config_file='model_128_l1_config.json')
+        logger.info(f"use_history = {use_history}")
+        return use_history
 
     def search_action(self, depth, infinite):
         no_act = None
@@ -267,7 +275,8 @@ class UCI:
             for i in range(len(self.history) - 1):
                 if self.history[i] == self.state:
                     no_act.append(self.history[i + 1])
-        action, _ = self.player.action(self.state, self.turns, no_act=no_act, depth=depth, infinite=infinite)
+        action, _ = self.player.action(self.state, self.turns, no_act=no_act, depth=depth, 
+                                        infinite=infinite, hist=self.history)
         if self.t:
             self.t.cancel()
         _, value = self.player.debug[self.state]
