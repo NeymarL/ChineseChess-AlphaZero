@@ -123,7 +123,7 @@ class SelfPlayWorker:
 
     def upload_play_data(self, path, filename):
         digest = CChessModel.fetch_digest(self.config.resource.model_best_weight_path)
-        data = {'digest': digest, 'username': self.config.internet.username, 'version': '2.0'}
+        data = {'digest': digest, 'username': self.config.internet.username, 'version': '2.1'}
         response = upload_file(self.config.internet.upload_url, path, filename, data, rm=False)
         if response is not None and response['status'] == 0:
             logger.info(f"上传博弈数据 {filename} 成功.")
@@ -164,8 +164,10 @@ def self_play_buffer(config, cur) -> (tuple, list):
 
     while not game_over:
         no_act = None
+        increase_temp = False
         if not check and state in history[:-1]:
             no_act = []
+            increase_temp = True
             free_move = defaultdict(int)
             for i in range(len(history) - 1):
                 if history[i] == state:
@@ -175,7 +177,7 @@ def self_play_buffer(config, cur) -> (tuple, list):
                     # 否则当作闲着处理
                     else:
                         free_move[state] += 1
-                        if free_move[state] >= 2:
+                        if free_move[state] >= 3:
                             # 作和棋处理
                             game_over = True
                             value = 0
@@ -184,7 +186,7 @@ def self_play_buffer(config, cur) -> (tuple, list):
         if game_over:
             break
         start_time = time()
-        action, policy = player.action(state, turns, no_act)
+        action, policy = player.action(state, turns, no_act, increase_temp=increase_temp)
         end_time = time()
         if action is None:
             print(f"{turns % 2} (0 = 红; 1 = 黑) 投降了!")

@@ -43,6 +43,7 @@ class CChessPlayer:
         self.pipe = pipes                   # pipes that used to communicate with CChessModelAPI thread
         self.node_lock = defaultdict(Lock)  # key: state key, value: Lock of that state
         self.use_history = use_history
+        self.increase_temp = False
 
         if search_tree is None:
             self.tree = defaultdict(VisitState)  # key: state key, value: VisitState
@@ -140,16 +141,18 @@ class CChessPlayer:
                 self.buffer_history = self.buffer_history[k:]
             self.run_lock.release()
 
-    def action(self, state, turns, no_act=None, depth=None, infinite=False, hist=None) -> str:
+    def action(self, state, turns, no_act=None, depth=None, infinite=False, hist=None, increase_temp=False) -> str:
         self.all_done.acquire(True)
         self.root_state = state
         self.no_act = no_act
+        self.increase_temp = increase_temp
         if hist and len(hist) >= 5:
             hist = hist[-5:]
         done = 0
         if state in self.tree:
             done = self.tree[state].sum_n
-        if no_act:
+        if no_act or increase_temp:
+            # logger.info(f"no_act = {no_act}, increase_temp = {increase_temp}")
             done = 0
         self.done_tasks = done
         self.num_task = self.play_config.simulation_num_per_move - done
@@ -443,6 +446,8 @@ class CChessPlayer:
             tau = 0
         if tau < 0.1 or (turn >= 4 and self.config.opts.evaluate):
              tau = 0
+        if self.increase_temp:
+            tau = 1
         if tau == 0:
             action = np.argmax(policy)
             ret = np.zeros(self.labels_n)

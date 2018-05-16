@@ -178,7 +178,7 @@ class EvaluateWorker:
                         # 否则当作闲着处理
                         else:
                             free_move[state] += 1
-                            if free_move[state] >= 2:
+                            if free_move[state] >= 3:
                                 # 作和棋处理
                                 game_over = True
                                 value = 0

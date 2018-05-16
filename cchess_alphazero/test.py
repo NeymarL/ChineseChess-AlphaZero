@@ -304,10 +304,10 @@ def plot_model():
 
 def test_check_and_catch():
     import cchess_alphazero.environment.static_env as senv
-    state = senv.INIT_STATE
+    state = '4s4/9/4e4/9/2e6/6E2/9/9/9/4S1E2'
     action = '1242'
-    print(senv.will_check_or_catch(state, action))
+    print(senv.has_attack_chessman(state))
 
 if __name__ == "__main__":
-    plot_model()
+    test_check_and_catch()
     
