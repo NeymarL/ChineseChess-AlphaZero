@@ -159,7 +159,7 @@ class EvaluateWorker:
                     sys.exit()
             except ValueError as e:
                 logger.error(f"权重架构不匹配，自动重新加载 {e}")
-                return load_model(weight_path, digest, 'model_128_l1_config.json')
+                return self.load_model(weight_path, digest, 'model_128_l1_config.json')
             except Exception as e:
                 logger.error(f"加载权重发生错误：{e}，10s后自动重试下载")
                 os.remove(weight_path)
