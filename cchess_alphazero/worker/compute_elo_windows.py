@@ -66,8 +66,8 @@ class EvaluateWorker:
         base_weight_path = os.path.join(self.config.resource.next_generation_model_dir, self.data['base']['digest'] + '.h5')
         ng_weight_path = os.path.join(self.config.resource.next_generation_model_dir, self.data['unchecked']['digest'] + '.h5')
         # load model
-        model_base = self.load_model(base_weight_path, self.data['base']['digest'])
-        model_ng = self.load_model(ng_weight_path, self.data['unchecked']['digest'])
+        model_base, hist_base = self.load_model(base_weight_path, self.data['base']['digest'])
+        model_ng, hist_ng = self.load_model(ng_weight_path, self.data['unchecked']['digest'])
         # make pipes
         self.pipes_bt = self.m.list([model_base.get_pipes(need_reload=False) for _ in range(self.config.play.max_processes)])
         self.pipes_ng = self.m.list([model_ng.get_pipes(need_reload=False) for _ in range(self.config.play.max_processes)])
@@ -82,7 +82,8 @@ class EvaluateWorker:
                 if len(futures) == 0:
                     for i in range(self.config.play.max_processes):
                         idx = 0 if random() > 0.5 else 1
-                        ff = executor.submit(self_play_buffer, self.config, self.pipes_bt, self.pipes_ng, idx, self.data)
+                        ff = executor.submit(self_play_buffer, self.config, self.pipes_bt, self.pipes_ng, 
+                                            idx, self.data, hist_base, hist_ng)
                         ff.add_done_callback(recall_fn)
                         futures.append(ff)
 
@@ -128,7 +129,8 @@ class EvaluateWorker:
                     need_evaluate = True
                     logger.info(f"继续评测")
                     idx = 0 if random() > 0.5 else 1
-                    ff = executor.submit(self_play_buffer, self.config, self.pipes_bt, self.pipes_ng, idx, self.data)
+                    ff = executor.submit(self_play_buffer, self.config, self.pipes_bt, self.pipes_ng, 
+                                        idx, self.data, hist_base, hist_ng)
                     ff.add_done_callback(recall_fn)
                     futures.append(ff) # Keep it going
                 else:
@@ -141,7 +143,9 @@ class EvaluateWorker:
 
     def load_model(self, weight_path, digest, config_file=None):
         model = CChessModel(self.config)
+        use_history = True
         if not config_file:
+            use_history = False
             config_path = self.config.resource.model_best_config_path
         else:
             config_path = os.path.join(self.config.resource.model_dir, config_file)
@@ -155,14 +159,14 @@ class EvaluateWorker:
                     sys.exit()
             except ValueError as e:
                 logger.error(f"权重架构不匹配，自动重新加载 {e}")
-                return load_model(weight_path, digest, 'model_256f.json')
+                return load_model(weight_path, digest, 'model_128_l1_config.json')
             except Exception as e:
                 logger.error(f"加载权重发生错误：{e}，10s后自动重试下载")
                 os.remove(weight_path)
                 sleep(10)
                 return load_model(weight_path, digest)
         logger.info(f"加载权重 {model.digest[0:8]} 成功")
-        return model
+        return model, use_history
 
     def save_play_data(self, idx, data, value, score):
         rc = self.config.resource
@@ -202,7 +206,7 @@ def recall_fn(future):
     futures.remove(future)
     job_done.release()
 
-def self_play_buffer(config, pipes_bt, pipes_ng, idx, res_data) -> (tuple, list):
+def self_play_buffer(config, pipes_bt, pipes_ng, idx, res_data, hist_base, hist_ng) -> (tuple, list):
     sleep(random())
     playouts = randint(8, 12) * 100
     config.play.simulation_num_per_move = playouts
@@ -212,9 +216,9 @@ def self_play_buffer(config, pipes_bt, pipes_ng, idx, res_data) -> (tuple, list)
     pipe2 = pipes_ng.pop()
 
     player1 = CChessPlayer(config, search_tree=defaultdict(VisitState), pipes=pipe1, 
-        enable_resign=False, debugging=False)
+        enable_resign=False, debugging=False, use_history=hist_base)
     player2 = CChessPlayer(config, search_tree=defaultdict(VisitState), pipes=pipe2, 
-        enable_resign=False, debugging=False)
+        enable_resign=False, debugging=False, use_history=hist_ng)
 
     # even: bst = red, ng = black; odd: bst = black, ng = red
     if idx % 2 == 0:
