@@ -242,7 +242,9 @@ def self_play_buffer(config, pipes_bt, pipes_ng, idx, res_data, hist_base, hist_
 
     while not game_over:
         no_act = None
+        increase_temp = False
         if not check and state in history[:-1]:
+            increase_temp = True
             no_act = []
             free_move = defaultdict(int)
             for i in range(len(history) - 1):
@@ -263,9 +265,9 @@ def self_play_buffer(config, pipes_bt, pipes_ng, idx, res_data, hist_base, hist_
             break
         start_time = time()
         if turns % 2 == 0:
-            action, _ = red.action(state, turns, no_act=no_act)
+            action, _ = red.action(state, turns, no_act=no_act, increase_temp=increase_temp)
         else:
-            action, _ = black.action(state, turns, no_act=no_act)
+            action, _ = black.action(state, turns, no_act=no_act, increase_temp=increase_temp)
         end_time = time()
         if action is None:
             print(f"{turns % 2} (0 = 红; 1 = 黑) 投降了!")

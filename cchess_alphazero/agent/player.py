@@ -446,7 +446,7 @@ class CChessPlayer:
             tau = 0
         if tau < 0.1 or (turn >= 4 and self.config.opts.evaluate):
              tau = 0
-        if self.increase_temp:
+        if self.increase_temp and not self.config.opts.evaluate:
             tau = 1
         if tau == 0:
             action = np.argmax(policy)

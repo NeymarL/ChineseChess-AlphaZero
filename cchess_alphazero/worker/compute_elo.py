@@ -167,8 +167,10 @@ class EvaluateWorker:
         while not game_over:
             start_time = time()
             no_act = None
+            increase_temp = False
             if not check and state in history[:-1]:
                 no_act = []
+                increase_temp = True
                 free_move = defaultdict(int)
                 for i in range(len(history) - 1):
                     if history[i] == state:
@@ -187,9 +189,9 @@ class EvaluateWorker:
             if game_over:
                 break
             if turns % 2 == 0:
-                action, _ = red.action(state, turns, no_act=no_act)
+                action, _ = red.action(state, turns, no_act=no_act, increase_temp=increase_temp)
             else:
-                action, _ = black.action(state, turns, no_act=no_act)
+                action, _ = black.action(state, turns, no_act=no_act, increase_temp=increase_temp)
             end_time = time()
             if self.config.opts.log_move:
                 logger.debug(f"进程id = {self.pid}, action = {action}, turns = {turns}, time = {(end_time-start_time):.1f}")
