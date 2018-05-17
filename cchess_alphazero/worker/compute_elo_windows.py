@@ -164,7 +164,7 @@ class EvaluateWorker:
                 logger.error(f"加载权重发生错误：{e}，10s后自动重试下载")
                 os.remove(weight_path)
                 sleep(10)
-                return load_model(weight_path, digest)
+                return self.load_model(weight_path, digest)
         logger.info(f"加载权重 {model.digest[0:8]} 成功")
         return model, use_history
 
