@@ -20,22 +20,34 @@ from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_policy, flip_move
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, write_game_data_to_file
-from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model, load_best_model_weight_from_internet
+from cchess_alphazero.lib.model_helper import load_model_weight, save_as_best_model, load_best_model_weight_from_internet
 from cchess_alphazero.lib.tf_util import set_session_config
 from cchess_alphazero.lib.web_helper import upload_file
 
 logger = getLogger(__name__)
 
-def load_model(config):
+def load_model(config, config_file=None):
+    use_history = True
     model = CChessModel(config)
-    if config.opts.new or not load_best_model_weight(model):
-        model.build()
-        save_as_best_model(model)
-    return model
+    weight_path = config.resource.model_best_weight_path
+    if not config_file:
+        config_path = config.resource.model_best_config_path
+        use_history = False
+    else:
+        config_path = os.path.join(config.resource.model_dir, config_file)
+    try:
+        if not load_model_weight(model, config_path, weight_path):
+            model.build()
+            save_as_best_model(model)
+            use_history = True
+    except Exception as e:
+        logger.info(f"Exception {e}, 重新加载权重")
+        return load_model(config, config_file='model_128_l1_config.json')
+    return model, use_history
 
 def start(config: Config):
     set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, device_list=config.opts.device_list)
-    current_model = load_model(config)
+    current_model, use_history = load_model(config)
     m = Manager()
     cur_pipes = m.list([current_model.get_pipes() for _ in range(config.play.max_processes)])
     # play_worker = SelfPlayWorker(config, cur_pipes, 0)
@@ -43,18 +55,19 @@ def start(config: Config):
     with ProcessPoolExecutor(max_workers=config.play.max_processes) as executor:
         futures = []
         for i in range(config.play.max_processes):
-            play_worker = SelfPlayWorker(config, cur_pipes, i)
+            play_worker = SelfPlayWorker(config, cur_pipes, i, use_history)
             logger.debug("Initialize selfplay worker")
             futures.append(executor.submit(play_worker.start))
 
 class SelfPlayWorker:
-    def __init__(self, config: Config, pipes=None, pid=None):
+    def __init__(self, config: Config, pipes=None, pid=None, use_history=False):
         self.config = config
         self.player = None
         self.cur_pipes = pipes
         self.id = pid
         self.buffer = []
         self.pid = os.getpid()
+        self.use_history = use_history
 
     def start(self):
         self.pid = os.getpid()
@@ -90,7 +103,7 @@ class SelfPlayWorker:
             enable_resign = False
 
         self.player = CChessPlayer(self.config, search_tree=search_tree, pipes=pipes, 
-                                    enable_resign=enable_resign, debugging=False, use_history=False)
+                                    enable_resign=enable_resign, debugging=False, use_history=self.use_history)
 
         state = senv.INIT_STATE
         history = [state]

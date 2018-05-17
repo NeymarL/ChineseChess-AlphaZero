@@ -21,7 +21,7 @@ from cchess_alphazero.config import Config
 from cchess_alphazero.environment.env import CChessEnv
 from cchess_alphazero.environment.lookup_tables import Winner, ActionLabelsRed, flip_policy, flip_move
 from cchess_alphazero.lib.data_helper import get_game_data_filenames, write_game_data_to_file
-from cchess_alphazero.lib.model_helper import load_best_model_weight, save_as_best_model, load_best_model_weight_from_internet
+from cchess_alphazero.lib.model_helper import load_model_weight, save_as_best_model, load_best_model_weight_from_internet
 from cchess_alphazero.lib.tf_util import set_session_config
 from cchess_alphazero.lib.web_helper import upload_file
 
@@ -43,7 +43,7 @@ class SelfPlayWorker:
         :param config:
         """
         self.config = config
-        self.current_model = self.load_model()
+        self.current_model, self.use_history = self.load_model()
         self.m = Manager()
         self.cur_pipes = self.m.list([self.current_model.get_pipes() for _ in range(self.config.play.max_processes)])
 
@@ -67,7 +67,7 @@ class SelfPlayWorker:
 
                 if len(futures) == 0:
                     for i in range(self.config.play.max_processes):
-                        ff = executor.submit(self_play_buffer, self.config, cur=self.cur_pipes)
+                        ff = executor.submit(self_play_buffer, self.config, self.cur_pipes, self.use_history)
                         ff.add_done_callback(recall_fn)
                         futures.append(ff)
 
@@ -84,7 +84,7 @@ class SelfPlayWorker:
                 if (game_idx % self.config.play_data.nb_game_in_file) == 0:
                     self.flush_buffer()
                     self.remove_play_data(all=False) # remove old data
-                ff = executor.submit(self_play_buffer, self.config, cur=self.cur_pipes)
+                ff = executor.submit(self_play_buffer, self.config, self.cur_pipes, self.use_history)
                 ff.add_done_callback(recall_fn)
                 futures.append(ff) # Keep it going
                 thr_free.release()
@@ -92,12 +92,24 @@ class SelfPlayWorker:
         if len(data) > 0:
             self.flush_buffer()
 
-    def load_model(self):
+    def load_model(self, config_file=None):
+        use_history = True
         model = CChessModel(self.config)
-        if self.config.opts.new or not load_best_model_weight(model):
-            model.build()
-            save_as_best_model(model)
-        return model
+        weight_path = self.config.resource.model_best_weight_path
+        if not config_file:
+            config_path = self.config.resource.model_best_config_path
+            use_history = False
+        else:
+            config_path = os.path.join(self.config.resource.model_dir, config_file)
+        try:
+            if not load_model_weight(model, config_path, weight_path):
+                model.build()
+                save_as_best_model(model)
+                use_history = True
+        except Exception as e:
+            logger.info(f"Exception {e}, 重新加载权重")
+            return self.load_model(config_file='model_128_l1_config.json')
+        return model, use_history
 
     def flush_buffer(self):
         rc = self.config.resource
@@ -142,7 +154,7 @@ def recall_fn(future):
     futures.remove(future)
     job_done.release()
 
-def self_play_buffer(config, cur) -> (tuple, list):
+def self_play_buffer(config, cur, use_history=False) -> (tuple, list):
     pipe = cur.pop() # borrow
 
     if random() > config.play.enable_resign_rate:
@@ -150,7 +162,8 @@ def self_play_buffer(config, cur) -> (tuple, list):
     else:
         enable_resign = False
 
-    player = CChessPlayer(config, search_tree=defaultdict(VisitState), pipes=pipe, enable_resign=enable_resign, debugging=False)
+    player = CChessPlayer(config, search_tree=defaultdict(VisitState), pipes=pipe, 
+                            enable_resign=enable_resign, debugging=False, use_history=use_history)
 
     state = senv.INIT_STATE
     history = [state]
