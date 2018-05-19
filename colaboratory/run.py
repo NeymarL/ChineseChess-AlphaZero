@@ -26,7 +26,7 @@ def setup_parameters(config):
         if flag == 'new':
             config.internet.base_url = 'http://temp.52coding.com.cn'
         elif flag == 'new2':
-            config.internet.base_url = 'http://temp2.52coding.com.cn'
+            config.internet.base_url = 'http://temp3.52coding.com.cn'
         config.internet.upload_url = f'{config.internet.base_url}/api/upload_game_file/128x7'
         config.internet.upload_eval_url = f'{config.internet.base_url}/api/upload_eval_game_file'
         config.internet.get_latest_digest = f'{config.internet.base_url}/api/get_latest_digest/128x7'
