@@ -135,7 +135,7 @@ class SelfPlayWorker:
 
     def upload_play_data(self, path, filename):
         digest = CChessModel.fetch_digest(self.config.resource.model_best_weight_path)
-        data = {'digest': digest, 'username': self.config.internet.username, 'version': '2.1'}
+        data = {'digest': digest, 'username': self.config.internet.username, 'version': '2.2'}
         response = upload_file(self.config.internet.upload_url, path, filename, data, rm=False)
         if response is not None and response['status'] == 0:
             logger.info(f"上传博弈数据 {filename} 成功.")
