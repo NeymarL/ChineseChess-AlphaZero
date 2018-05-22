@@ -286,6 +286,7 @@ class CChessPlayer:
 
         best_score = -99999999
         best_action = None
+        move_counts = len(legal_moves)
 
         for mov in legal_moves:
             if is_root_node and self.no_act and mov in self.no_act:
@@ -294,7 +295,7 @@ class CChessPlayer:
             action_state = node.a[mov]
             p_ = action_state.p
             if is_root_node:
-                p_ = (1 - e) * p_ + e * np.random.dirichlet([dir_alpha])[0]
+                p_ = (1 - e) * p_ + e * np.random.dirichlet(dir_alpha * np.ones(move_counts))[0]
             # Q + U
             score = action_state.q + c_puct * p_ * xx_ / (1 + action_state.n)
             # if score > 0.1 and is_root_node:
