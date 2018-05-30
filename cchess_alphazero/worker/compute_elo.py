@@ -82,7 +82,7 @@ class EvaluateWorker:
         self.hist_ng = hist_ng
 
     def start(self):
-        sleep((self.pid % 10) * 10)
+        sleep((self.pid % self.config.play.max_processes) * 10)
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
         need_evaluate = True
         self.config.opts.evaluate = True
