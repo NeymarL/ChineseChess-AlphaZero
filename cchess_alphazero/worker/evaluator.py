@@ -74,7 +74,8 @@ class EvaluateWorker:
         self.pipes_ng = pipes2
 
     def start(self):
-        sleep((self.pid % self.config.play.max_processes) * 10)
+        ran = self.config.play.max_processes if self.config.play.max_processes > 5 else self.config.play.max_processes * 2
+        sleep((self.pid % ran) * 10)
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
         score = 0
 
