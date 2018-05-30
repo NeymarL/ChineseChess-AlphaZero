@@ -71,6 +71,7 @@ class SelfPlayWorker:
 
     def start(self):
         self.pid = os.getpid()
+        sleep((self.pid % 10) * 10)
         logger.debug(f"Selfplay#Start Process index = {self.id}, pid = {self.pid}")
 
         idx = 1

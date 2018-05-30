@@ -82,6 +82,7 @@ class EvaluateWorker:
         self.hist_ng = hist_ng
 
     def start(self):
+        sleep((self.pid % 10) * 10)
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
         need_evaluate = True
         self.config.opts.evaluate = True
@@ -97,7 +98,7 @@ class EvaluateWorker:
             elif (value == 1 and idx == 1) or (value == -1 and idx == 0):
                 result = '待评测模型胜'
             else:
-                result = '双方连续60回合未吃子，和棋'
+                result = '和棋'
 
             if value == -1: # loss
                 score = 0
