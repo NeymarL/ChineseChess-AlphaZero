@@ -52,12 +52,29 @@ def start(config: Config):
     model_ng.close_pipes()
     # compute whether to update best model
     # and remove next generation model
-    score = 0
+    total_score = 0
+    red_new_win = 0
+    red_new_fail = 0
+    red_new_draw = 0
+    black_new_win = 0
+    black_new_fail = 0
+    black_new_draw = 0
     for future in futures:
-        score += future.result()
+        data = future.result()
+        total_score += data[0]
+        red_new_win += data[1]
+        red_new_draw += data[2]
+        red_new_fail += data[3]
+        black_new_win += data[4]
+        black_new_draw += data[5]
+        black_new_fail += data[6]
     game_num = config.eval.game_num * config.play.max_processes
-    logger.info(f"Evaluate over, next generation win {score}/{game_num}, score = {score}, game_num = {game_num}")
-    # if score * 1.0 / game_num >= config.eval.next_generation_replace_rate:
+    win_rate = total_score * 100 / game_num
+    logger.info(f"Evaluate over, next generation win {total_score}/{game_num} = {win_rate:.2f}%")
+    logger.info(f"红\t黑\t胜\t平\t负")
+    logger.info(f"新\t旧\t{red_new_win}\t{red_new_draw}\t{red_new_fail}")
+    logger.info(f"旧\t新\t{black_new_win}\t{black_new_draw}\t{black_new_fail}")
+    # if total_score * 1.0 / game_num >= config.eval.next_generation_replace_rate:
     #     logger.info("Best model will be replaced by next generation model")
     #     replace_best_model(config)
     # else:
@@ -79,6 +96,12 @@ class EvaluateWorker:
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
         score = 0
         total_score = 0
+        red_new_win = 0
+        red_new_fail = 0
+        red_new_draw = 0
+        black_new_win = 0
+        black_new_fail = 0
+        black_new_draw = 0
 
         for idx in range(self.config.eval.game_num):
             start_time = time()
@@ -86,10 +109,22 @@ class EvaluateWorker:
             end_time = time()
 
             if (value == 1 and idx % 2 == 0) or (value == -1 and idx % 2 == 1):
+                if idx % 2 == 0:
+                    black_new_fail += 1
+                else:
+                    red_new_fail += 1
                 result = '基准模型胜'
             elif (value == 1 and idx % 2 == 1) or (value == -1 and idx % 2 == 0):
+                if idx % 2 == 0:
+                    black_new_win += 1
+                else:
+                    red_new_win += 1
                 result = '待评测模型胜'
             else:
+                if idx % 2 == 0:
+                    black_new_draw += 1
+                else:
+                    red_new_draw += 1
                 result = '和棋'
 
             if value == -1: # loss
@@ -107,7 +142,7 @@ class EvaluateWorker:
             logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
                          f"{turns / 2}回合, {result}, 得分：{score}, value = {value}, idx = {idx}")
             total_score += score
-        return total_score  # return next generation model's score
+        return (total_score, red_new_win, red_new_draw, red_new_fail, black_new_win, black_new_draw, black_new_fail)
 
     def start_game(self, idx):
         pipe1 = self.pipes_bt.pop()
