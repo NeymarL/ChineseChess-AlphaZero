@@ -78,15 +78,16 @@ class EvaluateWorker:
         sleep((self.pid % ran) * 10)
         logger.debug(f"Evaluate#Start Process index = {self.pid}, pid = {os.getpid()}")
         score = 0
+        total_score = 0
 
         for idx in range(self.config.eval.game_num):
             start_time = time()
             value, turns = self.start_game(idx)
             end_time = time()
 
-            if (value == 1 and idx == 0) or (value == -1 and idx == 1):
+            if (value == 1 and idx % 2 == 0) or (value == -1 and idx % 2 == 1):
                 result = '基准模型胜'
-            elif (value == 1 and idx == 1) or (value == -1 and idx == 0):
+            elif (value == 1 and idx % 2 == 1) or (value == -1 and idx % 2 == 0):
                 result = '待评测模型胜'
             else:
                 result = '和棋'
@@ -105,7 +106,8 @@ class EvaluateWorker:
 
             logger.info(f"进程{self.pid}评测完毕 用时{(end_time - start_time):.1f}秒, "
                          f"{turns / 2}回合, {result}, 得分：{score}, value = {value}, idx = {idx}")
-        return score  # return next generation model's score
+            total_score += score
+        return total_score  # return next generation model's score
 
     def start_game(self, idx):
         pipe1 = self.pipes_bt.pop()
