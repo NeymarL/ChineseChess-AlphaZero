@@ -134,7 +134,7 @@ class EvaluateWorker:
             else:
                 score = 0.5
 
-            if idx == 0:
+            if idx % 2 == 0:
                 score = 1 - score
             else:
                 score = score
