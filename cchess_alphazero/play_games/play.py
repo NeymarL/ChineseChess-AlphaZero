@@ -67,7 +67,7 @@ class PlayWithHuman:
     def init_screen(self):
         bestdepth = pygame.display.mode_ok([self.screen_width, self.height], self.winstyle, 32)
         screen = pygame.display.set_mode([self.screen_width, self.height], self.winstyle, bestdepth)
-        pygame.display.set_caption("中国象棋-AlphaZero")
+        pygame.display.set_caption("中国象棋Zero")
         # create the background, tile the bgd image
         bgdtile = load_image(f'{self.config.opts.bg_style}.GIF')
         bgdtile = pygame.transform.scale(bgdtile, (self.width, self.height))
@@ -269,7 +269,7 @@ class PlayWithHuman:
         screen.blit(widget_background, (self.width, 0))
 
     def draw_evaluation(self, screen, widget_background):
-        title_label = 'AlphaZero信息'
+        title_label = 'CC-Zero信息'
         self.draw_label(screen, widget_background, title_label, 300, 16, 10)
         info_label = f'MCTS搜索次数：{self.config.play.simulation_num_per_move}'
         self.draw_label(screen, widget_background, info_label, 335, 14, 10)
