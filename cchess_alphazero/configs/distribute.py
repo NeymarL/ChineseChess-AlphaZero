@@ -68,6 +68,8 @@ class TrainerConfig:
         self.lr_schedules = [
             (0, 0.01),
             (200000, 0.003),
+            (300000, 0.001),
+            (400000, 0.0003),
             (600000, 0.0001),
         ]
         self.sl_game_step = 2000
