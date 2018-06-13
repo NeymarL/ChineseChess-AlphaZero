@@ -448,7 +448,7 @@ class CChessPlayer:
         if tau < 0.1 or (turn >= 4 and self.config.opts.evaluate):
              tau = 0
         if self.increase_temp and not self.config.opts.evaluate:
-            tau = 0.5
+            tau = 0.75
         if tau == 0:
             action = np.argmax(policy)
             ret = np.zeros(self.labels_n)
