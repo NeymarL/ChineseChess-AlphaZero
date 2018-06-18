@@ -33,7 +33,7 @@ class PlayDataConfig:
 class PlayConfig:
     def __init__(self):
         self.max_processes = 10     # tune this to your cpu cores
-        self.search_threads = 20    # increase this will be faster but with weaker performance
+        self.search_threads = 10    # increase this will be faster but with weaker performance
         self.vram_frac = 1.0
         self.simulation_num_per_move = 800
         self.thinking_loop = 1
@@ -66,11 +66,12 @@ class TrainerConfig:
         self.momentum = 0.9
         self.loss_weights = [1.0, 1.0]
         self.lr_schedules = [
-            (0, 0.01),
+            (0, 0.03),
+            (100000, 0.01),
             (200000, 0.003),
             (300000, 0.001),
             (400000, 0.0003),
-            (600000, 0.0001),
+            (500000, 0.0001),
         ]
         self.sl_game_step = 2000
         self.load_step = 25000
@@ -80,10 +81,10 @@ class ModelConfig:
         '''
         WARNING: DO NOT CHANGE THESE PARAMETERS
         '''
-        self.cnn_filter_num = 128
+        self.cnn_filter_num = 192
         self.cnn_first_filter_size = 5
         self.cnn_filter_size = 3
-        self.res_layer_num = 7
+        self.res_layer_num = 10
         self.l2_reg = 1e-4
         self.value_fc_size = 256
         self.distributed = False
