@@ -93,7 +93,7 @@ class SelfPlayWorker:
             self.flush_buffer()
 
     def load_model(self, config_file=None):
-        use_history = True
+        use_history = False
         model = CChessModel(self.config)
         weight_path = self.config.resource.model_best_weight_path
         if not config_file:
@@ -108,7 +108,7 @@ class SelfPlayWorker:
                 use_history = True
         except Exception as e:
             logger.info(f"Exception {e}, 重新加载权重")
-            return self.load_model(config_file='model_128_l1_config.json')
+            return self.load_model(config_file='model_192x10_config.json')
         return model, use_history
 
     def flush_buffer(self):

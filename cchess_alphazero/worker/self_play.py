@@ -27,7 +27,7 @@ from cchess_alphazero.lib.web_helper import upload_file
 logger = getLogger(__name__)
 
 def load_model(config, config_file=None):
-    use_history = True
+    use_history = False
     model = CChessModel(config)
     weight_path = config.resource.model_best_weight_path
     if not config_file:
@@ -42,7 +42,7 @@ def load_model(config, config_file=None):
             use_history = True
     except Exception as e:
         logger.info(f"Exception {e}, 重新加载权重")
-        return load_model(config, config_file='model_128_l1_config.json')
+        return load_model(config, config_file='model_192x10_config.json')
     return model, use_history
 
 def start(config: Config):
