@@ -143,7 +143,7 @@ class EvaluateWorker:
 
     def load_model(self, weight_path, digest, config_file=None):
         model = CChessModel(self.config)
-        use_history = True
+        use_history = False
         if not config_file:
             use_history = False
             config_path = self.config.resource.model_best_config_path
@@ -159,7 +159,7 @@ class EvaluateWorker:
                     sys.exit()
             except ValueError as e:
                 logger.error(f"权重架构不匹配，自动重新加载 {e}")
-                return self.load_model(weight_path, digest, 'model_128_l1_config.json')
+                return self.load_model(weight_path, digest, 'model_192x10_config.json')
             except Exception as e:
                 logger.error(f"加载权重发生错误：{e}，10s后自动重试下载")
                 os.remove(weight_path)
