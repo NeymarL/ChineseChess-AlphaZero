@@ -428,8 +428,12 @@ def will_check_or_catch(state, action):
                 i = int(mov[3])
                 j = int(mov[2])
                 black_board = state_to_board(black_state)
-                if black_board[i][j] == 'p' and i <= 5:
+                if black_board[i][j] == 'p' and i <= 4:
                     # 未过河的兵
+                    continue
+                m = int(mov[3])
+                n = int(mov[2])
+                if black_board[m][n] == 'P' and m > 4:
                     continue
                 logger.debug(f"Catch: mov = {mov}, chessman = {black_board[i][j]}")
                 return True

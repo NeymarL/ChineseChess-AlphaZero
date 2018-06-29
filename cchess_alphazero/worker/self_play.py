@@ -116,30 +116,10 @@ class SelfPlayWorker:
         final_move = None
         no_eat_count = 0
         check = False
+        no_act = []
+        increase_temp = False
 
         while not game_over:
-            no_act = None
-            increase_temp = False
-            if not check and state in history[:-1]:
-                no_act = []
-                increase_temp = True
-                free_move = defaultdict(int)
-                for i in range(len(history) - 1):
-                    if history[i] == state:
-                        # 如果走了下一步是将军或捉：禁止走那步
-                        if senv.will_check_or_catch(state, history[i+1]):
-                            no_act.append(history[i + 1])
-                        # 否则当作闲着处理
-                        else:
-                            free_move[state] += 1
-                            if free_move[state] >= 3:
-                                # 作和棋处理
-                                game_over = True
-                                value = 0
-                                logger.info("闲着循环三次，作和棋处理")
-                                break
-            if game_over:
-                break
             start_time = time()
             action, policy = self.player.action(state, turns, no_act, increase_temp=increase_temp)
             end_time = time()
@@ -150,10 +130,6 @@ class SelfPlayWorker:
             if self.config.opts.log_move:
                 logger.info(f"Process{self.pid} Playing: {turns % 2}, action: {action}, time: {(end_time - start_time):.1f}s")
             # logger.info(f"Process{self.pid} Playing: {turns % 2}, action: {action}, time: {(end_time - start_time):.1f}s")
-            # for move, action_state in self.player.search_results.items():
-            #     if action_state[0] >= 20:
-            #         logger.info(f"move: {move}, prob: {action_state[0]}, Q_value: {action_state[1]:.2f}, Prior: {action_state[2]:.3f}")
-            # self.player.search_results = {}
             history.append(action)
             # policys.append(policy)
             try:
@@ -180,6 +156,25 @@ class SelfPlayWorker:
                         logger.info(f"双方无进攻子力，作和。state = {state}")
                         game_over = True
                         value = 0
+                increase_temp = False
+                if not check and state in history[:-1]:
+                    no_act = []
+                    increase_temp = True
+                    free_move = defaultdict(int)
+                    for i in range(len(history) - 1):
+                        if history[i] == state:
+                            # 如果走了下一步是将军或捉：禁止走那步
+                            if senv.will_check_or_catch(state, history[i+1]):
+                                no_act.append(history[i + 1])
+                            # 否则当作闲着处理
+                            else:
+                                free_move[state] += 1
+                                if free_move[state] >= 3:
+                                    # 作和棋处理
+                                    game_over = True
+                                    value = 0
+                                    logger.info("闲着循环三次，作和棋处理")
+                                    break
 
         if final_move:
             # policy = self.build_policy(final_move, False)
