@@ -219,8 +219,14 @@ class CChessPlayer:
                     break
 
                 if state in history[:-1]: # loop -> loss
-                    # logger.debug(f"loop -> loss, state = {state}, history = {history[:-1]}")
-                    self.executor.submit(self.update_tree, None, 0, history)
+                    for i in range(len(history) - 1):
+                        if history[i] == state:
+                            if senv.will_check_or_catch(state, history[i+1]):
+                                self.executor.submit(self.update_tree, None, -1, history)
+                            else:
+                                # logger.debug(f"loop -> loss, state = {state}, history = {history[:-1]}")
+                                self.executor.submit(self.update_tree, None, 0, history)
+                            break
                     break
 
                 # Select
@@ -248,10 +254,6 @@ class CChessPlayer:
                 state = senv.step(state, sel_action)
                 history.append(state)
                 # logger.debug(f"step action {sel_action}, next = {action_state.next}")
-
-            # history.append(sel_action)
-            # state = action_state.next
-            # history.append(state)
 
     def select_action_q_and_u(self, state, is_root_node) -> str:
         '''
