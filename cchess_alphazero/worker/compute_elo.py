@@ -167,28 +167,6 @@ class EvaluateWorker:
 
         while not game_over:
             start_time = time()
-            no_act = None
-            increase_temp = False
-            if not check and state in history[:-1]:
-                no_act = []
-                increase_temp = True
-                free_move = defaultdict(int)
-                for i in range(len(history) - 1):
-                    if history[i] == state:
-                        # 如果走了下一步是将军或捉：禁止走那步
-                        if senv.will_check_or_catch(state, history[i+1]):
-                            no_act.append(history[i + 1])
-                        # 否则当作闲着处理
-                        else:
-                            free_move[state] += 1
-                            if free_move[state] >= 3:
-                                # 作和棋处理
-                                game_over = True
-                                value = 0
-                                logger.info("闲着循环三次，作和棋处理")
-                                break
-            if game_over:
-                break
             if turns % 2 == 0:
                 action, _ = red.action(state, turns, no_act=no_act, increase_temp=increase_temp)
             else:
@@ -214,11 +192,28 @@ class EvaluateWorker:
                 value = 0
             else:
                 game_over, value, final_move, check = senv.done(state, need_check=True)
+                no_act = []
+                increase_temp = False
                 if not game_over:
                     if not senv.has_attack_chessman(state):
                         logger.info(f"双方无进攻子力，作和。state = {state}")
                         game_over = True
                         value = 0
+                if not game_over and not check and state in history[:-1]:
+                    free_move = defaultdict(int)
+                    for i in range(len(history) - 1):
+                        if history[i] == state:
+                            if senv.will_check_or_catch(state, history[i+1]):
+                                no_act.append(history[i + 1])
+                            else:
+                                increase_temp = True
+                                free_move[state] += 1
+                                if free_move[state] >= 3:
+                                    # 作和棋处理
+                                    game_over = True
+                                    value = 0
+                                    logger.info("闲着循环三次，作和棋处理")
+                                    break
 
         if final_move:
             history.append(final_move)

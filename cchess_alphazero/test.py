@@ -304,9 +304,19 @@ def plot_model():
 
 def test_check_and_catch():
     import cchess_alphazero.environment.static_env as senv
-    state = '4s4/9/4e4/9/2e6/6E2/9/9/9/4S1E2'
-    action = '1242'
-    print(senv.has_attack_chessman(state))
+    state = senv.fen_to_state('rnba1cbnr/1a7/1c7/p1p3p1p/2p5k/2P1R4/P1P3P1P/1C5C1/9/RNBAKABN1 r')
+    # state = senv.fliped_state(state)
+    ori_state = state
+    senv.render(state)
+    print()
+    action = '4454'
+    state = senv.step(state, action)
+    senv.render(state)
+    state = senv.fliped_state(state)
+    print()
+    senv.render(state)
+    print(senv.will_check_or_catch(ori_state, action))
+    
 
 if __name__ == "__main__":
     test_check_and_catch()

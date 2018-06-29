@@ -157,17 +157,15 @@ class SelfPlayWorker:
                         game_over = True
                         value = 0
                 increase_temp = False
-                if not check and state in history[:-1]:
-                    no_act = []
-                    increase_temp = True
+                no_act = []
+                if not game_over and not check and state in history[:-1]:
                     free_move = defaultdict(int)
                     for i in range(len(history) - 1):
                         if history[i] == state:
-                            # 如果走了下一步是将军或捉：禁止走那步
                             if senv.will_check_or_catch(state, history[i+1]):
                                 no_act.append(history[i + 1])
-                            # 否则当作闲着处理
                             else:
+                                increase_temp = True
                                 free_move[state] += 1
                                 if free_move[state] >= 3:
                                     # 作和棋处理
@@ -235,7 +233,7 @@ class SelfPlayWorker:
 
     def upload_play_data(self, path, filename):
         digest = CChessModel.fetch_digest(self.config.resource.model_best_weight_path)
-        data = {'digest': digest, 'username': self.config.internet.username, 'version': '2.21'}
+        data = {'digest': digest, 'username': self.config.internet.username, 'version': '2.3'}
         response = upload_file(self.config.internet.upload_url, path, filename, data, rm=False)
         if response is not None and response['status'] == 0:
             logger.info(f"Upload play data {filename} finished.")

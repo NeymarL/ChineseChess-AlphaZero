@@ -360,6 +360,7 @@ def render(state):
     board = state_to_board(state)
     for i in range(9, -1, -1):
         logger.debug(board[i])
+        # print(board[i])
 
 def init(pos):
     board = [['.' for col in range(BOARD_WIDTH)] for row in range(BOARD_HEIGHT)]
@@ -386,13 +387,13 @@ def to_uci_move(action):
     move = x0 + action[1] + x1 + action[3]
     return move
 
-def will_check_or_catch(state, action):
+def will_check_or_catch(ori_state, action):
     '''
     判断走了下一步是否会造成红方将军或捉子
     '''
-    state = step(state, action)     # 判断当前state的红方是否会被将/捉
+    state = step(ori_state, action)     # 判断当前state的红方是否会被将/捉
     board = state_to_board(state)
-    # 判断被将
+    # long check
     red_k = [0, 0]
     for i in range(BOARD_HEIGHT):
         for j in range(BOARD_WIDTH):
@@ -410,9 +411,21 @@ def will_check_or_catch(state, action):
             check = True
             logger.debug(f"Checking move {mov}")
             return True
-    # 判断被捉
-    for mov in black_moves:
-        next_state, no_eat = new_step(black_state, mov)
+    # long catch
+    first_set = get_catch_list(ori_state)
+    second_set = get_catch_list(black_state, black_moves)
+    if second_set - first_set != set() and len(second_set) >= len(first_set):
+        logger.debug(f"Long catch, first_set = {first_set}, second_set = {second_set}")
+        return True
+    else:
+        return False
+
+def get_catch_list(state, moves=None):
+    catch_list = set()
+    if not moves:
+        moves = get_legal_moves(state)
+    for mov in moves:
+        next_state, no_eat = new_step(state, mov)
         if not no_eat:  # 有吃子
             # 判断能不能吃回来(防御)
             could_defend = False
@@ -424,20 +437,18 @@ def will_check_or_catch(state, action):
                     could_defend = True
                     break
             if not could_defend:
-                # 判断吃子源是否为未过河的兵
-                i = int(mov[3])
-                j = int(mov[2])
-                black_board = state_to_board(black_state)
+                i = int(mov[1])
+                j = int(mov[0])
+                black_board = state_to_board(state)
                 if black_board[i][j] == 'p' and i <= 4:
-                    # 未过河的兵
                     continue
                 m = int(mov[3])
                 n = int(mov[2])
                 if black_board[m][n] == 'P' and m > 4:
                     continue
-                logger.debug(f"Catch: mov = {mov}, chessman = {black_board[i][j]}")
-                return True
-    return False
+                print(f"Catch: mov = {mov}, chessman = {black_board[i][j]}")
+                catch_list.add((black_board[i][j], i, j, black_board[m][n], m, n))
+    return catch_list
 
 def has_attack_chessman(state):
     '''

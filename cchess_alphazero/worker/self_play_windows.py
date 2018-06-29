@@ -135,7 +135,7 @@ class SelfPlayWorker:
 
     def upload_play_data(self, path, filename):
         digest = CChessModel.fetch_digest(self.config.resource.model_best_weight_path)
-        data = {'digest': digest, 'username': self.config.internet.username, 'version': '2.21'}
+        data = {'digest': digest, 'username': self.config.internet.username, 'version': '2.3'}
         response = upload_file(self.config.internet.upload_url, path, filename, data, rm=False)
         if response is not None and response['status'] == 0:
             logger.info(f"上传博弈数据 {filename} 成功.")
@@ -174,30 +174,10 @@ def self_play_buffer(config, cur, use_history=False) -> (tuple, list):
     final_move = None
     no_eat_count = 0
     check = False
+    no_act = None
+    increase_temp = False
 
     while not game_over:
-        no_act = None
-        increase_temp = False
-        if not check and state in history[:-1]:
-            no_act = []
-            increase_temp = True
-            free_move = defaultdict(int)
-            for i in range(len(history) - 1):
-                if history[i] == state:
-                    # 如果走了下一步是将军或捉：禁止走那步
-                    if senv.will_check_or_catch(state, history[i+1]):
-                        no_act.append(history[i + 1])
-                    # 否则当作闲着处理
-                    else:
-                        free_move[state] += 1
-                        if free_move[state] >= 3:
-                            # 作和棋处理
-                            game_over = True
-                            value = 0
-                            logger.info("闲着循环三次，作和棋处理")
-                            break
-        if game_over:
-            break
         start_time = time()
         action, policy = player.action(state, turns, no_act, increase_temp=increase_temp)
         end_time = time()
@@ -227,11 +207,28 @@ def self_play_buffer(config, cur, use_history=False) -> (tuple, list):
             value = 0
         else:
             game_over, value, final_move, check = senv.done(state, need_check=True)
+            no_act = []
+            increase_temp = False
             if not game_over:
                 if not senv.has_attack_chessman(state):
                     logger.info(f"双方无进攻子力，作和。state = {state}")
                     game_over = True
                     value = 0
+            if not game_over and not check and state in history[:-1]:
+                free_move = defaultdict(int)
+                for i in range(len(history) - 1):
+                    if history[i] == state:
+                        if senv.will_check_or_catch(state, history[i+1]):
+                            no_act.append(history[i + 1])
+                        else:
+                            increase_temp = True
+                            free_move[state] += 1
+                            if free_move[state] >= 3:
+                                # 作和棋处理
+                                game_over = True
+                                value = 0
+                                logger.info("闲着循环三次，作和棋处理")
+                                break
 
     if final_move:
         # policy = build_policy(final_move, False)
