@@ -275,11 +275,15 @@ class UCI:
 
     def search_action(self, depth, infinite):
         no_act = None
-        if self.state in self.history[:-1]:
+        _, _, _, check = senv.done(self.state, need_check=True)
+        logger.debug(f"Check = {check}, state = {self.state}")
+        if not check and self.state in self.history[:-1]:
             no_act = []
             for i in range(len(self.history) - 1):
                 if self.history[i] == self.state:
-                    no_act.append(self.history[i + 1])
+                    if senv.will_check_or_catch(self.state, self.history[i+1]):
+                        no_act.append(self.history[i + 1])
+                        logger.debug(f"Foul: no act = {no_act}")
         action, _ = self.player.action(self.state, self.turns, no_act=no_act, depth=depth, 
                                         infinite=infinite, hist=self.history)
         if self.t:
