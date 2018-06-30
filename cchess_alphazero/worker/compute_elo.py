@@ -165,6 +165,7 @@ class EvaluateWorker:
         no_eat_count = 0
         check = False
         increase_temp = False
+        no_act = []
 
         while not game_over:
             start_time = time()

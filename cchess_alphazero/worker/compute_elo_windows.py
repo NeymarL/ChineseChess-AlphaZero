@@ -240,6 +240,7 @@ def self_play_buffer(config, pipes_bt, pipes_ng, idx, res_data, hist_base, hist_
     no_eat_count = 0
     check = False
     increase_temp = False
+    no_act = []
 
     while not game_over:
         start_time = time()
