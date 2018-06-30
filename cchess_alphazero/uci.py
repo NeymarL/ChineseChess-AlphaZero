@@ -73,6 +73,7 @@ class UCI:
         print('id author alphazero.52coding.com.cn')
         print('id version v2.3')
         print('option name gpu spin default 0 min 0 max 7')
+        print('option name Threads spin default 10 min 0 max 1024')
         print('uciok')
         sys.stdout.flush()
         set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, 
@@ -98,10 +99,13 @@ class UCI:
         if len(self.args) > 3:
             id = self.args[1]
             if id == 'gpu':
-                value = self.args[3]
+                value = int(self.args[3])
                 self.config.opts.device_list = value
                 set_session_config(per_process_gpu_memory_fraction=1, allow_growth=True, 
                     device_list=self.config.opts.device_list)
+            if id == 'Threads':
+                value = int(self.args[3])
+                self.config.play.search_threads = value
 
     def cmd_isready(self):
         if self.is_ready == True:
@@ -200,7 +204,8 @@ class UCI:
         self.pipe = self.model.get_pipes(need_reload=False)
         self.search_tree = defaultdict(VisitState)
         self.player = CChessPlayer(self.config, search_tree=self.search_tree, pipes=self.pipe,
-                              enable_resign=False, debugging=True, uci=True, use_history=self.use_history)
+                                    enable_resign=False, debugging=True, uci=True, 
+                                    use_history=self.use_history, side=self.turns % 2)
         for i in range(len(self.args)):
             if self.args[i] == 'depth':
                 depth = int(self.args[i + 1]) * 100
@@ -284,14 +289,15 @@ class UCI:
         self.player.close(wait=False)
         self.player = None
         self.model.close_pipes()
-        if self.turns % 2 == 1:
-            value = -value
         self.info_best_move(action, value, depth)
 
     def info_best_move(self, action, value, depth):
         self.end_time = time()
+        if not self.is_red_turn:
+            value = -value
         score = int(value * 1000)
-        print(f"info depth {depth} score {score} time {int((self.end_time - self.start_time) * 1000)}")
+        duration = self.end_time - self.start_time
+        print(f"info depth {depth} score {score} time {int(duration * 1000)} nps {int(depth * 100 / duration)}")
         logger.debug(f"info depth {depth} score {score} time {int((self.end_time - self.start_time) * 1000)}")
         sys.stdout.flush()
         # get ponder

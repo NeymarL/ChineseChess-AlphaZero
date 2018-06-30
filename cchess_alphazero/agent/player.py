@@ -34,7 +34,7 @@ class ActionState:
 
 class CChessPlayer:
     def __init__(self, config: Config, search_tree=None, pipes=None, play_config=None, 
-            enable_resign=False, debugging=False, uci=False, use_history=False):
+            enable_resign=False, debugging=False, uci=False, use_history=False, side=0):
         self.config = config
         self.play_config = play_config or self.config.play
         self.labels_n = len(ActionLabelsRed)
@@ -57,6 +57,7 @@ class CChessPlayer:
 
         self.search_results = {}        # for debug
         self.debug = {}
+        self.side = side
 
         self.s_lock = Lock()
         self.run_lock = Lock()
@@ -410,8 +411,6 @@ class CChessPlayer:
         '''
         depth = self.done_tasks // 100
         end_time = time()
-        if turns % 2 == 1:
-            value = -value
         pv = ""
         i = 0
         while i < 20:
@@ -440,7 +439,7 @@ class CChessPlayer:
             turns += 1
         if state in self.debug:
             _, value = self.debug[state]
-            if turns % 2 == 1:
+            if turns % 2 != self.side:
                 value = -value
         score = int(value * 1000)
         output = f"info depth {depth} score {score} time {int((end_time - start_time) * 1000)} pv" + pv
