@@ -69,9 +69,9 @@ class UCI:
                 logger.error(f"Error command: {cmd}")
 
     def cmd_uci(self):
-        print('id name AlphaZero')
+        print('id name CCZero')
         print('id author alphazero.52coding.com.cn')
-        print('id version v2.2')
+        print('id version v2.3')
         print('option name gpu spin default 0 min 0 max 7')
         print('uciok')
         sys.stdout.flush()
@@ -212,12 +212,12 @@ class UCI:
             if self.args[i] == 'wtime':
                 if self.is_red_turn:
                     self.remain_time = int(self.args[i + 1]) / 1000
-                    depth = 800
+                    depth = 3000
                     infinite = False
             if self.args[i] == 'btime':
                 if not self.is_red_turn:
                     self.remain_time = int(self.args[i + 1]) / 1000
-                    depth = 800
+                    depth = 3000
                     infinite = False
         logger.debug(f"depth = {depth}, infinite = {infinite}, remain_time = {self.remain_time}")
         search_worker = Thread(target=self.search_action, args=(depth, infinite))

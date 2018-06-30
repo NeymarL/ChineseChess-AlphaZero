@@ -412,10 +412,9 @@ class CChessPlayer:
         end_time = time()
         if turns % 2 == 1:
             value = -value
-        score = int(value * 1000)
-        output = f"info depth {depth} score {score} time {int((end_time - start_time) * 1000)} pv"
+        pv = ""
         i = 0
-        while i < 10:
+        while i < 20:
             node = self.tree[state]
             bestmove = None
             root = True
@@ -436,9 +435,15 @@ class CChessPlayer:
             if turns % 2 == 1:
                 bestmove = flip_move(bestmove)
             bestmove = senv.to_uci_move(bestmove)
-            output += " " + bestmove
+            pv += " " + bestmove
             i += 1
             turns += 1
+        if state in self.debug:
+            _, value = self.debug[state]
+            if turns % 2 == 1:
+                value = -value
+        score = int(value * 1000)
+        output = f"info depth {depth} score {score} time {int((end_time - start_time) * 1000)} pv" + pv
         print(output)
         logger.debug(output)
         sys.stdout.flush()
