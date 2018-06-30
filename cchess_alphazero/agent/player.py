@@ -442,7 +442,9 @@ class CChessPlayer:
             if turns % 2 != self.side:
                 value = -value
         score = int(value * 1000)
-        output = f"info depth {depth} score {score} time {int((end_time - start_time) * 1000)} pv" + pv
+        duration = end_time - start_time
+        nps = int(depth * 100 / duration)
+        output = f"info depth {depth} score {score} time {int(duration * 1000)} pv" + pv + f" nps {nps}"
         print(output)
         logger.debug(output)
         sys.stdout.flush()
