@@ -443,7 +443,7 @@ class CChessPlayer:
                 value = -value
         score = int(value * 1000)
         duration = end_time - start_time
-        nps = int(depth * 100 / duration)
+        nps = int(depth * 100 / duration) * 1000
         output = f"info depth {depth} score {score} time {int(duration * 1000)} pv" + pv + f" nps {nps}"
         print(output)
         logger.debug(output)

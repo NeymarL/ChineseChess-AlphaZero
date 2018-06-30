@@ -71,7 +71,7 @@ class UCI:
     def cmd_uci(self):
         print('id name CCZero')
         print('id author alphazero.52coding.com.cn')
-        print('id version v2.3')
+        print('id version 2.4')
         print('option name gpu spin default 0 min 0 max 7')
         print('option name Threads spin default 10 min 0 max 1024')
         print('uciok')
@@ -297,7 +297,8 @@ class UCI:
             value = -value
         score = int(value * 1000)
         duration = self.end_time - self.start_time
-        print(f"info depth {depth} score {score} time {int(duration * 1000)} nps {int(depth * 100 / duration)}")
+        nps = int(depth * 100 / duration) * 1000
+        print(f"info depth {depth} score {score} time {int(duration * 1000)} nps {nps}")
         logger.debug(f"info depth {depth} score {score} time {int((self.end_time - self.start_time) * 1000)}")
         sys.stdout.flush()
         # get ponder
