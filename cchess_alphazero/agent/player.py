@@ -151,7 +151,7 @@ class CChessPlayer:
         done = 0
         if state in self.tree:
             done = self.tree[state].sum_n
-        if no_act or increase_temp:
+        if no_act or increase_temp or done == self.play_config.simulation_num_per_move:
             # logger.info(f"no_act = {no_act}, increase_temp = {increase_temp}")
             done = 0
         self.done_tasks = done
@@ -218,11 +218,13 @@ class CChessPlayer:
                         self.expand_and_evaluate(state, history)
                     break
 
-                if state in history[:-1]: # loop -> loss
+                if state in history[:-1]: # loop
                     for i in range(len(history) - 1):
                         if history[i] == state:
                             if senv.will_check_or_catch(state, history[i+1]):
                                 self.executor.submit(self.update_tree, None, -1, history)
+                            elif senv.be_catched(state, history[i+1]):
+                                self.executor.submit(self.update_tree, None, 1, history)
                             else:
                                 # logger.debug(f"loop -> loss, state = {state}, history = {history[:-1]}")
                                 self.executor.submit(self.update_tree, None, 0, history)

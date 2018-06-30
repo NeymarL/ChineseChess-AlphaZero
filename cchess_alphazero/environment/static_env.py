@@ -450,6 +450,22 @@ def get_catch_list(state, moves=None):
                 catch_list.add((black_board[i][j], i, j, black_board[m][n], m, n))
     return catch_list
 
+def be_catched(state, mov):
+    i = int(mov[1])
+    j = int(mov[0])
+    position = [i, j]
+    board = state_to_board(state)
+    print(f"Chs = {board[i][j]}")
+    black_state = fliped_state(state)
+    black_moves = get_legal_moves(black_state)
+    position[0] = 9 - position[0]
+    position[1] = 8 - position[1]
+    for mov in black_moves:
+        dest = [int(mov[3]), int(mov[2])]
+        if dest == position:
+            return True
+    return False
+
 def has_attack_chessman(state):
     '''
     INIT_STATE = 'rkemsmekr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RKEMSMEKR'

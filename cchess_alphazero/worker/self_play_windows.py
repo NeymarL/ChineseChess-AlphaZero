@@ -220,7 +220,7 @@ def self_play_buffer(config, cur, use_history=False) -> (tuple, list):
                     if history[i] == state:
                         if senv.will_check_or_catch(state, history[i+1]):
                             no_act.append(history[i + 1])
-                        else:
+                        elif not senv.be_catched(state, history[i+1]):
                             increase_temp = True
                             free_move[state] += 1
                             if free_move[state] >= 3:

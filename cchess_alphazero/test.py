@@ -316,8 +316,18 @@ def test_check_and_catch():
     print()
     senv.render(state)
     print(senv.will_check_or_catch(ori_state, action))
+
+def test_be_catched():
+    import cchess_alphazero.environment.static_env as senv
+    state = senv.fen_to_state('rnbakab1r/9/1c3c2n/p1p5p/7p1/3PR4/P1P3P1P/C7C/9/RNBAKABN1 b')
+    # state = senv.fliped_state(state)
+    ori_state = state
+    senv.render(state)
+    print()
+    action = '4454'
+    print(senv.be_catched(ori_state, action))
     
 
 if __name__ == "__main__":
-    test_check_and_catch()
+    test_be_catched()
     
