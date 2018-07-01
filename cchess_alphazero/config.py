@@ -85,7 +85,7 @@ class Options:
     use_multiple_gpus = False
     gpu_num = 1
     evaluate = False
-    has_history = True
+    has_history = False
 
 class PlayWithHumanConfig:
     def __init__(self):
