@@ -409,13 +409,13 @@ def will_check_or_catch(ori_state, action):
         dest = [int(mov[3]), int(mov[2])]
         if dest == red_k:
             check = True
-            logger.debug(f"Checking move {mov}")
+            # logger.debug(f"Checking move {mov}")
             return True
     # long catch
     first_set = get_catch_list(ori_state)
     second_set = get_catch_list(black_state, black_moves)
     if second_set - first_set != set() and len(second_set) >= len(first_set):
-        logger.debug(f"Long catch, first_set = {first_set}, second_set = {second_set}")
+        # logger.debug(f"Long catch, first_set = {first_set}, second_set = {second_set}")
         return True
     else:
         return False
@@ -446,7 +446,7 @@ def get_catch_list(state, moves=None):
                 n = int(mov[2])
                 if black_board[m][n] == 'P' and m > 4:
                     continue
-                print(f"Catch: mov = {mov}, chessman = {black_board[i][j]}")
+                # print(f"Catch: mov = {mov}, chessman = {black_board[i][j]}")
                 catch_list.add((black_board[i][j], i, j, black_board[m][n], m, n))
     return catch_list
 
