@@ -455,7 +455,6 @@ def be_catched(state, mov):
     j = int(mov[0])
     position = [i, j]
     board = state_to_board(state)
-    print(f"Chs = {board[i][j]}")
     black_state = fliped_state(state)
     black_moves = get_legal_moves(black_state)
     position[0] = 9 - position[0]
