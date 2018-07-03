@@ -17,7 +17,7 @@ In order to build a strong chinese chess AI following the same type of technique
 If you want to join us to build the best chinese chess AI in the world:
 
 * For instructions, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki)
-* For live status, see http://alphazero.52coding.com.cn/
+* For live status, see https://cczero.org
 
 ![elo](elo.png)
 
