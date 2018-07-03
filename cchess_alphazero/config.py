@@ -108,7 +108,7 @@ class InternetConfig:
     def __init__(self):
         self.distributed = False
         self.username = getpass.getuser()
-        self.base_url = 'http://alphazero.52coding.com.cn'
+        self.base_url = 'https://cczero.org'
         self.upload_url = f'{self.base_url}/api/upload_game_file/192x10'
         self.upload_eval_url = f'{self.base_url}/api/upload_eval_game_file'
         self.download_url = f'http://download.52coding.com.cn/192x10/model_best_weight.h5'

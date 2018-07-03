@@ -70,7 +70,7 @@ class UCI:
 
     def cmd_uci(self):
         print('id name CCZero')
-        print('id author alphazero.52coding.com.cn')
+        print('id author https://cczero.org')
         print('id version 2.4')
         print('option name gpu spin default 0 min 0 max 7')
         print('option name Threads spin default 10 min 0 max 1024')
