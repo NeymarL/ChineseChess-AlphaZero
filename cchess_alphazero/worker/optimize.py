@@ -245,15 +245,17 @@ class OptimizeWorker:
         http_request(self.config.internet.add_model_url, post=True, data=data)
 
     def backup_play_data(self, files):
-        backup_folder = os.path.join(self.config.resource.data_dir, 'trained');
+        backup_folder = os.path.join(self.config.resource.data_dir, 'trained')
+        cnt = 0
         if not os.path.exists(backup_folder):
             os.makedirs(backup_folder)
         for i in range(len(files)):
             try:
                 shutil.move(files[i], backup_folder)
             except Exception as e:
-                logger.error(f"Backup error : {e}")
-        logger.info(f"backup {len(files)} files")
+                # logger.error(f"Backup error : {e}")
+                cnt = cnt + 1
+        logger.info(f"backup {len(files)} files, {cnt} empty files")
 
 def load_data_from_file(filename, use_history=False):
     try:
