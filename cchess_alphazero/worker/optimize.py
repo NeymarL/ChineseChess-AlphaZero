@@ -190,11 +190,6 @@ class OptimizeWorker:
             save_as_best_model(self.model)
         else:
             save_as_next_generation_model(self.model)
-        if self.config.internet.distributed and send:
-            # send_worker = Thread(target=self.send_model, name="send_worker")
-            # send_worker.daemon = True
-            # send_worker.start()
-            self.send_model()
 
     def decide_learning_rate(self, total_steps):
         ret = None
@@ -211,38 +206,6 @@ class OptimizeWorker:
                 load_best_model_weight(self.model)
             return True
         return False
-
-    def send_model(self):
-        success = False
-        remote_server = 'root@111.231.100.42'
-        # for i in range(3):
-        #     remote_server = 'root@111.231.100.42'
-        #     remote_path = '/var/www/alphazero.52coding.com.cn/data/model/128x7/model_best_weight.h5'
-        #     cmd = f'scp {self.config.resource.next_generation_weight_path} {remote_server}:{remote_path}'
-        #     ret = subprocess.run(cmd, shell=True)
-        #     if ret.returncode == 0:
-        #         success = True
-        #         logger.info("Send best model success!")
-        #         break
-        #     else:
-        #         logger.error(f"Send best model failed! {ret.stderr}, cmd = {cmd}")
-        # if self.eva:
-        filename = self.model.digest + '.h5'
-        weight_path = os.path.join(self.config.resource.next_generation_model_dir, filename)
-        shutil.copy(self.config.resource.next_generation_weight_path, weight_path)
-        for i in range(3):
-            remote_path = '/var/www/alphazero.52coding.com.cn/data/model/next_generation'
-            cmd = f'scp {weight_path} {remote_server}:{remote_path}'
-            ret = subprocess.run(cmd, shell=True)
-            if ret.returncode == 0:
-                success = True
-                logger.info("Send evaluate model success!")
-                os.remove(weight_path)
-                break
-            else:
-                logger.error(f"Send evaluate model failed! {ret.stderr}, cmd = {cmd}")
-        data = {'digest': self.model.digest, 'elo': 0}
-        http_request(self.config.internet.add_model_url, post=True, data=data)
 
     def backup_play_data(self, files):
         backup_folder = os.path.join(self.config.resource.data_dir, 'trained')
