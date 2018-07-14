@@ -22,17 +22,13 @@ def setup_parameters(config):
     if len(sys.argv) > 2:
         max_processes = int(sys.argv[2])
     if len(sys.argv) > 3:
-        flag = sys.argv[3]
-        if flag == 'new':
-            config.internet.base_url = 'http://temp.52coding.com.cn'
-        elif flag == 'new2':
-            config.internet.base_url = 'http://temp3.52coding.com.cn'
+        config.internet.base_url = sys.argv[3]
         config.internet.upload_url = f'{config.internet.base_url}/api/upload_game_file/192x10'
         config.internet.upload_eval_url = f'{config.internet.base_url}/api/upload_eval_game_file'
         config.internet.get_latest_digest = f'{config.internet.base_url}/api/get_latest_digest/192x10'
-        config.internet.get_evaluate_model_url = f'{config.internet.base_url}/api/query_for_evaluate'
-        config.internet.update_elo_url = f'{config.internet.base_url}/api/add_eval_result/'
-    search_threads = 20
+        # config.internet.get_evaluate_model_url = f'{config.internet.base_url}/api/query_for_evaluate'
+        # config.internet.update_elo_url = f'{config.internet.base_url}/api/add_eval_result/'
+    search_threads = 10
     print(f"max_processes = {max_processes}, search_threads = {search_threads}")
     config.play.max_processes = max_processes
     config.play.search_threads = search_threads
