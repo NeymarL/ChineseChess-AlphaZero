@@ -47,7 +47,7 @@ class UCI:
         self.model = None
         self.pipe = None
         self.is_ready = False
-        self.search_tree = None
+        self.search_tree = defaultdict(VisitState)
         self.remain_time = None
         self.history = None
         self.turns = 0
@@ -91,6 +91,7 @@ class UCI:
         self.history = [self.state]
         self.is_ready = True
         self.is_red_turn = True
+        self.search_tree = defaultdict(VisitState)
 
     def cmd_setoption(self):
         '''
