@@ -20,7 +20,7 @@ def setup_parameters(config):
     config.opts.device_list = gpu
     num_cores = mp.cpu_count()
     max_processes = num_cores // 2 if num_cores < 20 else 10
-    search_threads = 20
+    search_threads = 10
     max_processes = input(f"请输入运行进程数（推荐{max_processes}）：")
     max_processes = int(max_processes)
     print(f"max_processes = {max_processes}, search_threads = {search_threads}")
