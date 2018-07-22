@@ -203,6 +203,7 @@ class CChessPlayer:
             # logger.debug(f"start MCTS, state = {state}, history = {history}")
             game_over, v, _ = senv.done(state)
             if game_over:
+                v = v * 2
                 self.executor.submit(self.update_tree, None, v, history)
                 break
 
