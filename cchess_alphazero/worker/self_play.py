@@ -127,8 +127,8 @@ class SelfPlayWorker:
                 logger.debug(f"{turns % 2} (0 = red; 1 = black) has resigned!")
                 value = -1
                 break
-            if self.config.opts.log_move:
-                logger.info(f"Process{self.pid} Playing: {turns % 2}, action: {action}, time: {(end_time - start_time):.1f}s")
+            # if self.config.opts.log_move:
+            #     logger.info(f"Process{self.pid} Playing: {turns % 2}, action: {action}, time: {(end_time - start_time):.1f}s")
             # logger.info(f"Process{self.pid} Playing: {turns % 2}, action: {action}, time: {(end_time - start_time):.1f}s")
             history.append(action)
             # policys.append(policy)
