@@ -393,7 +393,7 @@ def will_check_or_catch(ori_state, action):
     '''
     state = step(ori_state, action)     # 判断当前state的红方是否会被将/捉
     board = state_to_board(state)
-    # long check
+    # permanent check
     red_k = [0, 0]
     for i in range(BOARD_HEIGHT):
         for j in range(BOARD_WIDTH):
@@ -411,11 +411,11 @@ def will_check_or_catch(ori_state, action):
             check = True
             # logger.debug(f"Checking move {mov}")
             return True
-    # long catch
+    # permanent catch
     first_set = get_catch_list(ori_state)
     second_set = get_catch_list(black_state, black_moves)
     if second_set - first_set != set() and len(second_set) >= len(first_set):
-        # logger.debug(f"Long catch, first_set = {first_set}, second_set = {second_set}")
+        # logger.debug(f"Permanent catch, first_set = {first_set}, second_set = {second_set}")
         return True
     else:
         return False
@@ -445,6 +445,9 @@ def get_catch_list(state, moves=None):
                 m = int(mov[3])
                 n = int(mov[2])
                 if black_board[m][n] == 'P' and m > 4:
+                    continue
+                # 判断是否为兑
+                if black_board[m][n].upper() == black_board[i][j].upper():
                     continue
                 # print(f"Catch: mov = {mov}, chessman = {black_board[i][j]}")
                 catch_list.add((black_board[i][j], i, j, black_board[m][n], m, n))
