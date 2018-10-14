@@ -3,3 +3,5 @@
 data/*
 logs/*
 *.ttc
+Icon*
+.vscode
