@@ -84,7 +84,7 @@ Make sure Keras is using Tensorflow and you have Python 3.6.3+.
 * `search_threads`: balance parameter of speed and accuracy in MCTS.
 * `dirichlet_alpha`: random parameter in self-play.
 
-### Basic Usage
+### Full Usage
 
 ```
 usage: run.py [-h] [--new] [--type TYPE] [--total-step TOTAL_STEP]
@@ -120,7 +120,7 @@ optional arguments:
   --elo                 whether to compute elo score
 ```
 
-#### Self-Play
+### Self-Play
 
 ```
 python cchess_alphazero/run.py self
@@ -138,7 +138,7 @@ options
 
 **Note**: To help training, you should run `python cchess_alphazero/run.py --type distribute --distributed self` (and do not change the configuration file `configs/distribute.py`), for more info, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki/For-Developers).
 
-#### Trainer
+### Trainer
 
 ```
 python cchess_alphazero/run.py opt
@@ -160,7 +160,7 @@ tensorboard --logdir logs/
 
 And access `http://<The Machine IP>:6006/`.
 
-#### Play with human
+### Play with human
 
 **Run with built-in GUI**
 
@@ -191,7 +191,7 @@ python cchess_alphazero/uci.py
 
 If you want to play in general GUIs such as '冰河五四', you can download the Windows executable [here](https://share.weiyun.com/5cK50Z4). For more information, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki/For-Non-Developers#%E4%B8%8B%E6%A3%8B).
 
-#### Evaluator
+### Evaluator
 
 ```
 python cchess_alphazero/run.py eval
@@ -204,7 +204,7 @@ options
 * `--type mini`: use mini config, (see `cchess_alphazero/configs/mini.py`)
 * `--gpu '1'`: specify which gpu to use
 
-#### Supervised Learning
+### Supervised Learning
 
 ```
 python cchess_alphazero/run.py sl
