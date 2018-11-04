@@ -126,7 +126,7 @@ optional arguments:
 python cchess_alphazero/run.py self
 ```
 
-When executed, Self-Play will start using BestModel. If the BestModel does not exist, new random model will be created and become BestModel.
+When executed, self-play will start using BestModel. If the BestModel does not exist, new random model will be created and become BestModel. Self-play records will store in `data/play_record` and BestMode will store in `data/model`.
 
 options
 
@@ -136,7 +136,9 @@ options
 * `--ucci`: whether to play with ucci engine (rather than self play, see `cchess_alphazero/worker/play_with_ucci_engine.py`)
 * `--distributed`: run self play in distributed mode which means it will upload the play data to the remote server and download latest model from it
 
-**Note**: To help training, you should run `python cchess_alphazero/run.py --type distribute --distributed self` (and do not change the configuration file `configs/distribute.py`), for more info, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki/For-Developers).
+**Note1**: To help training, you should run `python cchess_alphazero/run.py --type distribute --distributed self` (and do not change the configuration file `configs/distribute.py`), for more info, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki/For-Developers).
+
+**Note2**: If you want to view the self-play records in GUI, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki/View-self-play-games-in-GUI).
 
 ### Trainer
 
