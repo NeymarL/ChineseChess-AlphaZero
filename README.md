@@ -86,6 +86,40 @@ Make sure Keras is using Tensorflow and you have Python 3.6.3+.
 
 ### Basic Usage
 
+```
+usage: run.py [-h] [--new] [--type TYPE] [--total-step TOTAL_STEP]
+              [--ai-move-first] [--cli] [--gpu GPU] [--onegreen] [--skip SKIP]
+              [--ucci] [--piece-style {WOOD,POLISH,DELICATE}]
+              [--bg-style {CANVAS,DROPS,GREEN,QIANHONG,SHEET,SKELETON,WHITE,WOOD}]
+              [--random {none,small,medium,large}] [--distributed] [--elo]
+              {self,opt,eval,play,eval,sl,ob}
+
+positional arguments:
+  {self,opt,eval,play,eval,sl,ob}
+                        what to do
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --new                 run from new best model
+  --type TYPE           use normal setting
+  --total-step TOTAL_STEP
+                        set TrainerConfig.start_total_steps
+  --ai-move-first       set human or AI move first
+  --cli                 play with AI with CLI, default with GUI
+  --gpu GPU             device list
+  --onegreen            train sl work with onegreen data
+  --skip SKIP           skip games
+  --ucci                play with ucci engine instead of self play
+  --piece-style {WOOD,POLISH,DELICATE}
+                        choose a style of piece
+  --bg-style {CANVAS,DROPS,GREEN,QIANHONG,SHEET,SKELETON,WHITE,WOOD}
+                        choose a style of board
+  --random {none,small,medium,large}
+                        choose a style of randomness
+  --distributed         whether upload/download file from remote server
+  --elo                 whether to compute elo score
+```
+
 #### Self-Play
 
 ```
@@ -101,6 +135,8 @@ options
 * `--gpu '1'`: specify which gpu to use
 * `--ucci`: whether to play with ucci engine (rather than self play, see `cchess_alphazero/worker/play_with_ucci_engine.py`)
 * `--distributed`: run self play in distributed mode which means it will upload the play data to the remote server and download latest model from it
+
+**Note**: To help training, you should run `python cchess_alphazero/run.py --type distribute --distributed self` (and do not change the configuration file `configs/distribute.py`), for more info, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki/For-Developers).
 
 #### Trainer
 
@@ -126,6 +162,8 @@ And access `http://<The Machine IP>:6006/`.
 
 #### Play with human
 
+**Run with built-in GUI**
+
 ```
 python cchess_alphazero/run.py play
 ```
@@ -142,6 +180,16 @@ options
 * `--cli`: if set this flag, play with AI in a cli environment rather than gui
 
 **Note**: Before you start, you need to download/find a font file (`.ttc`) and rename it as `PingFang.ttc`, then put it into `cchess_alphazero/play_games`. I have removed the font file from this repo because it's too big, but you can download it from [here](http://alphazero.52coding.com.cn/PingFang.ttc).
+
+You can also download Windows executable directly from [here](https://pan.baidu.com/s/1uE_zmkn0x9Be_olRL9U9cQ). For more information, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki/For-Non-Developers#%E4%B8%8B%E6%A3%8B).
+
+**UCI mode**
+
+```
+python cchess_alphazero/uci.py
+```
+
+If you want to play in general GUIs such as '冰河五四', you can download the Windows executable [here](https://share.weiyun.com/5cK50Z4). For more information, see [wiki](https://github.com/NeymarL/ChineseChess-AlphaZero/wiki/For-Non-Developers#%E4%B8%8B%E6%A3%8B).
 
 #### Evaluator
 
