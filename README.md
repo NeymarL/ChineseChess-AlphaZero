@@ -43,7 +43,7 @@ For the sake of faster training, another two workers are involved:
 * `sl` is Supervised learning to train data crawled from the Internet.
 * `eval` is Evaluator to evaluate the NextGenerationModel with the current BestModel.
 
-### GUI
+### Built-in GUI
 
 Requirement: pygame
 
