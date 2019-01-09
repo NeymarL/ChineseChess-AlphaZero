@@ -339,7 +339,6 @@ class CChessPlayer:
 
     def update_tree(self, p, v, history):
         state = history.pop()
-        z = v
 
         if p is not None:
             with self.node_lock[state]:

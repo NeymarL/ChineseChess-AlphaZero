@@ -5,3 +5,4 @@ logs/*
 *.ttc
 Icon*
 .vscode
+*.icloud
