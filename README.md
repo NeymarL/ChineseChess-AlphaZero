@@ -1,5 +1,9 @@
 # 中国象棋Zero（CCZero）
 
+<a href="https://cczero.org">
+  <img src="https://cczero.org/zero2.png" alt="App Icon" />
+</a>
+
 ## About
 
 Chinese Chess reinforcement learning by [AlphaZero](https://arxiv.org/abs/1712.01815) methods.
